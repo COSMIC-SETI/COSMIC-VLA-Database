@@ -11,5 +11,76 @@
       "time_start_unix": 1680675440.009397,
       "metadata_json": {"tstart": 60039.261608217595,"nbits": 8,"fenchan": 1024.0,"tnow": 60039.261608558474,"datasetid": "23A-148.sb43249236.eb43775398.60039.09749797454","src": "J1254+1141","scanno": 63,"nant": 27,"intents": {"RestFreqA0C0": "1420000000","COSMIC_OFF": "0","ProjectID": "43050177","schedBlockStart": "Wed Apr 05 02:20:21 UTC 2023","ObserverName": "Dr. Karin Sandstrom","SBID": "43249236","RestFrame": "LLLL","VelocityA0C0": "2404000","SBTYPE": "OBSERVER","FreqVelSwitch": "VVVV","ScanIntent": "CALIBRATE_AMPLI CALIBRATE_PHASE","ObsCode": "23A-148","ExecBlockID": "43775398","schedBlockEnd": "Wed Apr 05 06:19:41 UTC 2023","VLITE_OFF": "0"},"samplehz": 2048000000.0,"station": ["ea14","ea13","ea12","ea11","ea28","ea27","ea26","ea25","ea24","ea23","ea22","ea21","ea20","ea09","ea08","ea07","ea06","ea05","ea04","ea03","ea02","ea01","ea19","ea18","ea17","ea16","ea15"],"ifids": ["AC","BD"],"tbin": 1e-06,"fcents": [1499.863123536189,1500.0],"obsbwmhz": [1024.0,1024.0],"tend_unix": 1680675582.4499998,"subscanNo": 1,"tnow_unix": 1680675402.9794521,"sideband": [1,1],"dec_deg": 11.684970853892649,"scanid": "23A-148.sb43249236.eb43775398.60039.09749797454.63.1","tdiff": 179.49999952316284,"ra_deg": 193.65939833631927,"projid": "43050177","tstart_unix": 1680675402.9500003,"baseband": ["AC_8BIT","BD_8BIT"],"sslo": [987.863123536189,988.0],"tend_datettime": "2023-04-05 06:19:42.450000","tend": 60039.263685763886,"fenpol": 2,"mjd": "60039"}
     }
+  ],
+  "configurations": [
+    {
+      "id": "23A-148.sb43249236.eb43775398.60039.09749797454.63.1",
+      "time_start_unix": 1680675442.009397,
+      "time_end_unix": 1680675466.009397,
+      "configuration_json": {
+        "xengine_subband_map": {
+          "cosmic-gpu-2.2": [512, 544],
+          "cosmic-gpu-2.3": [480, 512],
+          "cosmic-gpu-3.2": [544, 576],
+          "cosmic-gpu-3.3": [448, 480],
+          "cosmic-gpu-4.2": [576, 608],
+          "cosmic-gpu-4.3": [416, 448],
+          "cosmic-gpu-5.2": [608, 640],
+          "cosmic-gpu-5.3": [384, 416],
+          "cosmic-gpu-6.2": [640, 672],
+          "cosmic-gpu-6.3": [352, 384],
+          "cosmic-gpu-7.2": [672, 704],
+          "cosmic-gpu-7.3": [320, 352],
+          "cosmic-gpu-8.2": [704, 736],
+          "cosmic-gpu-8.3": [288, 320],
+          "cosmic-gpu-9.2": [736, 768],
+          "cosmic-gpu-9.3": [256, 288],
+          "cosmic-gpu-10.2": [768, 800],
+          "cosmic-gpu-10.3": [224, 256],
+          "cosmic-gpu-11.2": [800, 832],
+          "cosmic-gpu-11.3": [192, 224],
+          "cosmic-gpu-12.2": [832, 864],
+          "cosmic-gpu-12.3": [160, 192],
+          "cosmic-gpu-13.2": [864, 896],
+          "cosmic-gpu-13.3": [128, 160],
+          "cosmic-gpu-14.2": [896, 928],
+          "cosmic-gpu-14.3": [96, 128],
+          "cosmic-gpu-15.2": [928, 960],
+          "cosmic-gpu-15.3": [64, 96],
+          "cosmic-gpu-16.2": [960, 992],
+          "cosmic-gpu-16.3": [32, 64],
+          "cosmic-gpu-17.2": [992, 1024],
+          "cosmic-gpu-17.3": [0, 32]
+        },
+        "antenna": {
+          "number": 32,
+          "criterion_minimum": 14
+        },
+        "compensations": {
+          "delays": "full-corrected-phase",
+          "fiber_timestamp_shift": false,
+          "lo_fshift": true
+        },
+        "recording_mode": "correlator",
+        "hashpipe_keys": {
+          "PROJID": "uvh5_calibration",
+          "XTIMEINT": 1
+        },
+        "postprocess": "calibrate-uvh5"
+      },
+      "criteria_json": {
+        "META.baseband.0": "AC_8BIT",
+        "META.baseband.1": "BD_8BIT",
+        "META.station.len>=": 14,
+        "META.intents.ScanIntent": ".*CALIBRATE.*",
+        "META.scanid.!": "TCOS.*",
+        "META.tend_unix.-now>": 35,
+        "META.fcents.0.>=": 1000,
+        "META.fcents.0.<=": 8000,
+        "META.fcents.1.>=": 1000,
+        "META.fcents.1.<=": 8000
+      },
+      "successful": true
+    }
   ]
 }

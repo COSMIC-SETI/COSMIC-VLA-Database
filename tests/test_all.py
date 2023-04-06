@@ -9,7 +9,7 @@ from cosmic_database.engine import CosmicDB_Engine
 dbconf_filepath = os.path.join(os.path.dirname(__file__), "database_conf.yaml")
 print(dbconf_filepath)
 
-engine = CosmicDB_Engine(dbconf_filepath, echo=True)
+engine = CosmicDB_Engine(dbconf_filepath, echo=False)
 
 engine.create_all_tables()
 
@@ -31,11 +31,6 @@ with open(data_filepath, "r") as json_fio:
         for entitydata in json_data["datasets"]
     ])
     
-    with engine.session() as session:
-        assert session.scalars(
-            sqlalchemy.select(entities.CosmicDB_Dataset).where(entities.CosmicDB_Dataset.id == json_data["datasets"][0]["id"])
-        ).one_or_none() is not None
-
     engine.commit_entities([
         entities.CosmicDB_Scan(
             id = scan["id"],
@@ -46,10 +41,31 @@ with open(data_filepath, "r") as json_fio:
         for scan in json_data["scans"]
     ])
 
+    
+    with engine.session() as session:
+        for config in json_data["configurations"]:
+            scan = session.scalars(
+                sqlalchemy.select(entities.CosmicDB_Scan).where(entities.CosmicDB_Scan.id == config["id"])
+            ).one_or_none()
+            assert scan is not None
+            configuration = entities.CosmicDB_ObservationConfiguration(
+                id = config["id"],
+                time_start_unix = config["time_start_unix"],
+                time_end_unix = config["time_end_unix"],
+                criteria_json = json.dumps(config["criteria_json"]),
+                configuration_json = json.dumps(config["configuration_json"]),
+                successful = config["successful"],
+            )
+            session.add(configuration)
+
+            session.commit()
+
     with engine.session() as session:
 
         for scan in session.scalars(
-            sqlalchemy.select(entities.CosmicDB_Scan)#.where(entities.CosmicDB_Scan.time_start_unix.in_([1680675440.009397]))
+            sqlalchemy.select(entities.CosmicDB_Scan)
         ):
             print(scan)
+            print(scan.configuration)
+            print(scan.calibration_observation)
     

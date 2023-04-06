@@ -68,7 +68,7 @@ class CosmicDB_ObservationConfiguration(Base):
     )
 
     def __repr__(self) -> str:
-        return f"COSMIC_OBS_CONF({', '.join(f'{key}={getattr(self, key)}' for key in ['scan_id', 'time_start_unix', 'time_end_unix', 'successfull'])})"
+        return f"COSMIC_OBS_CONF({', '.join(f'{key}={getattr(self, key)}' for key in ['id', 'time_start_unix', 'time_end_unix', 'successful'])})"
 
 class CosmicDB_CalibrationObservation(Base):
     __tablename__ = f"cosmic_calibration_observation{TABLE_SUFFIX}"
@@ -86,7 +86,7 @@ class CosmicDB_CalibrationObservation(Base):
     )
 
     def __repr__(self) -> str:
-        return f"COSMIC_CAL_OBS({', '.join(f'{key}={getattr(self, key)}' for key in ['scan_id', 'time_start_unix', 'time_end_unix', 'successfull'])})"
+        return f"COSMIC_CAL_OBS({', '.join(f'{key}={getattr(self, key)}' for key in ['id', 'time_start_unix', 'time_end_unix', 'successful'])})"
 
 class CosmicDB_TargetObservation(Base):
     __tablename__ = f"cosmic_target_observation{TABLE_SUFFIX}"
@@ -110,7 +110,7 @@ class CosmicDB_TargetObservation(Base):
     )
 
     def __repr__(self) -> str:
-        return f"COSMIC_TARGET_OBS({', '.join(f'{key}={getattr(self, key)}' for key in ['scan_id', 'time_start_unix', 'time_end_unix', 'successfull'])})"
+        return f"COSMIC_TARGET_OBS({', '.join(f'{key}={getattr(self, key)}' for key in ['id', 'time_start_unix', 'time_end_unix', 'successful'])})"
 
 class CosmicDB_ObservationBeam(Base):
     __tablename__ = f"cosmic_seti_beam{TABLE_SUFFIX}"
