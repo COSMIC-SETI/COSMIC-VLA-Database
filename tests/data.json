@@ -1,0 +1,15 @@
+{
+  "datasets": [
+    {
+      "id": "23A-148.sb43249236"
+    }
+  ],
+  "scans": [
+    {
+      "id": "23A-148.sb43249236.eb43775398.60039.09749797454.63.1",
+      "dataset_id": "23A-148.sb43249236",
+      "time_start_unix": 1680675440.009397,
+      "metadata_json": {"tstart": 60039.261608217595,"nbits": 8,"fenchan": 1024.0,"tnow": 60039.261608558474,"datasetid": "23A-148.sb43249236.eb43775398.60039.09749797454","src": "J1254+1141","scanno": 63,"nant": 27,"intents": {"RestFreqA0C0": "1420000000","COSMIC_OFF": "0","ProjectID": "43050177","schedBlockStart": "Wed Apr 05 02:20:21 UTC 2023","ObserverName": "Dr. Karin Sandstrom","SBID": "43249236","RestFrame": "LLLL","VelocityA0C0": "2404000","SBTYPE": "OBSERVER","FreqVelSwitch": "VVVV","ScanIntent": "CALIBRATE_AMPLI CALIBRATE_PHASE","ObsCode": "23A-148","ExecBlockID": "43775398","schedBlockEnd": "Wed Apr 05 06:19:41 UTC 2023","VLITE_OFF": "0"},"samplehz": 2048000000.0,"station": ["ea14","ea13","ea12","ea11","ea28","ea27","ea26","ea25","ea24","ea23","ea22","ea21","ea20","ea09","ea08","ea07","ea06","ea05","ea04","ea03","ea02","ea01","ea19","ea18","ea17","ea16","ea15"],"ifids": ["AC","BD"],"tbin": 1e-06,"fcents": [1499.863123536189,1500.0],"obsbwmhz": [1024.0,1024.0],"tend_unix": 1680675582.4499998,"subscanNo": 1,"tnow_unix": 1680675402.9794521,"sideband": [1,1],"dec_deg": 11.684970853892649,"scanid": "23A-148.sb43249236.eb43775398.60039.09749797454.63.1","tdiff": 179.49999952316284,"ra_deg": 193.65939833631927,"projid": "43050177","tstart_unix": 1680675402.9500003,"baseband": ["AC_8BIT","BD_8BIT"],"sslo": [987.863123536189,988.0],"tend_datettime": "2023-04-05 06:19:42.450000","tend": 60039.263685763886,"fenpol": 2,"mjd": "60039"}
+    }
+  ]
+}
