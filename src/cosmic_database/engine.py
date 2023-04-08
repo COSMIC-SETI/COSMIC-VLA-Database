@@ -6,16 +6,36 @@ from cosmic_database import entities
 
 class CosmicDB_Engine:
 
-    def __init__(self, conf_yaml_filepath, **kwargs):
-        with open(conf_yaml_filepath, "r") as yaml_fio:
+    def __init__(
+        self,
+        engine_url: str = None,
+        engine_conf_yaml_filepath: str = None,
+        **kwargs
+    ):
+        """
+        Parameters
+        ----------
+
+        """
+
+        if engine_conf_yaml_filepath is not None:
+            engine_url = self._create_url(engine_conf_yaml_filepath)
+        
+        if engine_url is None:
+            raise ValueError("No value provided for the engine URL.")
+
+        self.engine = sqlalchemy.create_engine(
+            engine_url,
+            **kwargs
+        )
+    
+    @staticmethod
+    def _create_url(engine_conf_yaml_filepath):
+        with open(engine_conf_yaml_filepath, "r") as yaml_fio:
             engine_url = sqlalchemy.engine.url.URL.create(
                 **yaml.safe_load(yaml_fio)
             )
-            # print(engine_url)
-            self.engine = sqlalchemy.create_engine(
-                engine_url,
-                **kwargs
-            )
+        return engine_url
 
     def session(self):
         """
@@ -38,3 +58,45 @@ class CosmicDB_Engine:
         with self.session() as session:
             session.add_all(entities)
             session.commit()
+
+
+def cli_create_all_tables():
+    import argparse
+    
+    parser = argparse.ArgumentParser(
+        description="COSMIC Database: create all the tables.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    parser.add_argument(
+        "-u", "--engine-url",
+        type=str,
+        help="The SQLAlchemy.engine.url.URL string specifying the database."
+    )
+    parser.add_argument(
+        "-c", "--engine-configuration",
+        type=str,
+        help="The YAML file path containing the instantiation arguments for the SQLAlchemy.engine.url.URL instance specifying the database."
+    )
+
+    args = parser.parse_args()
+    
+    engine = CosmicDB_Engine(engine_url = args.engine_url, engine_conf_yaml_filepath = args.engine_configuration)
+    engine.create_all_tables()
+
+
+def cli_create_engine_url():
+    import argparse
+    
+    parser = argparse.ArgumentParser(
+        description="COSMIC Database: show the URL generated from a configuration file.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    parser.add_argument(
+        "engine_configuration",
+        type=str,
+        help="The YAML file path containing the instantiation arguments for the SQLAlchemy.engine.url.URL instance specifying the database."
+    )
+
+    args = parser.parse_args()
+    
+    print(CosmicDB_Engine._create_url(args.engine_configuration))

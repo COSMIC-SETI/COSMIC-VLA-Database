@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cosmic_database"
-version = "0.0.2"
+version = "0.0.3"
 authors = [
   { name="Ross Donnachie", email="code@radonn.co.za" },
 ]
@@ -20,5 +20,6 @@ dependencies = [
   "sqlalchemy",
 ]
 
-# [project.scripts]
-# pypeline = "Pypeline:entrypoints.main"
+[project.scripts]
+cosmicdb_create_all_tables = "cosmic_database:engine.cli_create_all_tables"
+cosmicdb_create_engine_url = "cosmic_database:engine.cli_create_engine_url"
