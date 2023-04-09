@@ -53,7 +53,7 @@ subband_offset | INTEGER | X |  |
 percentage_recorded | FLOAT |  |  | 
 successful_participation | BOOLEAN |  |  | 
 
-# Table `cosmic_seti_beam`
+# Table `cosmic_observation_beam`
 
 Class `cosmic_database.entities.CosmicDB_ObservationBeam`
 
@@ -76,7 +76,7 @@ Class `cosmic_database.entities.CosmicDB_ObservationHit`
 Column | Type | Primary Key | Foreign Key(s) | Nullable
 -|-|-|-|-
 id | INTEGER | X |  | 
-beam_id | INTEGER |  | [cosmic_seti_beam.id](#table-cosmic_seti_beam) | 
+beam_id | INTEGER |  | [cosmic_observation_beam.id](#table-cosmic_observation_beam) | 
 file_uri | VARCHAR |  |  | 
 file_local_enumeration | INTEGER |  |  | 
 signal_frequency | FLOAT |  |  | 
@@ -138,4 +138,4 @@ signal_coarse_channel | INTEGER |  |  |
 signal_num_timesteps | INTEGER |  |  | 
 signal_power | FLOAT |  |  | 
 signal_incoherent_power | FLOAT |  |  | 
-beam_id | INTEGER |  | [cosmic_seti_beam.id](#table-cosmic_seti_beam) | 
+beam_id | INTEGER |  | [cosmic_observation_beam.id](#table-cosmic_observation_beam) | 

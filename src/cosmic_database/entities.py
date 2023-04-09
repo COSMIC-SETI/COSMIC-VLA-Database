@@ -110,7 +110,7 @@ class CosmicDB_ObservationSubband(Base):
         return f"COSMIC_OBS_SUBBAND({', '.join(f'{key}={getattr(self, key)}' for key in ['id', 'tuning', 'subband_offset', 'percentage_recorded', 'successful_participation'])})"
 
 class CosmicDB_ObservationBeam(Base):
-    __tablename__ = f"cosmic_seti_beam{TABLE_SUFFIX}"
+    __tablename__ = f"cosmic_observation_beam{TABLE_SUFFIX}"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     observation_id: Mapped[str] = mapped_column(ForeignKey(f"cosmic_observation{TABLE_SUFFIX}.id"))
@@ -133,13 +133,13 @@ class CosmicDB_ObservationBeam(Base):
     )
 
     def __repr__(self) -> str:
-        return f"COSMIC_SETI_BEAM({', '.join(f'{key}={getattr(self, key)}' for key in ['id', 'scan_id', 'ra_radians', 'dec_radians', 'source'])})"
+        return f"COSMIC_OBS_BEAM({', '.join(f'{key}={getattr(self, key)}' for key in ['id', 'scan_id', 'ra_radians', 'dec_radians', 'source'])})"
 
 class CosmicDB_ObservationHit(Base):
     __tablename__ = f"cosmic_observation_hit{TABLE_SUFFIX}"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    beam_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_seti_beam{TABLE_SUFFIX}.id"))
+    beam_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_beam{TABLE_SUFFIX}.id"))
     
     file_uri: Mapped[str]
     file_local_enumeration: Mapped[int]
@@ -213,7 +213,7 @@ class CosmicDB_ObservationStamp(Base):
     signal_power: Mapped[float]
     signal_incoherent_power: Mapped[float]
 
-    beam_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_seti_beam{TABLE_SUFFIX}.id"))
+    beam_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_beam{TABLE_SUFFIX}.id"))
 
     observation: Mapped["CosmicDB_Observation"] = relationship(
         back_populates="stamps"
