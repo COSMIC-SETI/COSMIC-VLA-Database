@@ -3,6 +3,7 @@ import os
 from typing import List
 from typing import Optional
 from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKeyConstraint
 from sqlalchemy import String
 from sqlalchemy import Text
 from sqlalchemy.orm import DeclarativeBase
@@ -103,17 +104,13 @@ class CosmicDB_Observation(Base):
         back_populates="observation", cascade="all, delete-orphan"
     )
 
-    stamps: Mapped[List["CosmicDB_ObservationStamp"]] = relationship(
-        back_populates="observation", cascade="all, delete-orphan"
-    )
-
     def __repr__(self) -> str:
         return f"COSMIC_OBS({', '.join(f'{key}={getattr(self, key)}' for key in ['id', 'time_start_unix', 'time_end_unix'])})"
 
 class CosmicDB_ObservationSubband(Base):
     __tablename__ = f"cosmic_observation_subband{TABLE_SUFFIX}"
 
-    id: Mapped[String_ScanID] = mapped_column(ForeignKey(f"cosmic_observation{TABLE_SUFFIX}.id"), primary_key=True)
+    observation_id: Mapped[String_ScanID] = mapped_column(ForeignKey(f"cosmic_observation{TABLE_SUFFIX}.id"), primary_key=True)
     tuning: Mapped[String_Tuning] = mapped_column(primary_key=True)
     subband_offset: Mapped[int] = mapped_column(primary_key=True)
     percentage_recorded: Mapped[float]
@@ -123,17 +120,22 @@ class CosmicDB_ObservationSubband(Base):
         back_populates="subbands"
     )
 
+    hits: Mapped[List["CosmicDB_ObservationHit"]] = relationship(
+        back_populates="observation_subband", cascade="all, delete-orphan"
+    )
+
+    stamps: Mapped[List["CosmicDB_ObservationStamp"]] = relationship(
+        back_populates="observation_subband", cascade="all, delete-orphan"
+    )
+
     def __repr__(self) -> str:
-        return f"COSMIC_OBS_SUBBAND({', '.join(f'{key}={getattr(self, key)}' for key in ['id', 'tuning', 'subband_offset', 'percentage_recorded', 'successful_participation'])})"
+        return f"COSMIC_OBS_SUBBAND({', '.join(f'{key}={getattr(self, key)}' for key in ['observation_id', 'tuning', 'subband_offset', 'percentage_recorded', 'successful_participation'])})"
 
 class CosmicDB_ObservationBeam(Base):
     __tablename__ = f"cosmic_observation_beam{TABLE_SUFFIX}"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     observation_id: Mapped[String_ScanID] = mapped_column(ForeignKey(f"cosmic_observation{TABLE_SUFFIX}.id"))
-
-    file_uri: Mapped[String_URI]
-    file_local_enumeration: Mapped[int]
 
     ra_radians: Mapped[float]
     dec_radians: Mapped[float]
@@ -157,7 +159,11 @@ class CosmicDB_ObservationHit(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     beam_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_beam{TABLE_SUFFIX}.id"))
-    
+
+    observation_id: Mapped[String_ScanID]
+    tuning: Mapped[String_Tuning]
+    subband_offset: Mapped[int]
+
     file_uri: Mapped[String_URI]
     file_local_enumeration: Mapped[int]
 
@@ -188,6 +194,17 @@ class CosmicDB_ObservationHit(Base):
         back_populates="hits"
     )
 
+    observation_subband: Mapped["CosmicDB_ObservationSubband"] = relationship(
+        back_populates="hits"
+    )
+
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ['observation_id', 'tuning', 'subband_offset'],
+            [f'cosmic_observation_subband{TABLE_SUFFIX}.observation_id', f'cosmic_observation_subband{TABLE_SUFFIX}.tuning', f'cosmic_observation_subband{TABLE_SUFFIX}.subband_offset'],
+        ),
+    )
+
     def __repr__(self) -> str:
         return f"COSMIC_OBS_HIT({', '.join(f'{key}={getattr(self, key)}' for key in ['file_uri', 'file_local_enumeration'])})"
 
@@ -195,7 +212,10 @@ class CosmicDB_ObservationStamp(Base):
     __tablename__ = f"cosmic_observation_stamp{TABLE_SUFFIX}"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    observation_id: Mapped[String_ScanID] = mapped_column(ForeignKey(f"cosmic_observation{TABLE_SUFFIX}.id"))
+
+    observation_id: Mapped[String_ScanID]
+    tuning: Mapped[String_Tuning]
+    subband_offset: Mapped[int]
 
     file_uri: Mapped[String_URI]
     file_local_enumeration: Mapped[int]
@@ -232,8 +252,15 @@ class CosmicDB_ObservationStamp(Base):
 
     beam_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_beam{TABLE_SUFFIX}.id"))
 
-    observation: Mapped["CosmicDB_Observation"] = relationship(
+    observation_subband: Mapped["CosmicDB_ObservationSubband"] = relationship(
         back_populates="stamps"
+    )
+
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ['observation_id', 'tuning', 'subband_offset'],
+            [f'cosmic_observation_subband{TABLE_SUFFIX}.observation_id', f'cosmic_observation_subband{TABLE_SUFFIX}.tuning', f'cosmic_observation_subband{TABLE_SUFFIX}.subband_offset'],
+        ),
     )
 
     def __repr__(self) -> str:

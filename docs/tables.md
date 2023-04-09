@@ -47,7 +47,7 @@ Class `cosmic_database.entities.CosmicDB_ObservationSubband`
 
 Column | Type | Primary Key | Foreign Key(s) | Nullable
 -|-|-|-|-
-id | VARCHAR(80) | X | [cosmic_observation.id](#table-cosmic_observation) | 
+observation_id | VARCHAR(80) | X | [cosmic_observation.id](#table-cosmic_observation) | 
 tuning | VARCHAR(80) | X |  | 
 subband_offset | INTEGER | X |  | 
 percentage_recorded | FLOAT |  |  | 
@@ -61,8 +61,6 @@ Column | Type | Primary Key | Foreign Key(s) | Nullable
 -|-|-|-|-
 id | INTEGER | X |  | 
 observation_id | VARCHAR(80) |  | [cosmic_observation.id](#table-cosmic_observation) | 
-file_uri | VARCHAR(255) |  |  | 
-file_local_enumeration | INTEGER |  |  | 
 ra_radians | FLOAT |  |  | 
 dec_radians | FLOAT |  |  | 
 source | VARCHAR(80) |  |  | 
@@ -77,6 +75,9 @@ Column | Type | Primary Key | Foreign Key(s) | Nullable
 -|-|-|-|-
 id | INTEGER | X |  | 
 beam_id | INTEGER |  | [cosmic_observation_beam.id](#table-cosmic_observation_beam) | 
+observation_id | VARCHAR(80) |  | [cosmic_observation_subband.observation_id](#table-cosmic_observation_subband) | 
+tuning | VARCHAR(80) |  | [cosmic_observation_subband.tuning](#table-cosmic_observation_subband) | 
+subband_offset | INTEGER |  | [cosmic_observation_subband.subband_offset](#table-cosmic_observation_subband) | 
 file_uri | VARCHAR(255) |  |  | 
 file_local_enumeration | INTEGER |  |  | 
 signal_frequency | FLOAT |  |  | 
@@ -109,7 +110,9 @@ Class `cosmic_database.entities.CosmicDB_ObservationStamp`
 Column | Type | Primary Key | Foreign Key(s) | Nullable
 -|-|-|-|-
 id | INTEGER | X |  | 
-observation_id | VARCHAR(80) |  | [cosmic_observation.id](#table-cosmic_observation) | 
+observation_id | VARCHAR(80) |  | [cosmic_observation_subband.observation_id](#table-cosmic_observation_subband) | 
+tuning | VARCHAR(80) |  | [cosmic_observation_subband.tuning](#table-cosmic_observation_subband) | 
+subband_offset | INTEGER |  | [cosmic_observation_subband.subband_offset](#table-cosmic_observation_subband) | 
 file_uri | VARCHAR(255) |  |  | 
 file_local_enumeration | INTEGER |  |  | 
 source_name | VARCHAR(80) |  |  | 

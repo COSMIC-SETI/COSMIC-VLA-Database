@@ -78,6 +78,11 @@ with open(data_filepath, "r") as json_fio:
         for obs_hit in json_data["observation_hits"]
     ])
 
+    engine.commit_entities([
+        entities.CosmicDB_ObservationStamp(**obs_stamp)
+        for obs_stamp in json_data["observation_stamps"]
+    ])
+
     with engine.session() as session:
 
         for scan in session.scalars(
@@ -89,4 +94,6 @@ with open(data_filepath, "r") as json_fio:
             print(scan.observation.subbands)
             print(scan.observation.beams)
             print(scan.observation.beams[0].hits)
+            print(scan.observation.subbands[0].stamps)
+            print(scan.observation.subbands[0].hits)
     

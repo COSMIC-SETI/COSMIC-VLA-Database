@@ -99,28 +99,28 @@
   ],
   "observation_subbands": [
     {
-      "id": "23A-148.sb43249236.eb43775398.60039.09749797454.63.1",
+      "observation_id": "23A-148.sb43249236.eb43775398.60039.09749797454.63.1",
       "tuning": "AC",
       "subband_offset": 32,
       "percentage_recorded": 100.0,
       "successful_participation": true
     },
     {
-      "id": "23A-148.sb43249236.eb43775398.60039.09749797454.63.1",
+      "observation_id": "23A-148.sb43249236.eb43775398.60039.09749797454.63.1",
       "tuning": "BD",
       "subband_offset": 32,
       "percentage_recorded": 99.9,
       "successful_participation": true
     },
     {
-      "id": "23A-148.sb43249236.eb43775398.60039.09749797454.63.1",
+      "observation_id": "23A-148.sb43249236.eb43775398.60039.09749797454.63.1",
       "tuning": "AC",
       "subband_offset": 64,
       "percentage_recorded": 100.0,
       "successful_participation": true
     },
     {
-      "id": "23A-148.sb43249236.eb43775398.60039.09749797454.63.1",
+      "observation_id": "23A-148.sb43249236.eb43775398.60039.09749797454.63.1",
       "tuning": "BD",
       "subband_offset": 64,
       "percentage_recorded": 5.0,
@@ -130,8 +130,6 @@
   "observation_beams": [
     {
       "observation_id": "23A-148.sb43249236.eb43775398.60039.09749797454.63.1",
-      "file_uri": "N/A",
-      "file_local_enumeration": 0,
       "ra_radians": 45.0,
       "dec_radians": 45.0,
       "source": "beam0",
@@ -140,8 +138,6 @@
     },
     {
       "observation_id": "23A-148.sb43249236.eb43775398.60039.09749797454.63.1",
-      "file_uri": "N/A",
-      "file_local_enumeration": 0,
       "ra_radians": 45.0,
       "dec_radians": 45.0,
       "source": "beam0",
@@ -152,6 +148,9 @@
   "observation_hits": [
     {
       "beam_id": 1,
+      "observation_id": "23A-148.sb43249236.eb43775398.60039.09749797454.63.1",
+      "tuning": "BD",
+      "subband_offset": 32,
       "file_uri": "N/A",
       "file_local_enumeration": 0,
       "signal_frequency": 6500,
@@ -179,6 +178,9 @@
     },
     {
       "beam_id": 1,
+      "observation_id": "23A-148.sb43249236.eb43775398.60039.09749797454.63.1",
+      "tuning": "AC",
+      "subband_offset": 32,
       "file_uri": "N/A",
       "file_local_enumeration": 0,
       "signal_frequency": 6500,
@@ -203,6 +205,42 @@
       "num_channels": 0,
       "coarse_channel": 0,
       "start_channel": 32
+    }
+  ],
+  "observation_stamps": [
+    {
+      "observation_id": "23A-148.sb43249236.eb43775398.60039.09749797454.63.1",
+      "tuning": "AC",
+      "subband_offset": 32,
+      "file_uri": "N/A",
+      "file_local_enumeration": 0,
+      "source_name": "beam0",
+      "ra_hours": 45.0,
+      "dec_degrees": 45.0,
+      "fch1_mhz": 0,
+      "foff_mhz": 0,
+      "tstart": 1680675476.009397,
+      "tsamp": 1,
+      "telescope_id": 9,
+      "num_timesteps": 0,
+      "num_channels": 0,
+      "num_polarizations": 0,
+      "num_antennas": 0,
+      "coarse_channel": 0,
+      "fft_size": 0,
+      "start_channel": 0,
+      "schan": 0,
+      "signal_frequency": 0,
+      "signal_index": 0,
+      "signal_drift_steps": 0,
+      "signal_drift_rate": 0,
+      "signal_snr": 0,
+      "signal_beam": 0,
+      "signal_coarse_channel": 0,
+      "signal_num_timesteps": 0,
+      "signal_power": 0,
+      "signal_incoherent_power": 0,
+      "beam_id": 1
     }
   ]
 }
