@@ -41,23 +41,42 @@ with open(data_filepath, "r") as json_fio:
         for scan in json_data["scans"]
     ])
 
-    with engine.session() as session:
-        for config in json_data["configurations"]:
-            scan = session.scalars(
-                sqlalchemy.select(entities.CosmicDB_Scan).where(entities.CosmicDB_Scan.id == config["id"])
-            ).one_or_none()
-            assert scan is not None
-            configuration = entities.CosmicDB_ObservationConfiguration(
-                id = config["id"],
-                time_start_unix = config["time_start_unix"],
-                time_end_unix = config["time_end_unix"],
-                criteria_json = json.dumps(config["criteria_json"]),
-                configuration_json = json.dumps(config["configuration_json"]),
-                successful = config["successful"],
-            )
-            session.add(configuration)
+    engine.commit_entities([
+        entities.CosmicDB_ObservationConfiguration(
+            id = config["id"],
+            time_start_unix = config["time_start_unix"],
+            time_end_unix = config["time_end_unix"],
+            criteria_json = json.dumps(config["criteria_json"]),
+            configuration_json = json.dumps(config["configuration_json"]),
+            successful = config["successful"],
+        )
+        for config in json_data["configurations"]
+    ])
 
-            session.commit()
+    engine.commit_entities([
+        entities.CosmicDB_Observation(
+            id = obs["id"],
+            time_start_unix = obs["time_start_unix"],
+            time_end_unix = obs["time_end_unix"],
+            criteria_json = json.dumps(obs["criteria_json"]),
+        )
+        for obs in json_data["observations"]
+    ])
+
+    engine.commit_entities([
+        entities.CosmicDB_ObservationSubband(**obs_subband)
+        for obs_subband in json_data["observation_subbands"]
+    ])
+
+    engine.commit_entities([
+        entities.CosmicDB_ObservationBeam(**obs_beam)
+        for obs_beam in json_data["observation_beams"]
+    ])
+
+    engine.commit_entities([
+        entities.CosmicDB_ObservationHit(**obs_hit)
+        for obs_hit in json_data["observation_hits"]
+    ])
 
     with engine.session() as session:
 
@@ -67,4 +86,7 @@ with open(data_filepath, "r") as json_fio:
             print(scan)
             print(scan.configuration)
             print(scan.observation)
+            print(scan.observation.subbands)
+            print(scan.observation.beams)
+            print(scan.observation.beams[0].hits)
     

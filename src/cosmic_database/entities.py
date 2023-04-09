@@ -108,7 +108,7 @@ class CosmicDB_Observation(Base):
     )
 
     def __repr__(self) -> str:
-        return f"COSMIC_OBS({', '.join(f'{key}={getattr(self, key)}' for key in ['id', 'time_start_unix', 'time_end_unix', 'successful'])})"
+        return f"COSMIC_OBS({', '.join(f'{key}={getattr(self, key)}' for key in ['id', 'time_start_unix', 'time_end_unix'])})"
 
 class CosmicDB_ObservationSubband(Base):
     __tablename__ = f"cosmic_observation_subband{TABLE_SUFFIX}"
@@ -150,7 +150,7 @@ class CosmicDB_ObservationBeam(Base):
     )
 
     def __repr__(self) -> str:
-        return f"COSMIC_OBS_BEAM({', '.join(f'{key}={getattr(self, key)}' for key in ['id', 'scan_id', 'ra_radians', 'dec_radians', 'source'])})"
+        return f"COSMIC_OBS_BEAM({', '.join(f'{key}={getattr(self, key)}' for key in ['id', 'observation_id', 'ra_radians', 'dec_radians', 'source'])})"
 
 class CosmicDB_ObservationHit(Base):
     __tablename__ = f"cosmic_observation_hit{TABLE_SUFFIX}"
