@@ -30,23 +30,9 @@ criteria_json | VARCHAR |  |  |
 configuration_json | VARCHAR |  |  | 
 successful | BOOLEAN |  |  | 
 
-# Table `cosmic_calibration_observation`
+# Table `cosmic_observation`
 
-Class `cosmic_database.entities.CosmicDB_CalibrationObservation`
-
-Column | Type | Primary Key | Foreign Key(s) | Nullable
--|-|-|-|-
-id | VARCHAR | X | [cosmic_scan.id](#table-cosmic_scan) | 
-time_start_unix | FLOAT |  |  | 
-time_end_unix | FLOAT |  |  | 
-criteria_json | VARCHAR |  |  | 
-results_uri | VARCHAR |  |  | 
-measure | FLOAT |  |  | 
-successful | BOOLEAN |  |  | 
-
-# Table `cosmic_target_observation`
-
-Class `cosmic_database.entities.CosmicDB_TargetObservation`
+Class `cosmic_database.entities.CosmicDB_Observation`
 
 Column | Type | Primary Key | Foreign Key(s) | Nullable
 -|-|-|-|-
@@ -54,7 +40,18 @@ id | VARCHAR | X | [cosmic_scan.id](#table-cosmic_scan) |
 time_start_unix | FLOAT |  |  | 
 time_end_unix | FLOAT |  |  | 
 criteria_json | VARCHAR |  |  | 
-successful | BOOLEAN |  |  | 
+
+# Table `cosmic_observation_subband`
+
+Class `cosmic_database.entities.CosmicDB_ObservationSubband`
+
+Column | Type | Primary Key | Foreign Key(s) | Nullable
+-|-|-|-|-
+id | VARCHAR | X | [cosmic_observation.id](#table-cosmic_observation) | 
+tuning | VARCHAR | X |  | 
+subband_offset | INTEGER | X |  | 
+percentage_recorded | FLOAT |  |  | 
+successful_participation | BOOLEAN |  |  | 
 
 # Table `cosmic_seti_beam`
 
@@ -63,7 +60,7 @@ Class `cosmic_database.entities.CosmicDB_ObservationBeam`
 Column | Type | Primary Key | Foreign Key(s) | Nullable
 -|-|-|-|-
 id | INTEGER | X |  | 
-observation_id | VARCHAR |  | [cosmic_target_observation.id](#table-cosmic_target_observation) | 
+observation_id | VARCHAR |  | [cosmic_observation.id](#table-cosmic_observation) | 
 file_uri | VARCHAR |  |  | 
 file_local_enumeration | INTEGER |  |  | 
 ra_radians | FLOAT |  |  | 
@@ -112,7 +109,7 @@ Class `cosmic_database.entities.CosmicDB_ObservationStamp`
 Column | Type | Primary Key | Foreign Key(s) | Nullable
 -|-|-|-|-
 id | INTEGER | X |  | 
-observation_id | VARCHAR |  | [cosmic_target_observation.id](#table-cosmic_target_observation) | 
+observation_id | VARCHAR |  | [cosmic_observation.id](#table-cosmic_observation) | 
 file_uri | VARCHAR |  |  | 
 file_local_enumeration | INTEGER |  |  | 
 source_name | VARCHAR |  |  | 

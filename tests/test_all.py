@@ -66,5 +66,5 @@ with open(data_filepath, "r") as json_fio:
         ):
             print(scan)
             print(scan.configuration)
-            print(scan.calibration_observation)
+            print(scan.observation)
     
