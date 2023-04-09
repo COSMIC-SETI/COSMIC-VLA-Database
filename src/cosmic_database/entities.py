@@ -142,7 +142,7 @@ class CosmicDB_ObservationHit(Base):
     __tablename__ = f"cosmic_observation_hit{TABLE_SUFFIX}"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    observation_id: Mapped[str] = mapped_column(ForeignKey(f"cosmic_target_observation{TABLE_SUFFIX}.id"))
+    beam_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_seti_beam{TABLE_SUFFIX}.id"))
     
     file_uri: Mapped[str]
     file_local_enumeration: Mapped[int]
@@ -169,7 +169,6 @@ class CosmicDB_ObservationHit(Base):
     num_channels: Mapped[int]
     coarse_channel: Mapped[int]
     start_channel: Mapped[int]
-    beam_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_seti_beam{TABLE_SUFFIX}.id"))
 
     beam: Mapped["CosmicDB_ObservationBeam"] = relationship(
         back_populates="hits"
@@ -216,7 +215,6 @@ class CosmicDB_ObservationStamp(Base):
     signal_num_timesteps: Mapped[int]
     signal_power: Mapped[float]
     signal_incoherent_power: Mapped[float]
-    signal_beam: Mapped[float]
 
     beam_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_seti_beam{TABLE_SUFFIX}.id"))
 

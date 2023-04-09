@@ -65,7 +65,7 @@ time_end_unix | FLOAT |  |  |
 Column | Type | Primary Key | Foreign Key(s) | Nullable
 -|-|-|-|-
 id | INTEGER | X |  | 
-observation_id | VARCHAR |  | [cosmic_target_observation.id](#table-cosmic_target_observation) | 
+beam_id | INTEGER |  | [cosmic_seti_beam.id](#table-cosmic_seti_beam) | 
 file_uri | VARCHAR |  |  | 
 file_local_enumeration | INTEGER |  |  | 
 signal_frequency | FLOAT |  |  | 
@@ -90,7 +90,6 @@ num_timesteps | INTEGER |  |  |
 num_channels | INTEGER |  |  | 
 coarse_channel | INTEGER |  |  | 
 start_channel | INTEGER |  |  | 
-beam_id | INTEGER |  | [cosmic_seti_beam.id](#table-cosmic_seti_beam) | 
 
 # Table `cosmic_observation_stamp`
 
@@ -121,7 +120,7 @@ signal_index | INTEGER |  |  |
 signal_drift_steps | INTEGER |  |  | 
 signal_drift_rate | FLOAT |  |  | 
 signal_snr | FLOAT |  |  | 
-signal_beam | FLOAT |  |  | 
+signal_beam | INTEGER |  |  | 
 signal_coarse_channel | INTEGER |  |  | 
 signal_num_timesteps | INTEGER |  |  | 
 signal_power | FLOAT |  |  | 

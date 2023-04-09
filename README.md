@@ -6,14 +6,14 @@ The relationships are as follows.
 
 Entity | Relationship
 -|-
-Dataset | Scan (1:1)
-Scan | ObservationConfiguration (1:1)
- | CalibrationObservation (1:?)
- | TargetObservation (1:?)
+Dataset | (1:1) Scan
+Scan | (1:1) ObservationConfiguration
+_ | (1:?) CalibrationObservation
+_ | (1:?) TargetObservation
 ObservationConfiguration |
 CalibrationObservation |
-TargetObservation | ObservationBeam (1:N)
- | ObservationStamp (1:N)
-ObservationBeam | ObservationHit (1:N)
+TargetObservation | (1:N) ObservationBeam
+_ | (1:N) ObservationStamp
+ObservationBeam | (1:N) ObservationHit
 ObservationHit | 
 ObservationStamp | 
