@@ -15,20 +15,20 @@ TABLE_SUFFIX = os.environ.get("COSMIC_DB_TABLE_SUFFIX", "")
 
 from typing_extensions import Annotated
 
-String_DatasetID = Annotated[str, 20]
-String_ScanID = Annotated[str, 80]
+String_DatasetID = Annotated[str, 60]
+String_ScanID = Annotated[str, 100]
 String_JSON = str
 String_URI = Annotated[str, 255]
-String_Tuning = Annotated[str, 80]
+String_Tuning = Annotated[str, 10]
 String_SourceName = Annotated[str, 80]
 
 class Base(DeclarativeBase):
     type_annotation_map = {
-        String_DatasetID: String(20),
-        String_ScanID: String(80),
+        String_DatasetID: String(60),
+        String_ScanID: String(100),
         String_JSON: Text,
         String_URI: String(255),
-        String_Tuning: String(80),
+        String_Tuning: String(10),
         String_SourceName: String(80),
     }
 
