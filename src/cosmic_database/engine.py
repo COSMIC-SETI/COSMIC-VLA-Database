@@ -53,11 +53,47 @@ class CosmicDB_Engine:
         with self.session() as session:
             session.add(entity)
             session.commit()
+            session.refresh(entity)
 
     def commit_entities(self, entities: list):
         with self.session() as session:
             session.add_all(entities)
             session.commit()
+
+    def select_entity(self, session, entity_class, **criteria_kwargs):
+        return session.execute(
+            sqlalchemy.select(entity_class)
+            .where(*[
+                getattr(entity_class, colname) == colval
+                for colname, colval in criteria_kwargs.items()
+            ])
+        ).scalar_one_or_none()
+
+    def update_entity(self, sesion, entity, assert_exists=False):
+        remote_entity = self.select_entity(
+            session,
+            entity.__class__,
+            **{
+                getattr(entity.__class__, col.name): getattr(entity, col.name)
+                for col in entity.__table__.columns
+                if col.primary_key
+            }
+        )
+        if remote_entity is None:
+            if assert_exists:
+                raise AssertionError(f"Provided entity does not exist for update: {entity}.")
+            session.add(entity)
+        else:
+            for col in entity.__table__.columns:
+                if not col.primary_key:
+                    setattr(remote_entity, col.name, getattr(entity, col.name))
+            
+        session.commit()
+        # session.execute(
+        #     sqlalchemy.update(entity.__class__)
+        #     .where(*primary_key_criteria)
+        #     .values(**value_updates)
+        # )
 
 
 def cli_create_all_tables():

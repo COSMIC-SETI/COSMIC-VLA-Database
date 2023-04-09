@@ -7,8 +7,8 @@ The relationships are as follows.
 Entity | Relationship | Entity
 -|-|-
 Dataset | 1:1 | Scan
-Scan | 1:? | ObservationConfiguration
-Scan | 1:? | Observation
+Scan | 1:* | ObservationConfiguration
+Scan | 1:* | Observation
 Observation | 1:* | ObservationSubband
 Observation | 1:* | ObservationBeam
 ObservationBeam | 1:* | ObservationHit

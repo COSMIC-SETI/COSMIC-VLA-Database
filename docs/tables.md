@@ -23,7 +23,8 @@ Class `cosmic_database.entities.CosmicDB_ObservationConfiguration`
 
 Column | Type | Primary Key | Foreign Key(s) | Nullable
 -|-|-|-|-
-id | VARCHAR(100) | X | [cosmic_scan.id](#table-cosmic_scan) | 
+id | INTEGER | X |  | 
+scan_id | VARCHAR(100) |  | [cosmic_scan.id](#table-cosmic_scan) | 
 time_start_unix | FLOAT |  |  | 
 time_end_unix | FLOAT |  |  | 
 criteria_json | TEXT |  |  | 
@@ -36,7 +37,8 @@ Class `cosmic_database.entities.CosmicDB_Observation`
 
 Column | Type | Primary Key | Foreign Key(s) | Nullable
 -|-|-|-|-
-id | VARCHAR(100) | X | [cosmic_scan.id](#table-cosmic_scan) | 
+id | INTEGER | X |  | 
+scan_id | VARCHAR(100) |  | [cosmic_scan.id](#table-cosmic_scan) | 
 time_start_unix | FLOAT |  |  | 
 time_end_unix | FLOAT |  |  | 
 criteria_json | TEXT |  |  | 
@@ -47,7 +49,7 @@ Class `cosmic_database.entities.CosmicDB_ObservationSubband`
 
 Column | Type | Primary Key | Foreign Key(s) | Nullable
 -|-|-|-|-
-observation_id | VARCHAR(100) | X | [cosmic_observation.id](#table-cosmic_observation) | 
+observation_id | INTEGER | X | [cosmic_observation.id](#table-cosmic_observation) | 
 tuning | VARCHAR(10) | X |  | 
 subband_offset | INTEGER | X |  | 
 percentage_recorded | FLOAT |  |  | 
@@ -60,7 +62,7 @@ Class `cosmic_database.entities.CosmicDB_ObservationBeam`
 Column | Type | Primary Key | Foreign Key(s) | Nullable
 -|-|-|-|-
 id | INTEGER | X |  | 
-observation_id | VARCHAR(100) |  | [cosmic_observation.id](#table-cosmic_observation) | 
+observation_id | INTEGER |  | [cosmic_observation.id](#table-cosmic_observation) | 
 ra_radians | FLOAT |  |  | 
 dec_radians | FLOAT |  |  | 
 source | VARCHAR(80) |  |  | 
@@ -75,7 +77,7 @@ Column | Type | Primary Key | Foreign Key(s) | Nullable
 -|-|-|-|-
 id | INTEGER | X |  | 
 beam_id | INTEGER |  | [cosmic_observation_beam.id](#table-cosmic_observation_beam) | 
-observation_id | VARCHAR(100) |  | [cosmic_observation_subband.observation_id](#table-cosmic_observation_subband) | 
+observation_id | INTEGER |  | [cosmic_observation_subband.observation_id](#table-cosmic_observation_subband) | 
 tuning | VARCHAR(10) |  | [cosmic_observation_subband.tuning](#table-cosmic_observation_subband) | 
 subband_offset | INTEGER |  | [cosmic_observation_subband.subband_offset](#table-cosmic_observation_subband) | 
 file_uri | VARCHAR(255) |  |  | 
@@ -110,7 +112,7 @@ Class `cosmic_database.entities.CosmicDB_ObservationStamp`
 Column | Type | Primary Key | Foreign Key(s) | Nullable
 -|-|-|-|-
 id | INTEGER | X |  | 
-observation_id | VARCHAR(100) |  | [cosmic_observation_subband.observation_id](#table-cosmic_observation_subband) | 
+observation_id | INTEGER |  | [cosmic_observation_subband.observation_id](#table-cosmic_observation_subband) | 
 tuning | VARCHAR(10) |  | [cosmic_observation_subband.tuning](#table-cosmic_observation_subband) | 
 subband_offset | INTEGER |  | [cosmic_observation_subband.subband_offset](#table-cosmic_observation_subband) | 
 file_uri | VARCHAR(255) |  |  | 
@@ -131,6 +133,7 @@ coarse_channel | INTEGER |  |  |
 fft_size | INTEGER |  |  | 
 start_channel | INTEGER |  |  | 
 schan | INTEGER |  |  | 
+obsid | VARCHAR(100) |  |  | 
 signal_frequency | FLOAT |  |  | 
 signal_index | INTEGER |  |  | 
 signal_drift_steps | INTEGER |  |  | 
