@@ -4,10 +4,17 @@ from cosmic_database import entities
 
 DOCS_DIR = os.path.dirname(__file__)
 
+table_class_map = {
+    m.local_table.name: m.class_
+    for m in entities.Base.registry.mappers
+}
+
 docstr_lines = []
 for table_name, table in entities.Base.metadata.tables.items():
     docstr_lines += [
         f"# Table `{table_name}`",
+        "",
+        f"Class `{table_class_map[table_name].__module__}.{table_class_map[table_name].__qualname__}`",
         "",
         "Column | Type | Primary Key | Foreign Key(s) | Nullable",
         "-|-|-|-|-"

@@ -1,10 +1,14 @@
 # Table `cosmic_dataset`
 
+Class `cosmic_database.entities.CosmicDB_Dataset`
+
 Column | Type | Primary Key | Foreign Key(s) | Nullable
 -|-|-|-|-
 id | VARCHAR | X |  | 
 
 # Table `cosmic_scan`
+
+Class `cosmic_database.entities.CosmicDB_Scan`
 
 Column | Type | Primary Key | Foreign Key(s) | Nullable
 -|-|-|-|-
@@ -14,6 +18,8 @@ time_start_unix | FLOAT |  |  |
 metadata_json | VARCHAR |  |  | 
 
 # Table `cosmic_observation_configuration`
+
+Class `cosmic_database.entities.CosmicDB_ObservationConfiguration`
 
 Column | Type | Primary Key | Foreign Key(s) | Nullable
 -|-|-|-|-
@@ -25,6 +31,8 @@ configuration_json | VARCHAR |  |  |
 successful | BOOLEAN |  |  | 
 
 # Table `cosmic_calibration_observation`
+
+Class `cosmic_database.entities.CosmicDB_CalibrationObservation`
 
 Column | Type | Primary Key | Foreign Key(s) | Nullable
 -|-|-|-|-
@@ -38,6 +46,8 @@ successful | BOOLEAN |  |  |
 
 # Table `cosmic_target_observation`
 
+Class `cosmic_database.entities.CosmicDB_TargetObservation`
+
 Column | Type | Primary Key | Foreign Key(s) | Nullable
 -|-|-|-|-
 id | VARCHAR | X | [cosmic_scan.id](#table-cosmic_scan) | 
@@ -47,6 +57,8 @@ criteria_json | VARCHAR |  |  |
 successful | BOOLEAN |  |  | 
 
 # Table `cosmic_seti_beam`
+
+Class `cosmic_database.entities.CosmicDB_ObservationBeam`
 
 Column | Type | Primary Key | Foreign Key(s) | Nullable
 -|-|-|-|-
@@ -61,6 +73,8 @@ time_start_unix | FLOAT |  |  |
 time_end_unix | FLOAT |  |  | 
 
 # Table `cosmic_observation_hit`
+
+Class `cosmic_database.entities.CosmicDB_ObservationHit`
 
 Column | Type | Primary Key | Foreign Key(s) | Nullable
 -|-|-|-|-
@@ -92,6 +106,8 @@ coarse_channel | INTEGER |  |  |
 start_channel | INTEGER |  |  | 
 
 # Table `cosmic_observation_stamp`
+
+Class `cosmic_database.entities.CosmicDB_ObservationStamp`
 
 Column | Type | Primary Key | Foreign Key(s) | Nullable
 -|-|-|-|-

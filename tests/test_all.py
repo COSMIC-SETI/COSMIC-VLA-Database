@@ -9,7 +9,7 @@ from cosmic_database.engine import CosmicDB_Engine
 dbconf_filepath = os.path.join(os.path.dirname(__file__), "database_conf.yaml")
 print(dbconf_filepath)
 
-engine = CosmicDB_Engine(dbconf_filepath, echo=False)
+engine = CosmicDB_Engine(engine_conf_yaml_filepath=dbconf_filepath, echo=False)
 
 engine.create_all_tables()
 
@@ -41,7 +41,6 @@ with open(data_filepath, "r") as json_fio:
         for scan in json_data["scans"]
     ])
 
-    
     with engine.session() as session:
         for config in json_data["configurations"]:
             scan = session.scalars(
