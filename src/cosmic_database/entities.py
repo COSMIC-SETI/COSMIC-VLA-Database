@@ -4,6 +4,7 @@ from typing import List
 from typing import Optional
 from sqlalchemy import ForeignKey
 from sqlalchemy import String
+from sqlalchemy import Text
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
@@ -11,13 +12,29 @@ from sqlalchemy.orm import relationship
 
 TABLE_SUFFIX = os.environ.get("COSMIC_DB_TABLE_SUFFIX", "")
 
+from typing_extensions import Annotated
+
+String_DatasetID = Annotated[str, 20]
+String_ScanID = Annotated[str, 80]
+String_JSON = str
+String_URI = Annotated[str, 255]
+String_Tuning = Annotated[str, 80]
+String_SourceName = Annotated[str, 80]
+
 class Base(DeclarativeBase):
-    pass
+    type_annotation_map = {
+        String_DatasetID: String(20),
+        String_ScanID: String(80),
+        String_JSON: Text,
+        String_URI: String(255),
+        String_Tuning: String(80),
+        String_SourceName: String(80),
+    }
 
 class CosmicDB_Dataset(Base):
     __tablename__ = f"cosmic_dataset{TABLE_SUFFIX}"
 
-    id: Mapped[str] = mapped_column(primary_key=True)
+    id: Mapped[String_DatasetID] = mapped_column(primary_key=True)
     
     scans: Mapped[List["CosmicDB_Scan"]] = relationship(
         back_populates="dataset", cascade="all, delete-orphan"
@@ -29,10 +46,10 @@ class CosmicDB_Dataset(Base):
 class CosmicDB_Scan(Base):
     __tablename__ = f"cosmic_scan{TABLE_SUFFIX}"
 
-    id: Mapped[str] = mapped_column(primary_key=True)
-    dataset_id: Mapped[str] = mapped_column(ForeignKey(f"cosmic_dataset{TABLE_SUFFIX}.id"))
+    id: Mapped[String_ScanID] = mapped_column(primary_key=True)
+    dataset_id: Mapped[String_DatasetID] = mapped_column(ForeignKey(f"cosmic_dataset{TABLE_SUFFIX}.id"))
     time_start_unix: Mapped[float]
-    metadata_json: Mapped[str]
+    metadata_json: Mapped[String_JSON]
     
     dataset: Mapped["CosmicDB_Dataset"] = relationship(
         back_populates="scans"
@@ -52,11 +69,11 @@ class CosmicDB_Scan(Base):
 class CosmicDB_ObservationConfiguration(Base):
     __tablename__ = f"cosmic_observation_configuration{TABLE_SUFFIX}"
 
-    id: Mapped[str] = mapped_column(ForeignKey(f"cosmic_scan{TABLE_SUFFIX}.id"), primary_key=True)
+    id: Mapped[String_ScanID] = mapped_column(ForeignKey(f"cosmic_scan{TABLE_SUFFIX}.id"), primary_key=True)
     time_start_unix: Mapped[float]
     time_end_unix: Mapped[float]
-    criteria_json: Mapped[str]
-    configuration_json: Mapped[str]
+    criteria_json: Mapped[String_JSON]
+    configuration_json: Mapped[String_JSON]
     successful: Mapped[bool]
 
     scan: Mapped["CosmicDB_Scan"] = relationship(
@@ -69,10 +86,10 @@ class CosmicDB_ObservationConfiguration(Base):
 class CosmicDB_Observation(Base):
     __tablename__ = f"cosmic_observation{TABLE_SUFFIX}"
 
-    id: Mapped[str] = mapped_column(ForeignKey(f"cosmic_scan{TABLE_SUFFIX}.id"), primary_key=True)
+    id: Mapped[String_ScanID] = mapped_column(ForeignKey(f"cosmic_scan{TABLE_SUFFIX}.id"), primary_key=True)
     time_start_unix: Mapped[float]
     time_end_unix: Mapped[float]
-    criteria_json: Mapped[str]
+    criteria_json: Mapped[String_JSON]
 
     scan: Mapped["CosmicDB_Scan"] = relationship(
         back_populates="observation"
@@ -96,8 +113,8 @@ class CosmicDB_Observation(Base):
 class CosmicDB_ObservationSubband(Base):
     __tablename__ = f"cosmic_observation_subband{TABLE_SUFFIX}"
 
-    id: Mapped[str] = mapped_column(ForeignKey(f"cosmic_observation{TABLE_SUFFIX}.id"), primary_key=True)
-    tuning: Mapped[str] = mapped_column(primary_key=True)
+    id: Mapped[String_ScanID] = mapped_column(ForeignKey(f"cosmic_observation{TABLE_SUFFIX}.id"), primary_key=True)
+    tuning: Mapped[String_Tuning] = mapped_column(primary_key=True)
     subband_offset: Mapped[int] = mapped_column(primary_key=True)
     percentage_recorded: Mapped[float]
     successful_participation: Mapped[bool]
@@ -113,14 +130,14 @@ class CosmicDB_ObservationBeam(Base):
     __tablename__ = f"cosmic_observation_beam{TABLE_SUFFIX}"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    observation_id: Mapped[str] = mapped_column(ForeignKey(f"cosmic_observation{TABLE_SUFFIX}.id"))
+    observation_id: Mapped[String_ScanID] = mapped_column(ForeignKey(f"cosmic_observation{TABLE_SUFFIX}.id"))
 
-    file_uri: Mapped[str]
+    file_uri: Mapped[String_URI]
     file_local_enumeration: Mapped[int]
 
     ra_radians: Mapped[float]
     dec_radians: Mapped[float]
-    source: Mapped[str]
+    source: Mapped[String_SourceName]
     time_start_unix: Mapped[float]
     time_end_unix: Mapped[float]
 
@@ -141,7 +158,7 @@ class CosmicDB_ObservationHit(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     beam_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_beam{TABLE_SUFFIX}.id"))
     
-    file_uri: Mapped[str]
+    file_uri: Mapped[String_URI]
     file_local_enumeration: Mapped[int]
 
     signal_frequency: Mapped[float]
@@ -154,7 +171,7 @@ class CosmicDB_ObservationHit(Base):
     signal_num_timesteps: Mapped[int]
     signal_power: Mapped[float]
     signal_incoherent_power: Mapped[float]
-    source_name: Mapped[str]
+    source_name: Mapped[String_SourceName]
     fch1_mhz: Mapped[float]
     foff_mhz: Mapped[float]
     tstart: Mapped[float]
@@ -178,12 +195,12 @@ class CosmicDB_ObservationStamp(Base):
     __tablename__ = f"cosmic_observation_stamp{TABLE_SUFFIX}"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    observation_id: Mapped[str] = mapped_column(ForeignKey(f"cosmic_observation{TABLE_SUFFIX}.id"))
+    observation_id: Mapped[String_ScanID] = mapped_column(ForeignKey(f"cosmic_observation{TABLE_SUFFIX}.id"))
 
-    file_uri: Mapped[str]
+    file_uri: Mapped[String_URI]
     file_local_enumeration: Mapped[int]
 
-    source_name: Mapped[str]
+    source_name: Mapped[String_SourceName]
     ra_hours: Mapped[float]
     dec_degrees: Mapped[float]
     fch1_mhz: Mapped[float]
