@@ -52,6 +52,18 @@ with open(data_filepath, "r") as json_fio:
         for scan in json_data["scans"]
     ])
 
+    with engine.session() as session:
+        for scan in json_data["scans"]:
+            t = datetime.fromtimestamp(scan["time_start_unix"])
+            print(t)
+            scan = engine.select_entity(
+                session,
+                entities.CosmicDB_Scan,
+                start = t
+            ) 
+            print(scan)
+            assert scan is not None
+
     for config in json_data["configurations"]:
         time_now = time.time()
         db_config = entities.CosmicDB_ObservationConfiguration(
@@ -85,13 +97,14 @@ with open(data_filepath, "r") as json_fio:
 
     with engine.session() as session:
         for obs_subband in json_data["observation_subbands"]:
+            scan = engine.select_entity(
+                session,
+                entities.CosmicDB_Scan,
+                id = obs_subband.pop("scan_id")
+            )
             session.add(
                 entities.CosmicDB_ObservationSubband(
-                    observation_id = engine.select_entity(
-                        session,
-                        entities.CosmicDB_Scan,
-                        id = obs_subband.pop("scan_id")
-                    ).observations[-1].id,
+                    observation_id = scan.observations[-1].id,
                     tuning = obs_subband["tuning"],
                     subband_offset = obs_subband["subband_offset"],
                     percentage_recorded = obs_subband["percentage_recorded"],

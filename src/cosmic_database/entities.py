@@ -14,6 +14,8 @@ from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
 
+from sqlalchemy.dialects import mysql
+
 TABLE_SUFFIX = os.environ.get("COSMIC_DB_TABLE_SUFFIX", "")
 
 from typing_extensions import Annotated
@@ -33,7 +35,10 @@ class Base(DeclarativeBase):
         String_URI: String(255),
         String_Tuning: String(10),
         String_SourceName: String(80),
-        float: Double
+        float: Double,
+        datetime: DateTime().with_variant(
+            mysql.DATETIME(fsp=6), 'mysql'
+        )
     }
 
 class CosmicDB_Dataset(Base):
