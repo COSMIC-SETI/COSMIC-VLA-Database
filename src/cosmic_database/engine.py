@@ -69,12 +69,12 @@ class CosmicDB_Engine:
             ])
         ).scalar_one_or_none()
 
-    def update_entity(self, sesion, entity, assert_exists=False):
+    def update_entity(self, session, entity, assert_exists=False):
         remote_entity = self.select_entity(
             session,
             entity.__class__,
             **{
-                getattr(entity.__class__, col.name): getattr(entity, col.name)
+               col.name: getattr(entity, col.name)
                 for col in entity.__table__.columns
                 if col.primary_key
             }
@@ -89,11 +89,8 @@ class CosmicDB_Engine:
                     setattr(remote_entity, col.name, getattr(entity, col.name))
             
         session.commit()
-        # session.execute(
-        #     sqlalchemy.update(entity.__class__)
-        #     .where(*primary_key_criteria)
-        #     .values(**value_updates)
-        # )
+        session.refresh(remote_entity)
+        return remote_entity
 
 
 def cli_create_all_tables():

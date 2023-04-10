@@ -14,7 +14,7 @@ Column | Type | Primary Key | Foreign Key(s) | Nullable
 -|-|-|-|-
 id | VARCHAR(100) | X |  | 
 dataset_id | VARCHAR(60) |  | [cosmic_dataset.id](#table-cosmic_dataset) | 
-time_start_unix | FLOAT |  |  | 
+start | DATETIME |  |  | 
 metadata_json | TEXT |  |  | 
 
 # Table `cosmic_observation_configuration`
@@ -25,8 +25,8 @@ Column | Type | Primary Key | Foreign Key(s) | Nullable
 -|-|-|-|-
 id | INTEGER | X |  | 
 scan_id | VARCHAR(100) |  | [cosmic_scan.id](#table-cosmic_scan) | 
-time_start_unix | FLOAT |  |  | 
-time_end_unix | FLOAT |  |  | 
+start | DATETIME |  |  | 
+end | DATETIME |  |  | 
 criteria_json | TEXT |  |  | 
 configuration_json | TEXT |  |  | 
 successful | BOOLEAN |  |  | 
@@ -39,8 +39,8 @@ Column | Type | Primary Key | Foreign Key(s) | Nullable
 -|-|-|-|-
 id | INTEGER | X |  | 
 scan_id | VARCHAR(100) |  | [cosmic_scan.id](#table-cosmic_scan) | 
-time_start_unix | FLOAT |  |  | 
-time_end_unix | FLOAT |  |  | 
+start | DATETIME |  |  | 
+end | DATETIME |  |  | 
 criteria_json | TEXT |  |  | 
 
 # Table `cosmic_observation_subband`
@@ -52,7 +52,7 @@ Column | Type | Primary Key | Foreign Key(s) | Nullable
 observation_id | INTEGER | X | [cosmic_observation.id](#table-cosmic_observation) | 
 tuning | VARCHAR(10) | X |  | 
 subband_offset | INTEGER | X |  | 
-percentage_recorded | FLOAT |  |  | 
+percentage_recorded | DOUBLE |  |  | 
 successful_participation | BOOLEAN |  |  | 
 
 # Table `cosmic_observation_beam`
@@ -63,11 +63,11 @@ Column | Type | Primary Key | Foreign Key(s) | Nullable
 -|-|-|-|-
 id | INTEGER | X |  | 
 observation_id | INTEGER |  | [cosmic_observation.id](#table-cosmic_observation) | 
-ra_radians | FLOAT |  |  | 
-dec_radians | FLOAT |  |  | 
+ra_radians | DOUBLE |  |  | 
+dec_radians | DOUBLE |  |  | 
 source | VARCHAR(80) |  |  | 
-time_start_unix | FLOAT |  |  | 
-time_end_unix | FLOAT |  |  | 
+start | DATETIME |  |  | 
+end | DATETIME |  |  | 
 
 # Table `cosmic_observation_hit`
 
@@ -82,23 +82,23 @@ tuning | VARCHAR(10) |  | [cosmic_observation_subband.tuning](#table-cosmic_obse
 subband_offset | INTEGER |  | [cosmic_observation_subband.subband_offset](#table-cosmic_observation_subband) | 
 file_uri | VARCHAR(255) |  |  | 
 file_local_enumeration | INTEGER |  |  | 
-signal_frequency | FLOAT |  |  | 
+signal_frequency | DOUBLE |  |  | 
 signal_index | INTEGER |  |  | 
 signal_drift_steps | INTEGER |  |  | 
-signal_drift_rate | FLOAT |  |  | 
-signal_snr | FLOAT |  |  | 
+signal_drift_rate | DOUBLE |  |  | 
+signal_snr | DOUBLE |  |  | 
 signal_coarse_channel | INTEGER |  |  | 
 signal_beam | INTEGER |  |  | 
 signal_num_timesteps | INTEGER |  |  | 
-signal_power | FLOAT |  |  | 
-signal_incoherent_power | FLOAT |  |  | 
+signal_power | DOUBLE |  |  | 
+signal_incoherent_power | DOUBLE |  |  | 
 source_name | VARCHAR(80) |  |  | 
-fch1_mhz | FLOAT |  |  | 
-foff_mhz | FLOAT |  |  | 
-tstart | FLOAT |  |  | 
-tsamp | FLOAT |  |  | 
-ra_hours | FLOAT |  |  | 
-dec_degrees | FLOAT |  |  | 
+fch1_mhz | DOUBLE |  |  | 
+foff_mhz | DOUBLE |  |  | 
+tstart | DOUBLE |  |  | 
+tsamp | DOUBLE |  |  | 
+ra_hours | DOUBLE |  |  | 
+dec_degrees | DOUBLE |  |  | 
 telescope_id | INTEGER |  |  | 
 num_timesteps | INTEGER |  |  | 
 num_channels | INTEGER |  |  | 
@@ -118,12 +118,12 @@ subband_offset | INTEGER |  | [cosmic_observation_subband.subband_offset](#table
 file_uri | VARCHAR(255) |  |  | 
 file_local_enumeration | INTEGER |  |  | 
 source_name | VARCHAR(80) |  |  | 
-ra_hours | FLOAT |  |  | 
-dec_degrees | FLOAT |  |  | 
-fch1_mhz | FLOAT |  |  | 
-foff_mhz | FLOAT |  |  | 
-tstart | FLOAT |  |  | 
-tsamp | FLOAT |  |  | 
+ra_hours | DOUBLE |  |  | 
+dec_degrees | DOUBLE |  |  | 
+fch1_mhz | DOUBLE |  |  | 
+foff_mhz | DOUBLE |  |  | 
+tstart | DOUBLE |  |  | 
+tsamp | DOUBLE |  |  | 
 telescope_id | INTEGER |  |  | 
 num_timesteps | INTEGER |  |  | 
 num_channels | INTEGER |  |  | 
@@ -134,14 +134,14 @@ fft_size | INTEGER |  |  |
 start_channel | INTEGER |  |  | 
 schan | INTEGER |  |  | 
 obsid | VARCHAR(100) |  |  | 
-signal_frequency | FLOAT |  |  | 
+signal_frequency | DOUBLE |  |  | 
 signal_index | INTEGER |  |  | 
 signal_drift_steps | INTEGER |  |  | 
-signal_drift_rate | FLOAT |  |  | 
-signal_snr | FLOAT |  |  | 
+signal_drift_rate | DOUBLE |  |  | 
+signal_snr | DOUBLE |  |  | 
 signal_beam | INTEGER |  |  | 
 signal_coarse_channel | INTEGER |  |  | 
 signal_num_timesteps | INTEGER |  |  | 
-signal_power | FLOAT |  |  | 
-signal_incoherent_power | FLOAT |  |  | 
+signal_power | DOUBLE |  |  | 
+signal_incoherent_power | DOUBLE |  |  | 
 beam_id | INTEGER |  | [cosmic_observation_beam.id](#table-cosmic_observation_beam) | 

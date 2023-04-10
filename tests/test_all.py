@@ -1,4 +1,6 @@
 import os
+import time
+from datetime import datetime
 import json
 import yaml
 import sqlalchemy
@@ -44,17 +46,18 @@ with open(data_filepath, "r") as json_fio:
         entities.CosmicDB_Scan(
             id = scan["id"],
             dataset_id = scan["dataset_id"],
-            time_start_unix = scan["time_start_unix"],
+            start = datetime.fromtimestamp(scan["time_start_unix"]),
             metadata_json = json.dumps(scan["metadata_json"]),
         )
         for scan in json_data["scans"]
     ])
 
     for config in json_data["configurations"]:
+        time_now = time.time()
         db_config = entities.CosmicDB_ObservationConfiguration(
             scan_id = config["id"],
-            time_start_unix = config["time_start_unix"],
-            time_end_unix = config["time_end_unix"],
+            start = datetime.fromtimestamp(config["time_start_unix"]),
+            end = datetime.fromtimestamp(config["time_end_unix"]),
             criteria_json = json.dumps(config["criteria_json"]),
             configuration_json = json.dumps(config["configuration_json"]),
             successful = False,
@@ -62,11 +65,19 @@ with open(data_filepath, "r") as json_fio:
         engine.commit_entity(db_config)
         print(db_config.id)
 
+        db_config.successful = config["successful"]
+        with engine.session() as session:
+            db_config = engine.update_entity(session, db_config, assert_exists=True)
+
+        assert db_config.start == datetime.fromtimestamp(config["time_start_unix"])
+        assert db_config.end == datetime.fromtimestamp(config["time_end_unix"])
+        assert db_config.successful == config["successful"]
+
     engine.commit_entities([
         entities.CosmicDB_Observation(
             scan_id = obs["scan_id"],
-            time_start_unix = obs["time_start_unix"],
-            time_end_unix = obs["time_end_unix"],
+            start = datetime.fromtimestamp(obs["time_start_unix"]),
+            end = datetime.fromtimestamp(obs["time_end_unix"]),
             criteria_json = json.dumps(obs["criteria_json"]),
         )
         for obs in json_data["observations"]
@@ -96,6 +107,8 @@ with open(data_filepath, "r") as json_fio:
                     id = obs_beam.pop("scan_id")
                 ).observations[-1].id
             
+            obs_beam["start"] = datetime.fromtimestamp(obs_beam.pop("time_start_unix"))
+            obs_beam["end"] = datetime.fromtimestamp(obs_beam.pop("time_end_unix"))
             session.add(
                 entities.CosmicDB_ObservationBeam(**obs_beam)
             )

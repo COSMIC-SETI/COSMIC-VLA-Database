@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 
 from typing import List
 from typing import Optional
@@ -6,6 +7,8 @@ from sqlalchemy import ForeignKey
 from sqlalchemy import ForeignKeyConstraint
 from sqlalchemy import String
 from sqlalchemy import Text
+from sqlalchemy import DateTime
+from sqlalchemy import Double
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
@@ -30,6 +33,7 @@ class Base(DeclarativeBase):
         String_URI: String(255),
         String_Tuning: String(10),
         String_SourceName: String(80),
+        float: Double
     }
 
 class CosmicDB_Dataset(Base):
@@ -49,7 +53,7 @@ class CosmicDB_Scan(Base):
 
     id: Mapped[String_ScanID] = mapped_column(primary_key=True)
     dataset_id: Mapped[String_DatasetID] = mapped_column(ForeignKey(f"cosmic_dataset{TABLE_SUFFIX}.id"))
-    time_start_unix: Mapped[float]
+    start: Mapped[datetime]
     metadata_json: Mapped[String_JSON]
     
     dataset: Mapped["CosmicDB_Dataset"] = relationship(
@@ -65,15 +69,15 @@ class CosmicDB_Scan(Base):
     )
 
     def __repr__(self) -> str:
-        return f"COSMIC_SCAN({', '.join(f'{key}={getattr(self, key)}' for key in ['id', 'time_start_unix'])})"
+        return f"COSMIC_SCAN({', '.join(f'{key}={getattr(self, key)}' for key in ['id', 'start'])})"
 
 class CosmicDB_ObservationConfiguration(Base):
     __tablename__ = f"cosmic_observation_configuration{TABLE_SUFFIX}"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     scan_id: Mapped[String_ScanID] = mapped_column(ForeignKey(f"cosmic_scan{TABLE_SUFFIX}.id"))
-    time_start_unix: Mapped[float]
-    time_end_unix: Mapped[float]
+    start: Mapped[datetime]
+    end: Mapped[datetime]
     criteria_json: Mapped[String_JSON]
     configuration_json: Mapped[String_JSON]
     successful: Mapped[bool]
@@ -83,15 +87,15 @@ class CosmicDB_ObservationConfiguration(Base):
     )
 
     def __repr__(self) -> str:
-        return f"COSMIC_OBS_CONF({', '.join(f'{key}={getattr(self, key)}' for key in ['id', 'scan_id', 'time_start_unix', 'time_end_unix', 'successful'])})"
+        return f"COSMIC_OBS_CONF({', '.join(f'{key}={getattr(self, key)}' for key in ['id', 'scan_id', 'start', 'end', 'successful'])})"
 
 class CosmicDB_Observation(Base):
     __tablename__ = f"cosmic_observation{TABLE_SUFFIX}"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     scan_id: Mapped[String_ScanID] = mapped_column(ForeignKey(f"cosmic_scan{TABLE_SUFFIX}.id"))
-    time_start_unix: Mapped[float]
-    time_end_unix: Mapped[float]
+    start: Mapped[datetime]
+    end: Mapped[datetime]
     criteria_json: Mapped[String_JSON]
 
     scan: Mapped["CosmicDB_Scan"] = relationship(
@@ -107,7 +111,7 @@ class CosmicDB_Observation(Base):
     )
 
     def __repr__(self) -> str:
-        return f"COSMIC_OBS({', '.join(f'{key}={getattr(self, key)}' for key in ['id', 'scan_id', 'time_start_unix', 'time_end_unix'])})"
+        return f"COSMIC_OBS({', '.join(f'{key}={getattr(self, key)}' for key in ['id', 'scan_id', 'start', 'end'])})"
 
 class CosmicDB_ObservationSubband(Base):
     __tablename__ = f"cosmic_observation_subband{TABLE_SUFFIX}"
@@ -142,8 +146,8 @@ class CosmicDB_ObservationBeam(Base):
     ra_radians: Mapped[float]
     dec_radians: Mapped[float]
     source: Mapped[String_SourceName]
-    time_start_unix: Mapped[float]
-    time_end_unix: Mapped[float]
+    start: Mapped[datetime]
+    end: Mapped[datetime]
 
     observation : Mapped["CosmicDB_Observation"] = relationship(
         back_populates="beams"
