@@ -88,6 +88,7 @@ with open(data_filepath, "r") as json_fio:
     engine.commit_entities([
         entities.CosmicDB_Observation(
             scan_id = obs["scan_id"],
+            configuration_id = obs["configuration_id"],
             start = datetime.fromtimestamp(obs["time_start_unix"]),
             end = datetime.fromtimestamp(obs["time_end_unix"]),
             criteria_json = json.dumps(obs["criteria_json"]),
@@ -146,6 +147,7 @@ with open(data_filepath, "r") as json_fio:
             print(scan.configurations)
             print(scan.observations)
             print(scan.observations[-1])
+            print(scan.observations[-1].configuration)
             print(scan.observations[-1].subbands)
             print(scan.observations[-1].beams)
             print(scan.observations[-1].beams[0].hits)

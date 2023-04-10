@@ -39,6 +39,7 @@ Column | Type | Primary Key | Foreign Key(s) | Nullable
 -|-|-|-|-
 id | INTEGER | X |  | 
 scan_id | VARCHAR(100) |  | [cosmic_scan.id](#table-cosmic_scan) | 
+configuration_id | INTEGER |  | [cosmic_observation_configuration.id](#table-cosmic_observation_configuration) | 
 start | DATETIME |  |  | 
 end | DATETIME |  |  | 
 criteria_json | TEXT |  |  | 
