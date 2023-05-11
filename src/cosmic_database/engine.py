@@ -103,11 +103,13 @@ def cli_create_all_tables():
     parser.add_argument(
         "-u", "--engine-url",
         type=str,
+        default=None,
         help="The SQLAlchemy.engine.url.URL string specifying the database."
     )
     parser.add_argument(
         "-c", "--engine-configuration",
         type=str,
+        default=None,
         help="The YAML file path containing the instantiation arguments for the SQLAlchemy.engine.url.URL instance specifying the database."
     )
 
@@ -133,6 +135,7 @@ def cli_create_engine_url():
     args = parser.parse_args()
     
     print(CosmicDB_Engine._create_url(args.engine_configuration))
+
 
 def cli_inspect():
     import argparse
@@ -301,8 +304,8 @@ def cli_inspect():
                 sqlalchemy.select(args.entity)
                 .where(*criteria)
                 .order_by(ordering)
+                .limit(args.limit)
             ))
-            if args.limit is None or scalar_enum < args.limit
         ]
         scalar_num_str_len = len(str(len(scalars)))
         for scalar_enum, scalar in enumerate(scalars):
