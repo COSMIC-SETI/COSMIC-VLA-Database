@@ -41,6 +41,24 @@ class Base(DeclarativeBase):
         )
     }
 
+    def _get_str(self, verbosity: int) -> str:
+        attr_strs = []
+        for key, col in self.__table__.columns.items():
+            if verbosity == 0:
+                if type(col.type) != Text:
+                    continue
+
+            attr_strs.append(f'{key}={col.type}')
+
+        retstr = f"{self.__class__.__name__}({', '.join(attr_strs)})"
+        if verbosity == 1:
+            return retstr
+
+
+    def __repr__(self) -> str:
+        return _get_str(verbosity=0)
+
+
 class CosmicDB_Dataset(Base):
     __tablename__ = f"cosmic_dataset{TABLE_SUFFIX}"
 
@@ -50,8 +68,6 @@ class CosmicDB_Dataset(Base):
         back_populates="dataset", cascade="all, delete-orphan"
     )
 
-    def __repr__(self) -> str:
-        return f"COSMIC_DATASET(id={self.id})"
 
 class CosmicDB_Scan(Base):
     __tablename__ = f"cosmic_scan{TABLE_SUFFIX}"
@@ -73,9 +89,6 @@ class CosmicDB_Scan(Base):
         back_populates="scan", cascade="all, delete-orphan"
     )
 
-    def __repr__(self) -> str:
-        return f"COSMIC_SCAN({', '.join(f'{key}={getattr(self, key)}' for key in ['id', 'start'])})"
-
 class CosmicDB_ObservationConfiguration(Base):
     __tablename__ = f"cosmic_observation_configuration{TABLE_SUFFIX}"
 
@@ -90,9 +103,6 @@ class CosmicDB_ObservationConfiguration(Base):
     scan: Mapped["CosmicDB_Scan"] = relationship(
         back_populates="configurations"
     )
-
-    def __repr__(self) -> str:
-        return f"COSMIC_OBS_CONF({', '.join(f'{key}={getattr(self, key)}' for key in ['id', 'scan_id', 'start', 'end', 'successful'])})"
 
 class CosmicDB_Observation(Base):
     __tablename__ = f"cosmic_observation{TABLE_SUFFIX}"
@@ -118,9 +128,6 @@ class CosmicDB_Observation(Base):
         back_populates="observation", cascade="all, delete-orphan"
     )
 
-    def __repr__(self) -> str:
-        return f"COSMIC_OBS({', '.join(f'{key}={getattr(self, key)}' for key in ['id', 'scan_id', 'configuration_id', 'start', 'end'])})"
-
 class CosmicDB_ObservationSubband(Base):
     __tablename__ = f"cosmic_observation_subband{TABLE_SUFFIX}"
 
@@ -142,9 +149,6 @@ class CosmicDB_ObservationSubband(Base):
         back_populates="observation_subband", cascade="all, delete-orphan"
     )
 
-    def __repr__(self) -> str:
-        return f"COSMIC_OBS_SUBBAND({', '.join(f'{key}={getattr(self, key)}' for key in ['observation_id', 'tuning', 'subband_offset', 'percentage_recorded', 'successful_participation'])})"
-
 class CosmicDB_ObservationBeam(Base):
     __tablename__ = f"cosmic_observation_beam{TABLE_SUFFIX}"
 
@@ -164,9 +168,6 @@ class CosmicDB_ObservationBeam(Base):
     hits: Mapped[List["CosmicDB_ObservationHit"]] = relationship(
         back_populates="beam", cascade="all, delete-orphan"
     )
-
-    def __repr__(self) -> str:
-        return f"COSMIC_OBS_BEAM({', '.join(f'{key}={getattr(self, key)}' for key in ['id', 'observation_id', 'ra_radians', 'dec_radians', 'source'])})"
 
 class CosmicDB_ObservationHit(Base):
     __tablename__ = f"cosmic_observation_hit{TABLE_SUFFIX}"
@@ -218,9 +219,6 @@ class CosmicDB_ObservationHit(Base):
             [f'cosmic_observation_subband{TABLE_SUFFIX}.observation_id', f'cosmic_observation_subband{TABLE_SUFFIX}.tuning', f'cosmic_observation_subband{TABLE_SUFFIX}.subband_offset'],
         ),
     )
-
-    def __repr__(self) -> str:
-        return f"COSMIC_OBS_HIT({', '.join(f'{key}={getattr(self, key)}' for key in ['file_uri', 'file_local_enumeration'])})"
 
 class CosmicDB_ObservationStamp(Base):
     __tablename__ = f"cosmic_observation_stamp{TABLE_SUFFIX}"
@@ -276,6 +274,3 @@ class CosmicDB_ObservationStamp(Base):
             [f'cosmic_observation_subband{TABLE_SUFFIX}.observation_id', f'cosmic_observation_subband{TABLE_SUFFIX}.tuning', f'cosmic_observation_subband{TABLE_SUFFIX}.subband_offset'],
         ),
     )
-
-    def __repr__(self) -> str:
-        return f"COSMIC_OBS_STAMP({', '.join(f'{key}={getattr(self, key)}' for key in ['file_uri', 'file_local_enumeration'])})"

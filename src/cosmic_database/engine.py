@@ -1,5 +1,7 @@
 import json
 import yaml
+
+import pandas
 import sqlalchemy
 
 from cosmic_database import entities
@@ -168,6 +170,12 @@ def cli_inspect():
         help="The YAML file path specifying the COSMIC database.",
     )
     parser.add_argument(
+        "--pandas-output-filepath",
+        type=str,
+        default=None,
+        help="The output file path to which a pandas-dataframe-pickle of the results are written.",
+    )
+    parser.add_argument(
         "entity",
         type=str,
         choices=[
@@ -297,16 +305,29 @@ def cli_inspect():
 
     engine = CosmicDB_Engine(engine_conf_yaml_filepath=args.cosmicdb_engine_configuration)
 
-    with engine.session() as session:
-        scalars = [
-            scalar
-            for scalar_enum, scalar in enumerate(session.scalars(
-                sqlalchemy.select(args.entity)
-                .where(*criteria)
-                .order_by(ordering)
-                .limit(args.limit)
-            ))
-        ]
-        scalar_num_str_len = len(str(len(scalars)))
-        for scalar_enum, scalar in enumerate(scalars):
-            print(f"#{str(scalar_enum+1).ljust(scalar_num_str_len)} {scalar}")
+    sql_selection = (sqlalchemy
+        .select(args.entity)
+        .where(*criteria)
+        .order_by(ordering)
+        .limit(args.limit)
+    )
+
+    if args.pandas_output_filepath is not None:
+        df = pandas.read_sql_query(
+            sql = sql_selection,
+            con = engine.engine
+        )
+        print(df)
+        print(f"Output: {args.pandas_output_filepath}")
+        df.to_pickle(args.pandas_output_filepath)
+    else:
+        with engine.session() as session:
+            scalars = [
+                scalar
+                for scalar_enum, scalar in enumerate(
+                    session.scalars(sql_selection)
+                )
+            ]
+            scalar_num_str_len = len(str(len(scalars)))
+            for scalar_enum, scalar in enumerate(scalars):
+                print(f"#{str(scalar_enum+1).ljust(scalar_num_str_len)} {scalar}")
