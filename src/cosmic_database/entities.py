@@ -45,18 +45,20 @@ class Base(DeclarativeBase):
         attr_strs = []
         for key, col in self.__table__.columns.items():
             if verbosity == 0:
-                if type(col.type) != Text:
+                if type(col.type) == Text:
                     continue
 
-            attr_strs.append(f'{key}={col.type}')
+            attr_strs.append(f'{key}={getattr(self, key)}')
 
         retstr = f"{self.__class__.__name__}({', '.join(attr_strs)})"
-        if verbosity == 1:
+        if verbosity == 0:
             return retstr
+
+        return retstr
 
 
     def __repr__(self) -> str:
-        return _get_str(verbosity=0)
+        return self._get_str(verbosity=0)
 
 
 class CosmicDB_Dataset(Base):
