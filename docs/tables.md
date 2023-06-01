@@ -87,15 +87,11 @@ Column | Type | Primary Key | Foreign Key(s) | Nullable
 id | INTEGER | X |  | 
 calibration_id | INTEGER |  | [cosmic_observation_calibration](#table-cosmic_observation_calibration).id | 
 antenna_name | VARCHAR(4) |  |  | 
-observation_id | INTEGER |  | [cosmic_observation_subband](#table-cosmic_observation_subband).observation_id | 
-tuning | VARCHAR(10) |  | [cosmic_observation_subband](#table-cosmic_observation_subband).tuning | 
-subband_offset | INTEGER |  | [cosmic_observation_subband](#table-cosmic_observation_subband).subband_offset | 
-subband_channel_index | INTEGER |  |  | 
+tuning | VARCHAR(10) |  |  | 
 channel_frequency | DOUBLE |  |  | 
 polarization | VARCHAR(10) |  |  | 
 gain_real | DOUBLE |  |  | 
 gain_imag | DOUBLE |  |  | 
-gain_grade | DOUBLE |  |  | 
 
 # Table `cosmic_observation_beam`
 

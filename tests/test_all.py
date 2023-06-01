@@ -175,7 +175,6 @@ with open(data_filepath, "r") as json_fio:
             if len(scan.observations[-1].subbands) > 0:
                 print(scan.observations[-1].subbands[0].hits)
                 print(scan.observations[-1].subbands[0].stamps)
-                print(scan.observations[-1].subbands[0].calibration_gains)
             print(scan.observations[-1].calibration)
             if scan.observations[-1].calibration is not None:
                 print(scan.observations[-1].calibration.gains)

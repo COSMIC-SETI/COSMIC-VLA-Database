@@ -301,61 +301,45 @@
       "calibration_id": 1,
       "antenna_name": "ea01",
 
-      "observation_id": 1,      
       "tuning": "AC",
-      "subband_offset": 32,
 
       "polarization": "x",
-      "subband_channel_index": 0,
       "channel_frequency": 6420000000,
       "gain_real": 1.0,
-      "gain_imag": 0.0,
-      "gain_grade": 1.0
+      "gain_imag": 0.0
     },
     {
       "calibration_id": 1,
       "antenna_name": "ea01",
 
-      "observation_id": 1,      
       "tuning": "AC",
-      "subband_offset": 32,
 
       "polarization": "y",
-      "subband_channel_index": 0,
       "channel_frequency": 6420000000,
       "gain_real": 1.0,
-      "gain_imag": 0.0,
-      "gain_grade": 1.0
+      "gain_imag": 0.0
     },
     {
       "calibration_id": 1,
       "antenna_name": "ea02",
 
-      "observation_id": 1,      
       "tuning": "AC",
-      "subband_offset": 32,
 
       "polarization": "x",
-      "subband_channel_index": 0,
       "channel_frequency": 6420000000,
       "gain_real": 1.0,
-      "gain_imag": 0.0,
-      "gain_grade": 0.98
+      "gain_imag": 0.0
     },
     {
       "calibration_id": 1,
       "antenna_name": "ea03",
 
-      "observation_id": 1,      
       "tuning": "AC",
-      "subband_offset": 32,
 
       "polarization": "x",
-      "subband_channel_index": 0,
       "channel_frequency": 6420000000,
       "gain_real": 1.0,
-      "gain_imag": 0.0,
-      "gain_grade": 0.96
+      "gain_imag": 0.0
     }
   ],
   "observation_beams": [

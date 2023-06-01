@@ -76,7 +76,6 @@ tuning | `str`
 observation | [CosmicDB_Observation](#class-cosmicdb_observation)
 hits | list([CosmicDB_ObservationHit](#class-cosmicdb_observationhit))
 stamps | list([CosmicDB_ObservationStamp](#class-cosmicdb_observationstamp))
-calibration_gains | list([CosmicDB_CalibrationGain](#class-cosmicdb_calibrationgain))
 # Class `CosmicDB_ObservationCalibration`
 
 Table [`cosmic_observation_calibration`](./tables.md#table-cosmic_observation_calibration)
@@ -100,17 +99,12 @@ Attribute | Type
 antenna_name | `str`
 calibration_id | `int`
 channel_frequency | `float`
-gain_grade | `float`
 gain_imag | `float`
 gain_real | `float`
 id | `int`
-observation_id | `int`
 polarization | `str`
-subband_channel_index | `int`
-subband_offset | `int`
 tuning | `str`
 calibration | [CosmicDB_ObservationCalibration](#class-cosmicdb_observationcalibration)
-observation_subband | [CosmicDB_ObservationSubband](#class-cosmicdb_observationsubband)
 # Class `CosmicDB_ObservationBeam`
 
 Table [`cosmic_observation_beam`](./tables.md#table-cosmic_observation_beam)
