@@ -1,0 +1,198 @@
+digraph CosmicDB {
+rankdir=LR;
+CosmicDB_Dataset:scans -> CosmicDB_Scan:class;
+CosmicDB_Dataset [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_Dataset</font></td></tr>
+	<tr><td>id</td></tr>
+	<tr><td bgcolor="darkgrey" port="scans">scans</td></tr>
+</table>>, shape=plain];
+CosmicDB_Scan:dataset -> CosmicDB_Dataset:class;
+CosmicDB_Scan:configurations -> CosmicDB_ObservationConfiguration:class;
+CosmicDB_Scan:observations -> CosmicDB_Observation:class;
+CosmicDB_Scan [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_Scan</font></td></tr>
+	<tr><td>dataset_id</td></tr>
+	<tr><td>id</td></tr>
+	<tr><td>metadata_json</td></tr>
+	<tr><td>start</td></tr>
+	<tr><td bgcolor="darkgrey" port="dataset">dataset</td></tr>
+	<tr><td bgcolor="darkgrey" port="configurations">configurations</td></tr>
+	<tr><td bgcolor="darkgrey" port="observations">observations</td></tr>
+</table>>, shape=plain];
+CosmicDB_ObservationConfiguration:scan -> CosmicDB_Scan:class;
+CosmicDB_ObservationConfiguration:antenna -> CosmicDB_ConfigurationAntenna:class;
+CosmicDB_ObservationConfiguration [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_ObservationConfiguration</font></td></tr>
+	<tr><td>configuration_json</td></tr>
+	<tr><td>criteria_json</td></tr>
+	<tr><td>end</td></tr>
+	<tr><td>id</td></tr>
+	<tr><td>scan_id</td></tr>
+	<tr><td>start</td></tr>
+	<tr><td>successful</td></tr>
+	<tr><td bgcolor="darkgrey" port="scan">scan</td></tr>
+	<tr><td bgcolor="darkgrey" port="antenna">antenna</td></tr>
+</table>>, shape=plain];
+CosmicDB_ConfigurationAntenna:configuration -> CosmicDB_ObservationConfiguration:class;
+CosmicDB_ConfigurationAntenna [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_ConfigurationAntenna</font></td></tr>
+	<tr><td>configuration_id</td></tr>
+	<tr><td>name</td></tr>
+	<tr><td bgcolor="darkgrey" port="configuration">configuration</td></tr>
+</table>>, shape=plain];
+CosmicDB_Observation:configuration -> CosmicDB_ObservationConfiguration:class;
+CosmicDB_Observation:scan -> CosmicDB_Scan:class;
+CosmicDB_Observation:subbands -> CosmicDB_ObservationSubband:class;
+CosmicDB_Observation:beams -> CosmicDB_ObservationBeam:class;
+CosmicDB_Observation:calibration -> CosmicDB_ObservationCalibration:class;
+CosmicDB_Observation [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_Observation</font></td></tr>
+	<tr><td>configuration_id</td></tr>
+	<tr><td>criteria_json</td></tr>
+	<tr><td>end</td></tr>
+	<tr><td>id</td></tr>
+	<tr><td>scan_id</td></tr>
+	<tr><td>start</td></tr>
+	<tr><td bgcolor="darkgrey" port="configuration">configuration</td></tr>
+	<tr><td bgcolor="darkgrey" port="scan">scan</td></tr>
+	<tr><td bgcolor="darkgrey" port="subbands">subbands</td></tr>
+	<tr><td bgcolor="darkgrey" port="beams">beams</td></tr>
+	<tr><td bgcolor="darkgrey" port="calibration">calibration</td></tr>
+</table>>, shape=plain];
+CosmicDB_ObservationSubband:observation -> CosmicDB_Observation:class;
+CosmicDB_ObservationSubband:hits -> CosmicDB_ObservationHit:class;
+CosmicDB_ObservationSubband:stamps -> CosmicDB_ObservationStamp:class;
+CosmicDB_ObservationSubband:calibration_gains -> CosmicDB_CalibrationGain:class;
+CosmicDB_ObservationSubband [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_ObservationSubband</font></td></tr>
+	<tr><td>observation_id</td></tr>
+	<tr><td>percentage_recorded</td></tr>
+	<tr><td>subband_offset</td></tr>
+	<tr><td>successful_participation</td></tr>
+	<tr><td>tuning</td></tr>
+	<tr><td bgcolor="darkgrey" port="observation">observation</td></tr>
+	<tr><td bgcolor="darkgrey" port="hits">hits</td></tr>
+	<tr><td bgcolor="darkgrey" port="stamps">stamps</td></tr>
+	<tr><td bgcolor="darkgrey" port="calibration_gains">calibration_gains</td></tr>
+</table>>, shape=plain];
+CosmicDB_ObservationCalibration:observation -> CosmicDB_Observation:class;
+CosmicDB_ObservationCalibration:gains -> CosmicDB_CalibrationGain:class;
+CosmicDB_ObservationCalibration [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_ObservationCalibration</font></td></tr>
+	<tr><td>file_uri</td></tr>
+	<tr><td>id</td></tr>
+	<tr><td>observation_id</td></tr>
+	<tr><td>overall_grade</td></tr>
+	<tr><td>reference_antenna_name</td></tr>
+	<tr><td bgcolor="darkgrey" port="observation">observation</td></tr>
+	<tr><td bgcolor="darkgrey" port="gains">gains</td></tr>
+</table>>, shape=plain];
+CosmicDB_CalibrationGain:calibration -> CosmicDB_ObservationCalibration:class;
+CosmicDB_CalibrationGain:observation_subband -> CosmicDB_ObservationSubband:class;
+CosmicDB_CalibrationGain [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_CalibrationGain</font></td></tr>
+	<tr><td>antenna_name</td></tr>
+	<tr><td>calibration_id</td></tr>
+	<tr><td>channel_frequency</td></tr>
+	<tr><td>gain_grade</td></tr>
+	<tr><td>gain_imag</td></tr>
+	<tr><td>gain_real</td></tr>
+	<tr><td>id</td></tr>
+	<tr><td>observation_id</td></tr>
+	<tr><td>polarization</td></tr>
+	<tr><td>subband_channel_index</td></tr>
+	<tr><td>subband_offset</td></tr>
+	<tr><td>tuning</td></tr>
+	<tr><td bgcolor="darkgrey" port="calibration">calibration</td></tr>
+	<tr><td bgcolor="darkgrey" port="observation_subband">observation_subband</td></tr>
+</table>>, shape=plain];
+CosmicDB_ObservationBeam:observation -> CosmicDB_Observation:class;
+CosmicDB_ObservationBeam:hits -> CosmicDB_ObservationHit:class;
+CosmicDB_ObservationBeam [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_ObservationBeam</font></td></tr>
+	<tr><td>dec_radians</td></tr>
+	<tr><td>end</td></tr>
+	<tr><td>id</td></tr>
+	<tr><td>observation_id</td></tr>
+	<tr><td>ra_radians</td></tr>
+	<tr><td>source</td></tr>
+	<tr><td>start</td></tr>
+	<tr><td bgcolor="darkgrey" port="observation">observation</td></tr>
+	<tr><td bgcolor="darkgrey" port="hits">hits</td></tr>
+</table>>, shape=plain];
+CosmicDB_ObservationHit:beam -> CosmicDB_ObservationBeam:class;
+CosmicDB_ObservationHit:observation_subband -> CosmicDB_ObservationSubband:class;
+CosmicDB_ObservationHit [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_ObservationHit</font></td></tr>
+	<tr><td>beam_id</td></tr>
+	<tr><td>coarse_channel</td></tr>
+	<tr><td>dec_degrees</td></tr>
+	<tr><td>fch1_mhz</td></tr>
+	<tr><td>file_local_enumeration</td></tr>
+	<tr><td>file_uri</td></tr>
+	<tr><td>foff_mhz</td></tr>
+	<tr><td>id</td></tr>
+	<tr><td>num_channels</td></tr>
+	<tr><td>num_timesteps</td></tr>
+	<tr><td>observation_id</td></tr>
+	<tr><td>ra_hours</td></tr>
+	<tr><td>signal_beam</td></tr>
+	<tr><td>signal_coarse_channel</td></tr>
+	<tr><td>signal_drift_rate</td></tr>
+	<tr><td>signal_drift_steps</td></tr>
+	<tr><td>signal_frequency</td></tr>
+	<tr><td>signal_incoherent_power</td></tr>
+	<tr><td>signal_index</td></tr>
+	<tr><td>signal_num_timesteps</td></tr>
+	<tr><td>signal_power</td></tr>
+	<tr><td>signal_snr</td></tr>
+	<tr><td>source_name</td></tr>
+	<tr><td>start_channel</td></tr>
+	<tr><td>subband_offset</td></tr>
+	<tr><td>telescope_id</td></tr>
+	<tr><td>tsamp</td></tr>
+	<tr><td>tstart</td></tr>
+	<tr><td>tuning</td></tr>
+	<tr><td bgcolor="darkgrey" port="beam">beam</td></tr>
+	<tr><td bgcolor="darkgrey" port="observation_subband">observation_subband</td></tr>
+</table>>, shape=plain];
+CosmicDB_ObservationStamp:observation_subband -> CosmicDB_ObservationSubband:class;
+CosmicDB_ObservationStamp [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_ObservationStamp</font></td></tr>
+	<tr><td>beam_id</td></tr>
+	<tr><td>coarse_channel</td></tr>
+	<tr><td>dec_degrees</td></tr>
+	<tr><td>fch1_mhz</td></tr>
+	<tr><td>fft_size</td></tr>
+	<tr><td>file_local_enumeration</td></tr>
+	<tr><td>file_uri</td></tr>
+	<tr><td>foff_mhz</td></tr>
+	<tr><td>id</td></tr>
+	<tr><td>num_antennas</td></tr>
+	<tr><td>num_channels</td></tr>
+	<tr><td>num_polarizations</td></tr>
+	<tr><td>num_timesteps</td></tr>
+	<tr><td>observation_id</td></tr>
+	<tr><td>obsid</td></tr>
+	<tr><td>ra_hours</td></tr>
+	<tr><td>schan</td></tr>
+	<tr><td>signal_beam</td></tr>
+	<tr><td>signal_coarse_channel</td></tr>
+	<tr><td>signal_drift_rate</td></tr>
+	<tr><td>signal_drift_steps</td></tr>
+	<tr><td>signal_frequency</td></tr>
+	<tr><td>signal_incoherent_power</td></tr>
+	<tr><td>signal_index</td></tr>
+	<tr><td>signal_num_timesteps</td></tr>
+	<tr><td>signal_power</td></tr>
+	<tr><td>signal_snr</td></tr>
+	<tr><td>source_name</td></tr>
+	<tr><td>start_channel</td></tr>
+	<tr><td>subband_offset</td></tr>
+	<tr><td>telescope_id</td></tr>
+	<tr><td>tsamp</td></tr>
+	<tr><td>tstart</td></tr>
+	<tr><td>tuning</td></tr>
+	<tr><td bgcolor="darkgrey" port="observation_subband">observation_subband</td></tr>
+</table>>, shape=plain];
+}

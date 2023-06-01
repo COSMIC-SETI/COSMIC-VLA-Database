@@ -67,7 +67,7 @@ with open(data_filepath, "r") as json_fio:
     for config in json_data["configurations"]:
         time_now = time.time()
         db_config = entities.CosmicDB_ObservationConfiguration(
-            scan_id = config["id"],
+            scan_id = config["scan_id"],
             start = datetime.fromtimestamp(config["time_start_unix"]),
             end = datetime.fromtimestamp(config["time_end_unix"]),
             criteria_json = json.dumps(config["criteria_json"]),
@@ -84,6 +84,14 @@ with open(data_filepath, "r") as json_fio:
         assert db_config.start == datetime.fromtimestamp(config["time_start_unix"])
         assert db_config.end == datetime.fromtimestamp(config["time_end_unix"])
         assert db_config.successful == config["successful"]
+
+    engine.commit_entities([
+        entities.CosmicDB_ConfigurationAntenna(
+            configuration_id = obs["configuration_id"],
+            name = obs["name"],
+        )
+        for obs in json_data["configuration_antenna"]
+    ])
 
     engine.commit_entities([
         entities.CosmicDB_Observation(
@@ -129,6 +137,16 @@ with open(data_filepath, "r") as json_fio:
         session.commit()
 
     engine.commit_entities([
+        entities.CosmicDB_ObservationCalibration(**obs_cal)
+        for obs_cal in json_data["observation_calibrations"]
+    ])
+
+    engine.commit_entities([
+        entities.CosmicDB_CalibrationGain(**cal_gain)
+        for cal_gain in json_data["calibration_gains"]
+    ])
+
+    engine.commit_entities([
         entities.CosmicDB_ObservationHit(**obs_hit)
         for obs_hit in json_data["observation_hits"]
     ])
@@ -146,11 +164,18 @@ with open(data_filepath, "r") as json_fio:
             print(scan)
             print(scan.configurations)
             print(scan.observations)
+
             print(scan.observations[-1])
             print(scan.observations[-1].configuration)
-            print(scan.observations[-1].subbands)
+            print(scan.observations[-1].configuration.antenna)
             print(scan.observations[-1].beams)
-            print(scan.observations[-1].beams[0].hits)
-            print(scan.observations[-1].subbands[0].stamps)
-            print(scan.observations[-1].subbands[0].hits)
-    
+            if len(scan.observations[-1].beams) > 0:
+                print(scan.observations[-1].beams[0].hits)
+            print(scan.observations[-1].subbands)
+            if len(scan.observations[-1].subbands) > 0:
+                print(scan.observations[-1].subbands[0].hits)
+                print(scan.observations[-1].subbands[0].stamps)
+                print(scan.observations[-1].subbands[0].calibration_gains)
+            print(scan.observations[-1].calibration)
+            if scan.observations[-1].calibration is not None:
+                print(scan.observations[-1].calibration.gains)

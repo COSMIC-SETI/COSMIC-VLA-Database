@@ -22,6 +22,7 @@ from typing_extensions import Annotated
 
 String_DatasetID = Annotated[str, 60]
 String_ScanID = Annotated[str, 100]
+String_AntennaName = Annotated[str, 4]
 String_JSON = str
 String_URI = Annotated[str, 255]
 String_Tuning = Annotated[str, 10]
@@ -31,6 +32,7 @@ class Base(DeclarativeBase):
     type_annotation_map = {
         String_DatasetID: String(60),
         String_ScanID: String(100),
+        String_AntennaName: String(4),
         String_JSON: Text,
         String_URI: String(255),
         String_Tuning: String(10),
@@ -41,7 +43,7 @@ class Base(DeclarativeBase):
         )
     }
 
-    def _get_str(self, verbosity: int) -> str:
+    def _get_str(self, verbosity: int, join_lines: bool = True) -> str:
         attr_strs = []
         for key, col in self.__table__.columns.items():
             if verbosity == 0:
@@ -106,6 +108,20 @@ class CosmicDB_ObservationConfiguration(Base):
         back_populates="configurations"
     )
 
+    antenna: Mapped[List["CosmicDB_ConfigurationAntenna"]] = relationship(
+        back_populates="configuration", cascade="all, delete-orphan"
+    )
+
+class CosmicDB_ConfigurationAntenna(Base):
+    __tablename__ = f"cosmic_configuration_antenna{TABLE_SUFFIX}"
+
+    configuration_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_configuration{TABLE_SUFFIX}.id"), primary_key=True)
+    name: Mapped[String_AntennaName] = mapped_column(primary_key=True)
+    
+    configuration: Mapped["CosmicDB_ObservationConfiguration"] = relationship(
+        back_populates="antenna"
+    )
+
 class CosmicDB_Observation(Base):
     __tablename__ = f"cosmic_observation{TABLE_SUFFIX}"
 
@@ -130,6 +146,10 @@ class CosmicDB_Observation(Base):
         back_populates="observation", cascade="all, delete-orphan"
     )
 
+    calibration: Mapped[Optional["CosmicDB_ObservationCalibration"]] = relationship(
+        back_populates="observation", cascade="all, delete-orphan"
+    )
+
 class CosmicDB_ObservationSubband(Base):
     __tablename__ = f"cosmic_observation_subband{TABLE_SUFFIX}"
 
@@ -138,6 +158,9 @@ class CosmicDB_ObservationSubband(Base):
     subband_offset: Mapped[int] = mapped_column(primary_key=True)
     percentage_recorded: Mapped[float]
     successful_participation: Mapped[bool]
+    
+    # node_uri: Mapped[String_URI]
+    # subband_length: Mapped[int]
 
     observation: Mapped["CosmicDB_Observation"] = relationship(
         back_populates="subbands"
@@ -149,6 +172,62 @@ class CosmicDB_ObservationSubband(Base):
 
     stamps: Mapped[List["CosmicDB_ObservationStamp"]] = relationship(
         back_populates="observation_subband", cascade="all, delete-orphan"
+    )
+
+    calibration_gains: Mapped[List["CosmicDB_CalibrationGain"]] = relationship(
+        back_populates="observation_subband"
+    )
+
+class CosmicDB_ObservationCalibration(Base):
+    __tablename__ = f"cosmic_observation_calibration{TABLE_SUFFIX}"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    observation_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation{TABLE_SUFFIX}.id"))
+
+    reference_antenna_name: Mapped[String_AntennaName]
+    overall_grade: Mapped[float]
+    file_uri: Mapped[String_URI]
+
+    observation : Mapped["CosmicDB_Observation"] = relationship(
+        back_populates="calibration"
+    )
+
+    gains: Mapped[List["CosmicDB_CalibrationGain"]] = relationship(
+        back_populates="calibration", cascade="all, delete-orphan"
+    )
+
+class CosmicDB_CalibrationGain(Base):
+    __tablename__ = f"cosmic_calibration_gain{TABLE_SUFFIX}"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    calibration_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_calibration{TABLE_SUFFIX}.id"))
+
+    antenna_name: Mapped[String_AntennaName]
+
+    observation_id: Mapped[int]
+    tuning: Mapped[String_Tuning]
+    subband_offset: Mapped[int]
+
+    subband_channel_index: Mapped[int]
+    channel_frequency: Mapped[float]
+    polarization: Mapped[String_Tuning]
+    gain_real: Mapped[float]
+    gain_imag: Mapped[float]
+    gain_grade: Mapped[float]
+
+    calibration: Mapped["CosmicDB_ObservationCalibration"] = relationship(
+        back_populates="gains"
+    )
+    
+    observation_subband: Mapped["CosmicDB_ObservationSubband"] = relationship(
+        back_populates="calibration_gains"
+    )
+
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ['observation_id', 'tuning', 'subband_offset'],
+            [f'cosmic_observation_subband{TABLE_SUFFIX}.observation_id', f'cosmic_observation_subband{TABLE_SUFFIX}.tuning', f'cosmic_observation_subband{TABLE_SUFFIX}.subband_offset'],
+        ),
     )
 
 class CosmicDB_ObservationBeam(Base):

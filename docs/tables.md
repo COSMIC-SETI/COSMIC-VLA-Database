@@ -31,6 +31,15 @@ criteria_json | TEXT |  |  |
 configuration_json | TEXT |  |  | 
 successful | BOOLEAN |  |  | 
 
+# Table `cosmic_configuration_antenna`
+
+Class [`cosmic_database.entities.CosmicDB_ConfigurationAntenna`](./classes.md#class-CosmicDB_ConfigurationAntenna)
+
+Column | Type | Primary Key | Foreign Key(s) | Nullable
+-|-|-|-|-
+configuration_id | INTEGER | X | [cosmic_observation_configuration](#table-cosmic_observation_configuration).id | 
+name | VARCHAR(4) | X |  | 
+
 # Table `cosmic_observation`
 
 Class [`cosmic_database.entities.CosmicDB_Observation`](./classes.md#class-CosmicDB_Observation)
@@ -55,6 +64,37 @@ tuning | VARCHAR(10) | X |  |
 subband_offset | INTEGER | X |  | 
 percentage_recorded | DOUBLE |  |  | 
 successful_participation | BOOLEAN |  |  | 
+
+# Table `cosmic_observation_calibration`
+
+Class [`cosmic_database.entities.CosmicDB_ObservationCalibration`](./classes.md#class-CosmicDB_ObservationCalibration)
+
+Column | Type | Primary Key | Foreign Key(s) | Nullable
+-|-|-|-|-
+id | INTEGER | X |  | 
+observation_id | INTEGER |  | [cosmic_observation](#table-cosmic_observation).id | 
+reference_antenna_name | VARCHAR(4) |  |  | 
+overall_grade | DOUBLE |  |  | 
+file_uri | VARCHAR(255) |  |  | 
+
+# Table `cosmic_calibration_gain`
+
+Class [`cosmic_database.entities.CosmicDB_CalibrationGain`](./classes.md#class-CosmicDB_CalibrationGain)
+
+Column | Type | Primary Key | Foreign Key(s) | Nullable
+-|-|-|-|-
+id | INTEGER | X |  | 
+calibration_id | INTEGER |  | [cosmic_observation_calibration](#table-cosmic_observation_calibration).id | 
+antenna_name | VARCHAR(4) |  |  | 
+observation_id | INTEGER |  | [cosmic_observation_subband](#table-cosmic_observation_subband).observation_id | 
+tuning | VARCHAR(10) |  | [cosmic_observation_subband](#table-cosmic_observation_subband).tuning | 
+subband_offset | INTEGER |  | [cosmic_observation_subband](#table-cosmic_observation_subband).subband_offset | 
+subband_channel_index | INTEGER |  |  | 
+channel_frequency | DOUBLE |  |  | 
+polarization | VARCHAR(10) |  |  | 
+gain_real | DOUBLE |  |  | 
+gain_imag | DOUBLE |  |  | 
+gain_grade | DOUBLE |  |  | 
 
 # Table `cosmic_observation_beam`
 

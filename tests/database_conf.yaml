@@ -1,7 +1,16 @@
-drivername: sqlite+pysqlite # database backend and driver name, such as postgresql+psycopg2
-username: null # username string
-password: null # password string
-host: null # string hostname
+# drivername: mysql+pymysql # sqlite+pysqlite # database backend and driver name, such as postgresql+psycopg2
+# drivername: sqlite+pysqlite # database backend and driver name, such as postgresql+psycopg2
+# username: null # username string
+# password: null # password string
+# host: null # string hostname
+# port: null # integer port number
+# database: ":memory:" # string database name
+# query: null # an immutable mapping representing the query string. contains strings for keys and either strings or tuples of strings for values.
+
+drivername: mysql+pymysql # sqlite+pysqlite # database backend and driver name, such as postgresql+psycopg2
+username: root # username string
+password: root # password string
+host: localhost # string hostname
 port: null # integer port number
-database: ":memory:" # string database name
+database: "test" # string database name
 query: null # an immutable mapping representing the query string. contains strings for keys and either strings or tuples of strings for values.

@@ -10,11 +10,18 @@
       "dataset_id": "23A-148.sb43249236",
       "time_start_unix": 1680675439.59397,
       "metadata_json": {"tstart": 60039.261608217595,"nbits": 8,"fenchan": 1024.0,"tnow": 60039.261608558474,"datasetid": "23A-148.sb43249236.eb43775398.60039.09749797454","src": "J1254+1141","scanno": 63,"nant": 27,"intents": {"RestFreqA0C0": "1420000000","COSMIC_OFF": "0","ProjectID": "43050177","schedBlockStart": "Wed Apr 05 02:20:21 UTC 2023","ObserverName": "Dr. Karin Sandstrom","SBID": "43249236","RestFrame": "LLLL","VelocityA0C0": "2404000","SBTYPE": "OBSERVER","FreqVelSwitch": "VVVV","ScanIntent": "CALIBRATE_AMPLI CALIBRATE_PHASE","ObsCode": "23A-148","ExecBlockID": "43775398","schedBlockEnd": "Wed Apr 05 06:19:41 UTC 2023","VLITE_OFF": "0"},"samplehz": 2048000000.0,"station": ["ea14","ea13","ea12","ea11","ea28","ea27","ea26","ea25","ea24","ea23","ea22","ea21","ea20","ea09","ea08","ea07","ea06","ea05","ea04","ea03","ea02","ea01","ea19","ea18","ea17","ea16","ea15"],"ifids": ["AC","BD"],"tbin": 1e-06,"fcents": [1499.863123536189,1500.0],"obsbwmhz": [1024.0,1024.0],"tend_unix": 1680675582.4499998,"subscanNo": 1,"tnow_unix": 1680675402.9794521,"sideband": [1,1],"dec_deg": 11.684970853892649,"scanid": "23A-148.sb43249236.eb43775398.60039.09749797454.63.1","tdiff": 179.49999952316284,"ra_deg": 193.65939833631927,"projid": "43050177","tstart_unix": 1680675402.9500003,"baseband": ["AC_8BIT","BD_8BIT"],"sslo": [987.863123536189,988.0],"tend_datettime": "2023-04-05 06:19:42.450000","tend": 60039.263685763886,"fenpol": 2,"mjd": "60039"}
+    },
+    {
+      "id": "23A-148.sb43249236.eb43775398.60039.09749797454.64.1",
+      "dataset_id": "23A-148.sb43249236",
+      "time_start_unix": 1680675559.59397,
+      "metadata_json": {"tstart": 60039.261608217595,"nbits": 8,"fenchan": 1024.0,"tnow": 60039.261608558474,"datasetid": "23A-148.sb43249236.eb43775398.60039.09749797454","src": "J1254+1141","scanno": 63,"nant": 27,"intents": {"RestFreqA0C0": "1420000000","COSMIC_OFF": "0","ProjectID": "43050177","schedBlockStart": "Wed Apr 05 02:20:21 UTC 2023","ObserverName": "Dr. Karin Sandstrom","SBID": "43249236","RestFrame": "LLLL","VelocityA0C0": "2404000","SBTYPE": "OBSERVER","FreqVelSwitch": "VVVV","ScanIntent": "CALIBRATE_AMPLI CALIBRATE_PHASE","ObsCode": "23A-148","ExecBlockID": "43775398","schedBlockEnd": "Wed Apr 05 06:19:41 UTC 2023","VLITE_OFF": "0"},"samplehz": 2048000000.0,"station": ["ea14","ea13","ea12","ea11","ea28","ea27","ea26","ea25","ea24","ea23","ea22","ea21","ea20","ea09","ea08","ea07","ea06","ea05","ea04","ea03","ea02","ea01","ea19","ea18","ea17","ea16","ea15"],"ifids": ["AC","BD"],"tbin": 1e-06,"fcents": [1499.863123536189,1500.0],"obsbwmhz": [1024.0,1024.0],"tend_unix": 1680675582.4499998,"subscanNo": 1,"tnow_unix": 1680675402.9794521,"sideband": [1,1],"dec_deg": 11.684970853892649,"scanid": "23A-148.sb43249236.eb43775398.60039.09749797454.63.1","tdiff": 179.49999952316284,"ra_deg": 193.65939833631927,"projid": "43050177","tstart_unix": 1680675402.9500003,"baseband": ["AC_8BIT","BD_8BIT"],"sslo": [987.863123536189,988.0],"tend_datettime": "2023-04-05 06:19:42.450000","tend": 60039.263685763886,"fenpol": 2,"mjd": "60039"}
     }
   ],
   "configurations": [
     {
-      "id": "23A-148.sb43249236.eb43775398.60039.09749797454.63.1",
+      "id": 1,
+      "scan_id": "23A-148.sb43249236.eb43775398.60039.09749797454.63.1",
       "time_start_unix": 1680675442.009397,
       "time_end_unix": 1680675466.009397,
       "configuration_json": {
@@ -83,7 +90,8 @@
       "successful": true
     },
     {
-      "id": "23A-148.sb43249236.eb43775398.60039.09749797454.63.1",
+      "id": 2,
+      "scan_id": "23A-148.sb43249236.eb43775398.60039.09749797454.63.1",
       "time_start_unix": 1680675442.009397,
       "time_end_unix": 1680675466.009397,
       "configuration_json": {
@@ -154,8 +162,9 @@
   ],
   "observations": [
     {
+      "id": 1,
       "scan_id": "23A-148.sb43249236.eb43775398.60039.09749797454.63.1",
-      "configuration_id": 2,
+      "configuration_id": 1,
       "time_start_unix": 1680675476.009397,
       "time_end_unix": 1680675540.009397,
       "criteria_json": {
@@ -167,7 +176,22 @@
       }
     },
     {
-      "scan_id": "23A-148.sb43249236.eb43775398.60039.09749797454.63.1",
+      "id": 2,
+      "scan_id": "23A-148.sb43249236.eb43775398.60039.09749797454.64.1",
+      "configuration_id": 2,
+      "time_start_unix": 1680678476.009397,
+      "time_end_unix": 1680678540.009397,
+      "criteria_json": {
+        "META_flagAnt.on_source.includesAntenna": {
+          "number": 32,
+          "criterion_minimum": 14
+        },
+        "META.tend_unix.-now>": 10
+      }
+    },
+    {
+      "id": 3,
+      "scan_id": "23A-148.sb43249236.eb43775398.60039.09749797454.64.1",
       "configuration_id": 2,
       "time_start_unix": 1680678476.009397,
       "time_end_unix": 1680678540.009397,
@@ -180,39 +204,162 @@
       }
     }
   ],
+  "configuration_antenna": [
+    {
+      "configuration_id": 1,
+      "name": "ea01"
+    },
+    {
+      "configuration_id": 1,
+      "name": "ea02"
+    },
+    {
+      "configuration_id": 1,
+      "name": "ea03"
+    },
+    {
+      "configuration_id": 2,
+      "name": "ea01"
+    },
+    {
+      "configuration_id": 2,
+      "name": "ea02"
+    },
+    {
+      "configuration_id": 2,
+      "name": "ea04"
+    }
+  ],
   "observation_subbands": [
     {
       "scan_id": "23A-148.sb43249236.eb43775398.60039.09749797454.63.1",
       "tuning": "AC",
       "subband_offset": 32,
       "percentage_recorded": 100.0,
-      "successful_participation": true
+      "successful_participation": true,
+      "node_uri": "cosmic-gpu-2.0",
+      "subband_length": 32
     },
     {
       "scan_id": "23A-148.sb43249236.eb43775398.60039.09749797454.63.1",
       "tuning": "BD",
       "subband_offset": 32,
       "percentage_recorded": 99.9,
-      "successful_participation": true
+      "successful_participation": true,
+      "node_uri": "cosmic-gpu-2.1",
+      "subband_length": 32
     },
     {
-      "scan_id": "23A-148.sb43249236.eb43775398.60039.09749797454.63.1",
+      "scan_id": "23A-148.sb43249236.eb43775398.60039.09749797454.64.1",
+      "tuning": "AC",
+      "subband_offset": 32,
+      "percentage_recorded": 100.0,
+      "successful_participation": true,
+      "node_uri": "cosmic-gpu-2.0",
+      "subband_length": 32
+    },
+    {
+      "scan_id": "23A-148.sb43249236.eb43775398.60039.09749797454.64.1",
+      "tuning": "BD",
+      "subband_offset": 32,
+      "percentage_recorded": 99.9,
+      "successful_participation": true,
+      "node_uri": "cosmic-gpu-2.1",
+      "subband_length": 32
+    },
+    {
+      "scan_id": "23A-148.sb43249236.eb43775398.60039.09749797454.64.1",
       "tuning": "AC",
       "subband_offset": 64,
       "percentage_recorded": 100.0,
-      "successful_participation": true
+      "successful_participation": true,
+      "node_uri": "cosmic-gpu-2.0",
+      "subband_length": 32
     },
     {
-      "scan_id": "23A-148.sb43249236.eb43775398.60039.09749797454.63.1",
+      "scan_id": "23A-148.sb43249236.eb43775398.60039.09749797454.64.1",
       "tuning": "BD",
       "subband_offset": 64,
       "percentage_recorded": 5.0,
-      "successful_participation": false
+      "successful_participation": false,
+      "node_uri": "cosmic-gpu-2.1",
+      "subband_length": 32
+    }
+  ],
+  "observation_calibrations": [
+    {
+      "id": 1,
+      "observation_id": 1,
+      "reference_antenna_name": "ea01",
+      "overall_grade": 0.98,
+      "file_uri": "/mnt/storage/data0/calib/1/*"
+    }
+  ],
+  "calibration_gains": [
+    {
+      "calibration_id": 1,
+      "antenna_name": "ea01",
+
+      "observation_id": 1,      
+      "tuning": "AC",
+      "subband_offset": 32,
+
+      "polarization": "x",
+      "subband_channel_index": 0,
+      "channel_frequency": 6420000000,
+      "gain_real": 1.0,
+      "gain_imag": 0.0,
+      "gain_grade": 1.0
+    },
+    {
+      "calibration_id": 1,
+      "antenna_name": "ea01",
+
+      "observation_id": 1,      
+      "tuning": "AC",
+      "subband_offset": 32,
+
+      "polarization": "y",
+      "subband_channel_index": 0,
+      "channel_frequency": 6420000000,
+      "gain_real": 1.0,
+      "gain_imag": 0.0,
+      "gain_grade": 1.0
+    },
+    {
+      "calibration_id": 1,
+      "antenna_name": "ea02",
+
+      "observation_id": 1,      
+      "tuning": "AC",
+      "subband_offset": 32,
+
+      "polarization": "x",
+      "subband_channel_index": 0,
+      "channel_frequency": 6420000000,
+      "gain_real": 1.0,
+      "gain_imag": 0.0,
+      "gain_grade": 0.98
+    },
+    {
+      "calibration_id": 1,
+      "antenna_name": "ea03",
+
+      "observation_id": 1,      
+      "tuning": "AC",
+      "subband_offset": 32,
+
+      "polarization": "x",
+      "subband_channel_index": 0,
+      "channel_frequency": 6420000000,
+      "gain_real": 1.0,
+      "gain_imag": 0.0,
+      "gain_grade": 0.96
     }
   ],
   "observation_beams": [
     {
-      "observation_id": 1,
+      "observation_id": 3,
       "ra_radians": 45.0,
       "dec_radians": 45.0,
       "source": "beam0",
@@ -220,10 +367,10 @@
       "time_end_unix": 1680675484.009397 
     },
     {
-      "scan_id": "23A-148.sb43249236.eb43775398.60039.09749797454.63.1",
+      "scan_id": "23A-148.sb43249236.eb43775398.60039.09749797454.64.1",
       "ra_radians": 45.0,
       "dec_radians": 45.0,
-      "source": "beam0",
+      "source": "incoherent",
       "time_start_unix": 1680675484.009397,
       "time_end_unix": 1680675492.009397 
     }
@@ -231,7 +378,7 @@
   "observation_hits": [
     {
       "beam_id": 1,
-      "observation_id": 2,
+      "observation_id": 3,
       "tuning": "BD",
       "subband_offset": 32,
       "file_uri": "N/A",
@@ -261,7 +408,7 @@
     },
     {
       "beam_id": 1,
-      "observation_id": 2,
+      "observation_id": 3,
       "tuning": "AC",
       "subband_offset": 32,
       "file_uri": "N/A",
@@ -292,7 +439,7 @@
   ],
   "observation_stamps": [
     {
-      "observation_id": 2,
+      "observation_id": 3,
       "tuning": "AC",
       "subband_offset": 32,
       "file_uri": "N/A",
@@ -313,7 +460,7 @@
       "fft_size": 0,
       "start_channel": 0,
       "schan": 0,
-      "obsid": "23A-148.sb43249236.eb43775398.60039.09749797454.63.1",
+      "obsid": "23A-148.sb43249236.eb43775398.60039.09749797454.64.1",
       "signal_frequency": 0,
       "signal_index": 0,
       "signal_drift_steps": 0,

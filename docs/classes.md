@@ -1,3 +1,5 @@
+![Class Diagram](./classes.png)
+
 # Class `CosmicDB_Dataset`
 
 Table [`cosmic_dataset`](./tables.md#table-cosmic_dataset)
@@ -6,7 +8,6 @@ Attribute | Type
 -|-
 id | `str`
 scans | list([CosmicDB_Scan](#class-cosmicdb_scan))
-
 # Class `CosmicDB_Scan`
 
 Table [`cosmic_scan`](./tables.md#table-cosmic_scan)
@@ -20,7 +21,6 @@ start | `datetime`
 dataset | [CosmicDB_Dataset](#class-cosmicdb_dataset)
 configurations | list([CosmicDB_ObservationConfiguration](#class-cosmicdb_observationconfiguration))
 observations | list([CosmicDB_Observation](#class-cosmicdb_observation))
-
 # Class `CosmicDB_ObservationConfiguration`
 
 Table [`cosmic_observation_configuration`](./tables.md#table-cosmic_observation_configuration)
@@ -35,7 +35,16 @@ scan_id | `str`
 start | `datetime`
 successful | `bool`
 scan | [CosmicDB_Scan](#class-cosmicdb_scan)
+antenna | list([CosmicDB_ConfigurationAntenna](#class-cosmicdb_configurationantenna))
+# Class `CosmicDB_ConfigurationAntenna`
 
+Table [`cosmic_configuration_antenna`](./tables.md#table-cosmic_configuration_antenna)
+
+Attribute | Type
+-|-
+configuration_id | `int`
+name | `str`
+configuration | [CosmicDB_ObservationConfiguration](#class-cosmicdb_observationconfiguration)
 # Class `CosmicDB_Observation`
 
 Table [`cosmic_observation`](./tables.md#table-cosmic_observation)
@@ -52,7 +61,7 @@ configuration | [CosmicDB_ObservationConfiguration](#class-cosmicdb_observationc
 scan | [CosmicDB_Scan](#class-cosmicdb_scan)
 subbands | list([CosmicDB_ObservationSubband](#class-cosmicdb_observationsubband))
 beams | list([CosmicDB_ObservationBeam](#class-cosmicdb_observationbeam))
-
+calibration | [CosmicDB_ObservationCalibration](#class-cosmicdb_observationcalibration)
 # Class `CosmicDB_ObservationSubband`
 
 Table [`cosmic_observation_subband`](./tables.md#table-cosmic_observation_subband)
@@ -67,7 +76,40 @@ tuning | `str`
 observation | [CosmicDB_Observation](#class-cosmicdb_observation)
 hits | list([CosmicDB_ObservationHit](#class-cosmicdb_observationhit))
 stamps | list([CosmicDB_ObservationStamp](#class-cosmicdb_observationstamp))
+calibration_gains | list([CosmicDB_CalibrationGain](#class-cosmicdb_calibrationgain))
+# Class `CosmicDB_ObservationCalibration`
 
+Table [`cosmic_observation_calibration`](./tables.md#table-cosmic_observation_calibration)
+
+Attribute | Type
+-|-
+file_uri | `str`
+id | `int`
+observation_id | `int`
+overall_grade | `float`
+reference_antenna_name | `str`
+observation | [CosmicDB_Observation](#class-cosmicdb_observation)
+gains | list([CosmicDB_CalibrationGain](#class-cosmicdb_calibrationgain))
+# Class `CosmicDB_CalibrationGain`
+
+Table [`cosmic_calibration_gain`](./tables.md#table-cosmic_calibration_gain)
+
+Attribute | Type
+-|-
+antenna_name | `str`
+calibration_id | `int`
+channel_frequency | `float`
+gain_grade | `float`
+gain_imag | `float`
+gain_real | `float`
+id | `int`
+observation_id | `int`
+polarization | `str`
+subband_channel_index | `int`
+subband_offset | `int`
+tuning | `str`
+calibration | [CosmicDB_ObservationCalibration](#class-cosmicdb_observationcalibration)
+observation_subband | [CosmicDB_ObservationSubband](#class-cosmicdb_observationsubband)
 # Class `CosmicDB_ObservationBeam`
 
 Table [`cosmic_observation_beam`](./tables.md#table-cosmic_observation_beam)
@@ -83,7 +125,6 @@ source | `str`
 start | `datetime`
 observation | [CosmicDB_Observation](#class-cosmicdb_observation)
 hits | list([CosmicDB_ObservationHit](#class-cosmicdb_observationhit))
-
 # Class `CosmicDB_ObservationHit`
 
 Table [`cosmic_observation_hit`](./tables.md#table-cosmic_observation_hit)
@@ -121,7 +162,6 @@ tstart | `float`
 tuning | `str`
 beam | [CosmicDB_ObservationBeam](#class-cosmicdb_observationbeam)
 observation_subband | [CosmicDB_ObservationSubband](#class-cosmicdb_observationsubband)
-
 # Class `CosmicDB_ObservationStamp`
 
 Table [`cosmic_observation_stamp`](./tables.md#table-cosmic_observation_stamp)
