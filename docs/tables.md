@@ -74,6 +74,7 @@ Column | Type | Primary Key | Foreign Key(s) | Nullable
 id | INTEGER | X |  | 
 observation_id | INTEGER |  | [cosmic_observation](#table-cosmic_observation).id | 
 reference_antenna_name | VARCHAR(4) |  |  | 
+flagged_percentage | DOUBLE |  |  | 
 overall_grade | DOUBLE |  |  | 
 file_uri | VARCHAR(255) |  |  | 
 

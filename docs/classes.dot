@@ -80,6 +80,7 @@ CosmicDB_ObservationCalibration:gains -> CosmicDB_CalibrationGain:class;
 CosmicDB_ObservationCalibration [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
 	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_ObservationCalibration</font></td></tr>
 	<tr><td>file_uri</td></tr>
+	<tr><td>flagged_percentage</td></tr>
 	<tr><td>id</td></tr>
 	<tr><td>observation_id</td></tr>
 	<tr><td>overall_grade</td></tr>

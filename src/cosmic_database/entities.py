@@ -185,6 +185,7 @@ class CosmicDB_ObservationCalibration(Base):
     observation_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation{TABLE_SUFFIX}.id"))
 
     reference_antenna_name: Mapped[String_AntennaName]
+    flagged_percentage: Mapped[float]
     overall_grade: Mapped[float]
     file_uri: Mapped[String_URI]
 

@@ -292,6 +292,7 @@
       "observation_id": 1,
       "reference_antenna_name": "ea01",
       "overall_grade": 0.98,
+      "flagged_percentage": 0.0,
       "file_uri": "/mnt/storage/data0/calib/1/*"
     }
   ],

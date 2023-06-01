@@ -84,6 +84,7 @@ Table [`cosmic_observation_calibration`](./tables.md#table-cosmic_observation_ca
 Attribute | Type
 -|-
 file_uri | `str`
+flagged_percentage | `float`
 id | `int`
 observation_id | `int`
 overall_grade | `float`
