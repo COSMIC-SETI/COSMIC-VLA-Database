@@ -221,6 +221,13 @@ def cli_inspect():
         help=f"Order the selected instances. 'direction' is an element of {order_operations.keys()}."
     )
     parser.add_argument(
+        "-v",
+        "--verbosity",
+        action="count",
+        default=0,
+        help="Increase the verbosity of the entity strings."
+    )
+    parser.add_argument(
         "-S",
         "--select",
         action="append",
@@ -347,4 +354,4 @@ def cli_inspect():
             )
             scalar_num_str_len = len(str(len(scalars)))
             for scalar_enum, scalar in enumerate(scalars):
-                print(f"#{str(scalar_enum+1).ljust(scalar_num_str_len)} {scalar}")
+                print(f"#{str(scalar_enum+1).ljust(scalar_num_str_len)} {scalar._get_str(args.verbosity)}")

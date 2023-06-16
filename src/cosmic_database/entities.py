@@ -13,6 +13,7 @@ from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
+from sqlalchemy.orm import RelationshipDirection
 
 from sqlalchemy.dialects import mysql
 
@@ -43,20 +44,67 @@ class Base(DeclarativeBase):
         )
     }
 
-    def _get_str(self, verbosity: int, join_lines: bool = True) -> str:
+    def _get_str(
+        self,
+        verbosity: int = 0,
+        join_lines: bool = True,
+        include_limitless_strings: bool = False,
+        indentation: int = 0,
+        object_name: str = None
+    ) -> str:
         attr_strs = []
         for key, col in self.__table__.columns.items():
-            if verbosity == 0:
-                if type(col.type) == Text:
-                    continue
+            if type(col.type) == Text and not include_limitless_strings:
+                continue
 
             attr_strs.append(f'{key}={getattr(self, key)}')
 
-        retstr = f"{self.__class__.__name__}({', '.join(attr_strs)})"
-        if verbosity == 0:
-            return retstr
+        indentation_str = "\t"*indentation
+        primarystr = f"{indentation_str}{'' if object_name is None else f'{object_name}: '}{self.__class__.__name__}({', '.join(attr_strs)})"
+        verbosity -= 1
+        if verbosity <= 0:
+            if not join_lines:
+                return [primarystr]
+            return primarystr
 
-        return retstr
+        attr_strs = [primarystr]
+        indentation_str += "\t"
+        for attr_name, relationship in self.__mapper__.relationships.items():
+            if relationship.direction == RelationshipDirection.MANYTOONE:
+                continue
+
+            attr = getattr(self, attr_name)
+            if attr is None:
+                attr_strs.append(f"{indentation_str}{attr_name}: {attr}")
+            elif relationship.collection_class is None:
+                attr_strs += attr._get_str(
+                    verbosity,
+                    join_lines=False,
+                    include_limitless_strings=include_limitless_strings,
+                    indentation=indentation+1,
+                    object_name=attr_name
+                )
+            else:
+                if relationship.collection_class == list:
+                    attr_strs.append(f"{indentation_str}{attr_name}: [")
+                    if len(attr) == 0:
+                        attr_strs[-1] += "]"
+                        continue
+
+                    attr_enum_str_len = len(str(len(attr)))
+                    for attr_idx, attr_ in enumerate(attr):
+                        attr_strs += attr_._get_str(
+                            verbosity,
+                            join_lines=False,
+                            include_limitless_strings=include_limitless_strings,
+                            indentation=indentation+2,
+                            object_name=f"#{str(attr_idx+1).ljust(attr_enum_str_len)}"
+                        )
+                    attr_strs.append(f"{indentation_str}]")
+                else:
+                    print("\t", attr_name, relationship.collection_class)
+
+        return "\n".join(attr_strs) if join_lines else attr_strs
 
 
     def __repr__(self) -> str:
