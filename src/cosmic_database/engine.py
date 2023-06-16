@@ -220,6 +220,15 @@ def cli_inspect():
         default=None,
         help=f"Order the selected instances. 'direction' is an element of {order_operations.keys()}."
     )
+    parser.add_argument(
+        "-S",
+        "--select",
+        action="append",
+        type=str,
+        metavar="field",
+        default=None,
+        help=f"Specify a field selection."
+    )
 
     args = parser.parse_args()
 
@@ -269,6 +278,16 @@ def cli_inspect():
         for col in args.entity.__table__.columns
     }
 
+    selection = [args.entity]
+    if args.select is not None:
+        selection = []
+        for field in args.select:
+            if not hasattr(args.entity, field):
+                print(f"Selected field '{field}' is not found in '{entity_name}'.")
+            selection.append(
+                getattr(args.entity, field)
+            )
+
     criteria = []
     if args.where_criteria is not None:
         for criterion in args.where_criteria:
@@ -306,28 +325,26 @@ def cli_inspect():
     engine = CosmicDB_Engine(engine_conf_yaml_filepath=args.cosmicdb_engine_configuration)
 
     sql_selection = (sqlalchemy
-        .select(args.entity)
+        .select(*selection)
         .where(*criteria)
         .order_by(ordering)
         .limit(args.limit)
     )
 
-    if args.pandas_output_filepath is not None:
+    if args.pandas_output_filepath is not None or args.select is not None:
         df = pandas.read_sql_query(
             sql = sql_selection,
             con = engine.engine
         )
         print(df)
-        print(f"Output: {args.pandas_output_filepath}")
-        df.to_pickle(args.pandas_output_filepath)
+        if args.pandas_output_filepath is not None:
+            print(f"Output: {args.pandas_output_filepath}")
+            df.to_pickle(args.pandas_output_filepath)
     else:
         with engine.session() as session:
-            scalars = [
-                scalar
-                for scalar_enum, scalar in enumerate(
-                    session.scalars(sql_selection)
-                )
-            ]
+            scalars = list(
+                session.scalars(sql_selection)
+            )
             scalar_num_str_len = len(str(len(scalars)))
             for scalar_enum, scalar in enumerate(scalars):
                 print(f"#{str(scalar_enum+1).ljust(scalar_num_str_len)} {scalar}")
