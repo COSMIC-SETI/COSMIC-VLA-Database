@@ -1,5 +1,6 @@
 import json
 import yaml
+from datetime import datetime
 
 import pandas
 import sqlalchemy
@@ -139,25 +140,133 @@ def cli_create_engine_url():
     print(CosmicDB_Engine._create_url(args.engine_configuration))
 
 
+criterion_operations = {
+    "eq": lambda lhs, rhs: lhs == rhs,
+    "gt": lambda lhs, rhs: lhs > rhs,
+    "geq": lambda lhs, rhs: lhs >= rhs,
+    "lt": lambda lhs, rhs: lhs < rhs,
+    "leq": lambda lhs, rhs: lhs <= rhs,
+    "neq": lambda lhs, rhs: lhs != rhs,
+    "in": lambda lhs, rhs: lhs.in_(rhs),
+}
+
+order_operations = {
+    "asc": lambda col: col.asc(),
+    "desc": lambda col: col.desc(),
+}
+
+value_conversions = {
+    datetime: lambda val: datetime.fromisoformat(val),
+    int: lambda val: int(val),
+    float: lambda val: float(val),
+    str: lambda val: val,
+}
+
+def cli_replace_fieldnames_with_column_instances(
+    entity_class,
+    fieldnames: list,
+    element_getter = lambda element: element,
+    element_setter = lambda element, replacement: replacement
+):
+    entity_col_map = {
+        col.name: col
+        for col in entity_class.__table__.columns
+    }
+
+    ret_list = []
+    for el_ in fieldnames:
+        el = element_getter(el_)
+
+        try:
+            replacement = entity_col_map[el]
+        except KeyError as err:
+            raise KeyError(f"{err.args[0]} not found as a column in the table ('{entity_class.__table__}') for {entity_class}.")
+        ret_list.append(element_setter(el_, replacement))
+
+    return ret_list
+
+
+def cli_add_where_argument(parser):
+    parser.add_argument(
+        "-w",
+        "--where-criteria",
+        type=str,
+        nargs=3,
+        action="append",
+        metavar=("field", "comparison", "value[;value;...]"),
+        help=f"""
+            Instance selection field criterion.
+            The comparison value is an element of {', '.join(criterion_operations.keys())}.
+            Only the 'in' operator supports multiple values, which are semi-colon delimited.
+            DateTime values must be given as ISO formatted strings.
+        """,
+    )
+
+def cli_parse_where_criterion(operand, operator: str, value:str):
+    if operator not in criterion_operations:
+        raise ValueError(
+            f"Specified comparison operation '{operator}' is not known."
+        )
+
+    value_type = type(operand)
+    if isinstance(operand, sqlalchemy.sql.schema.Column):
+        value_type = operand.type.python_type
+    elif isinstance(operand, list):
+        raise ValueError("Where criterion for a list is not supported.")
+
+    if operator == "in":
+        value = list(
+            map(
+                value_conversions[value_type],
+                value.split(';')
+            )
+        )
+    else:
+        value = value_conversions[value_type](value)
+    return criterion_operations[operator](operand, value)
+
+def cli_parse_where_arguments(entity_class, where_criteria: list):
+    if where_criteria is None:
+        return []
+
+    return [
+        cli_parse_where_criterion(column, comp, val)
+        for column, comp, val in cli_replace_fieldnames_with_column_instances(
+            entity_class,
+            where_criteria,
+            element_getter=lambda el: el[0],
+            element_setter=lambda el, replacement: (replacement, *el[1:])
+        )
+    ]
+
+def cli_add_orderby_argument(parser):
+    parser.add_argument(
+        "-o",
+        "--orderby",
+        nargs=2,
+        type=str,
+        metavar=("field", "direction"),
+        default=None,
+        help=f"Order the selected instances. 'direction' is an element of {order_operations.keys()}."
+    )
+
+def cli_parse_orderby_argument(entity_class, orderby):
+    if orderby is None:
+        return None
+    field, direction = orderby
+    if direction not in order_operations:
+        raise ValueError(f"Specified order-by direction '{direction}' is not known.")
+    return order_operations[direction](
+        cli_replace_fieldnames_with_column_instances(
+            entity_class,
+            [field]
+        )[0]
+    )
+
 def cli_inspect():
     import argparse
-    from datetime import datetime
 
     from cosmic_database import entities
-
-    criterion_operations = {
-        "eq": lambda lhs, rhs: lhs == rhs,
-        "gt": lambda lhs, rhs: lhs > rhs,
-        "geq": lambda lhs, rhs: lhs >= rhs,
-        "lt": lambda lhs, rhs: lhs < rhs,
-        "leq": lambda lhs, rhs: lhs <= rhs,
-        "neq": lambda lhs, rhs: lhs != rhs,
-        "in": lambda lhs, rhs: lhs.in_(rhs),
-    }
-    order_operations = {
-        "asc": lambda col: col.asc(),
-        "desc": lambda col: col.desc(),
-    }
 
     parser = argparse.ArgumentParser(
         description="Minor interface to expose COSMIC database entities.",
@@ -184,20 +293,7 @@ def cli_inspect():
         ],
         help="The entity to view.",
     )
-    parser.add_argument(
-        "-w",
-        "--where-criteria",
-        type=str,
-        nargs=3,
-        action="append",
-        metavar=("field", "comparison", "value[;value;...]"),
-        help=f"""
-            Instance selection field criterion.
-            The comparison value is an element of {', '.join(criterion_operations.keys())}.
-            Only the 'in' operator supports multiple values, which are semi-colon delimited.
-            DateTime values must be given as ISO formatted strings.
-        """,
-    )
+    cli_add_where_argument(parser)
     parser.add_argument(
         "-s",
         "--entity-schema",
@@ -211,15 +307,7 @@ def cli_inspect():
         default=None,
         help="Limit the number of instances selected."
     )
-    parser.add_argument(
-        "-o",
-        "--orderby",
-        nargs=2,
-        type=str,
-        metavar=("field", "direction"),
-        default=None,
-        help=f"Order the selected instances. 'direction' is an element of {order_operations.keys()}."
-    )
+    cli_add_orderby_argument(parser)    
     parser.add_argument(
         "-v",
         "--verbosity",
@@ -273,18 +361,6 @@ def cli_inspect():
 
         exit(0)
 
-    value_conversions = {
-        datetime: lambda val: datetime.fromisoformat(val),
-        int: lambda val: int(val),
-        float: lambda val: float(val),
-        str: lambda val: val,
-    }
-
-    entity_col_map = {
-        col.name: col
-        for col in args.entity.__table__.columns
-    }
-
     selection = [args.entity]
     if args.select is not None:
         selection = []
@@ -295,39 +371,8 @@ def cli_inspect():
                 getattr(args.entity, field)
             )
 
-    criteria = []
-    if args.where_criteria is not None:
-        for criterion in args.where_criteria:
-            field, comp, val = criterion
-            if field not in entity_col_map:
-                print(f"Specified field '{field}' is not found in '{entity_name}'.\n\t{criterion}")
-                exit(1)
-            if comp not in criterion_operations:
-                print(f"Specified comparison operation '{comp}' is not known.\n\t{criterion}")
-                exit(1)
-            
-            col = entity_col_map[field]
-            if comp == "in":
-                value = list(
-                    map(
-                        value_conversions[col.type.python_type],
-                        val.split(';')
-                    )
-                )
-            else:
-                value = value_conversions[col.type.python_type](val)
-            criteria.append(criterion_operations[comp](col, value))
-
-    ordering = None
-    if args.orderby is not None:
-        field, direction = args.orderby
-        if field not in entity_col_map:
-            print(f"Specified field '{field}' is not found in '{entity_name}'.\n\t{args.orderby}")
-            exit(1)
-        if direction not in order_operations:
-            print(f"Specified direction '{direction}' is not known.\n\t{args.orderby}")
-            exit(1)
-        ordering = order_operations[direction](entity_col_map[field])
+    criteria = cli_parse_where_arguments(args.entity, args.where_criteria)
+    ordering = cli_parse_orderby_argument(args.entity, args.orderby)
 
     engine = CosmicDB_Engine(engine_conf_yaml_filepath=args.cosmicdb_engine_configuration)
 
