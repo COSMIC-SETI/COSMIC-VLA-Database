@@ -148,6 +148,14 @@ criterion_operations = {
     "leq": lambda lhs, rhs: lhs <= rhs,
     "neq": lambda lhs, rhs: lhs != rhs,
     "in": lambda lhs, rhs: lhs.in_(rhs),
+    "like": lambda lhs, rhs: lhs.like(rhs),
+    "ilike": lambda lhs, rhs: lhs.ilike(rhs),
+    "contains": lambda lhs, rhs: lhs.contains(rhs),
+    "icontains": lambda lhs, rhs: lhs.icontains(rhs),
+    "startswith": lambda lhs, rhs: lhs.startswith(rhs),
+    "istartswith": lambda lhs, rhs: lhs.istartswith(rhs),
+    "endswith": lambda lhs, rhs: lhs.endswith(rhs),
+    "iendswith": lambda lhs, rhs: lhs.iendswith(rhs),
 }
 
 order_operations = {
