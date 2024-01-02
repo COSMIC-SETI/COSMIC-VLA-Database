@@ -230,7 +230,6 @@ class CosmicDB_ObservationCalibration(Base):
     observation_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation{TABLE_SUFFIX}.id"))
 
     reference_antenna_name: Mapped[String_AntennaName]
-    flagged_percentage: Mapped[float]
     overall_grade: Mapped[float]
     file_uri: Mapped[String_URI]
 
@@ -238,29 +237,23 @@ class CosmicDB_ObservationCalibration(Base):
         back_populates="calibration"
     )
 
-    gains: Mapped[List["CosmicDB_CalibrationGain"]] = relationship(
+    antenna: Mapped[List["CosmicDB_AntennaCalibration"]] = relationship(
         back_populates="calibration", cascade="all, delete-orphan"
     )
 
-class CosmicDB_CalibrationGain(Base):
-    __tablename__ = f"cosmic_calibration_gain{TABLE_SUFFIX}"
+class CosmicDB_AntennaCalibration(Base):
+    __tablename__ = f"cosmic_calibration_antenna_result{TABLE_SUFFIX}"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    calibration_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_calibration{TABLE_SUFFIX}.id"))
+    calibration_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_calibration{TABLE_SUFFIX}.id"), primary_key=True)
+    antenna_name: Mapped[String_AntennaName] = mapped_column(primary_key=True)
+    tuning: Mapped[String_Tuning] = mapped_column(primary_key=True)
 
-    antenna_name: Mapped[String_AntennaName]
-
-    tuning: Mapped[String_Tuning]
-
-    channel_frequency: Mapped[float]
-    polarization: Mapped[String_Tuning]
-    gain_real: Mapped[float]
-    gain_imag: Mapped[float]
+    coarse_channels_processed: Mapped[int]
+    coarse_channels_flagged_rfi: Mapped[int]
 
     calibration: Mapped["CosmicDB_ObservationCalibration"] = relationship(
-        back_populates="gains"
+        back_populates="antenna"
     )
-
 
 class CosmicDB_ObservationBeam(Base):
     __tablename__ = f"cosmic_observation_beam{TABLE_SUFFIX}"
@@ -308,7 +301,7 @@ class CosmicDB_ObservationHit(Base):
     source_name: Mapped[String_SourceName]
     fch1_mhz: Mapped[float]
     foff_mhz: Mapped[float]
-    tstart: Mapped[float]
+    tstart: Mapped[float] = mapped_column(index=True)
     tsamp: Mapped[float]
     ra_hours: Mapped[float]
     dec_degrees: Mapped[float]
