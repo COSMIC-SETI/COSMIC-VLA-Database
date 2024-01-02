@@ -27,6 +27,7 @@ class CosmicDB_Engine:
         if engine_url is None:
             raise ValueError("No value provided for the engine URL.")
 
+        kwargs["pool_recycle"] = kwargs.get("pool_recycle", 3600)
         self.engine = sqlalchemy.create_engine(
             engine_url,
             **kwargs
