@@ -1,8 +1,6 @@
-import json
 import yaml
 from datetime import datetime
 
-import pandas
 import sqlalchemy
 
 from cosmic_database import entities
@@ -172,23 +170,37 @@ value_conversions = {
 }
 
 def cli_replace_fieldnames_with_column_instances(
-    entity_class,
+    entity_class_map,
     fieldnames: list,
     element_getter = lambda element: element,
     element_setter = lambda element, replacement: replacement
 ):
     entity_col_map = {
-        col.name: col
-        for col in entity_class.__table__.columns
+        entity: {
+            col.name: col
+            for col in entity_class.__table__.columns
+
+        }
+        for entity, entity_class in entity_class_map.items()
     }
 
     ret_list = []
     for el_ in fieldnames:
         el = element_getter(el_)
+        entity = None
+
+        if "." in el:
+            relation, relation_el = el.split(".", maxsplit=1)
+            if relation in entity_col_map:
+                entity = relation
+                el = relation_el
+
+        col_map = entity_col_map[entity]
 
         try:
-            replacement = entity_col_map[el]
+            replacement = col_map[el]
         except KeyError as err:
+            entity_class = entity_class_map[entity]
             raise KeyError(f"{err.args[0]} not found as a column in the table ('{entity_class.__table__}') for {entity_class}.")
         ret_list.append(element_setter(el_, replacement))
 
@@ -234,14 +246,14 @@ def cli_parse_where_criterion(operand, operator: str, value:str):
         value = value_conversions[value_type](value)
     return criterion_operations[operator](operand, value)
 
-def cli_parse_where_arguments(entity_class, where_criteria: list):
+def cli_parse_where_arguments(entity_class_map, where_criteria: list):
     if where_criteria is None:
         return []
 
     return [
         cli_parse_where_criterion(column, comp, val)
         for column, comp, val in cli_replace_fieldnames_with_column_instances(
-            entity_class,
+            entity_class_map,
             where_criteria,
             element_getter=lambda el: el[0],
             element_setter=lambda el, replacement: (replacement, *el[1:])
@@ -259,7 +271,7 @@ def cli_add_orderby_argument(parser):
         help=f"Order the selected instances. 'direction' is an element of {order_operations.keys()}."
     )
 
-def cli_parse_orderby_argument(entity_class, orderby):
+def cli_parse_orderby_argument(entity_class_map, orderby):
     if orderby is None:
         return None
     field, direction = orderby
@@ -267,7 +279,7 @@ def cli_parse_orderby_argument(entity_class, orderby):
         raise ValueError(f"Specified order-by direction '{direction}' is not known.")
     return order_operations[direction](
         cli_replace_fieldnames_with_column_instances(
-            entity_class,
+            entity_class_map,
             [field]
         )[0]
     )
@@ -304,7 +316,7 @@ def cli_inspect():
     )
     cli_add_where_argument(parser)
     parser.add_argument(
-        "-s",
+        "-S",
         "--entity-schema",
         action="store_true",
         help="Show the structure of the entity instead of an instance."
@@ -325,13 +337,22 @@ def cli_inspect():
         help="Increase the verbosity of the entity strings."
     )
     parser.add_argument(
-        "-S",
+        "-s",
         "--select",
         action="append",
         type=str,
         metavar="field",
         default=None,
         help=f"Specify a field selection."
+    )
+    parser.add_argument(
+        "-j",
+        "--join",
+        action="append",
+        type=str,
+        metavar="relationship",
+        default=None,
+        help=f"Specify a relationship to join on."
     )
 
     args = parser.parse_args()
@@ -370,42 +391,80 @@ def cli_inspect():
 
         exit(0)
 
-    selection = [args.entity]
+    """
+    The default entity is keyed under `None`. All relations are keyed
+    under the names of the relationship-field for the default entity.
+    """
+    entity_class_map = {
+        None: args.entity
+    }
+    join = []
+    if args.join is not None:
+        for relation in args.join:
+            if relation not in args.entity.__mapper__.relationships:
+                raise ValueError(f"Selected relation '{relation}' is not found in '{entity_name}'.")
+            entity_class_map[relation] = args.entity.__mapper__.relationships[relation].mapper.entity
+            join.append(getattr(args.entity, relation))
+
+    selection = list(entity_class_map.values())
     if args.select is not None:
         selection = []
         for field in args.select:
-            if not hasattr(args.entity, field):
-                print(f"Selected field '{field}' is not found in '{entity_name}'.")
+            entity = args.entity
+            if "." in field:
+                relation, relation_field = field.split(".", maxsplit=1)
+                if relation in entity_class_map:
+                    entity = entity_class_map[relation]
+                    field = relation_field
+                else:
+                    print(f"If selection '{field}' was meant to be that of the '{relation}' relation, --join the relation.")
+
+            if field == "*":
+                selection.append(entity)
+                continue
+
+            if not hasattr(entity, field):
+                raise ValueError(f"Selected field '{field}' is not found in '{entity}'.")
+            if field not in entity.__table__.columns:
+                raise ValueError(f"Selected field '{field}' is not a column of in '{entity}'.")
             selection.append(
-                getattr(args.entity, field)
+                getattr(entity, field)
             )
 
-    criteria = cli_parse_where_arguments(args.entity, args.where_criteria)
-    ordering = cli_parse_orderby_argument(args.entity, args.orderby)
+    criteria = cli_parse_where_arguments(entity_class_map, args.where_criteria)
+    ordering = cli_parse_orderby_argument(entity_class_map, args.orderby)
 
     engine = CosmicDB_Engine(engine_conf_yaml_filepath=args.cosmicdb_engine_configuration)
 
-    sql_selection = (sqlalchemy
-        .select(*selection)
-        .where(*criteria)
-        .order_by(ordering)
-        .limit(args.limit)
-    )
-
-    if args.pandas_output_filepath is not None or args.select is not None:
-        df = pandas.read_sql_query(
-            sql = sql_selection,
-            con = engine.engine
+    with engine.session() as session:
+        sql_query = session.query(*selection)
+        if len(join) > 0:
+            sql_query = sql_query.join(*join)
+        sql_query = (sql_query
+            .filter(*criteria)
+            .order_by(ordering)
+            .limit(args.limit)
         )
-        print(df)
-        if args.pandas_output_filepath is not None:
-            print(f"Output: {args.pandas_output_filepath}")
-            df.to_pickle(args.pandas_output_filepath)
-    else:
-        with engine.session() as session:
-            scalars = list(
-                session.scalars(sql_selection)
+
+        if args.pandas_output_filepath is not None or args.select is not None:
+            import pandas
+            df = pandas.read_sql_query(
+                sql = sql_query.statement,
+                con = engine.engine
             )
-            scalar_num_str_len = len(str(len(scalars)))
-            for scalar_enum, scalar in enumerate(scalars):
-                print(f"#{str(scalar_enum+1).ljust(scalar_num_str_len)} {scalar._get_str(args.verbosity)}")
+            print(df)
+            if args.pandas_output_filepath is not None:
+                print(f"Output: {args.pandas_output_filepath}")
+                df.to_pickle(args.pandas_output_filepath)
+        else:
+            results = sql_query.all()
+            result_num_str_len = len(str(len(results)))
+            for result_enum, result in enumerate(results):
+                if len(join) == 0:
+                    result_str = result._get_str(args.verbosity)
+                else:
+                    result_str = "\n\t" + "\n\t".join(
+                        res._get_str(args.verbosity)
+                        for res in result
+                    )
+                print(f"#{str(result_enum+1).ljust(result_num_str_len)} {result_str}")
