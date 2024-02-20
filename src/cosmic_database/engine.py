@@ -190,7 +190,7 @@ def cli_replace_fieldnames_with_column_instances(
         entity = None
 
         if "." in el:
-            relation, relation_el = el.split(".", maxsplit=1)
+            relation, relation_el = el.rsplit(".", maxsplit=1)
             if relation in entity_col_map:
                 entity = relation
                 el = relation_el
@@ -343,7 +343,7 @@ def cli_inspect():
         type=str,
         metavar="field",
         default=None,
-        help=f"Specify a field selection."
+        help=f"Specify a field selection. The asterisk (*) symbol will select all fields, but usually needs to be encapsulated in quotes."
     )
     parser.add_argument(
         "-j",
@@ -387,6 +387,9 @@ def cli_inspect():
             ))
             for value_row in value_matrix
         ]
+        lines.append("Relations:")
+        for relation, relationship in args.entity.__mapper__.relationships.items():
+            lines.append(f"\t{relation}: {relationship.mapper.entity.__qualname__}")
         print('\n'.join(lines))
 
         exit(0)
@@ -401,10 +404,22 @@ def cli_inspect():
     join = []
     if args.join is not None:
         for relation in args.join:
-            if relation not in args.entity.__mapper__.relationships:
-                raise ValueError(f"Selected relation '{relation}' is not found in '{entity_name}'.")
-            entity_class_map[relation] = args.entity.__mapper__.relationships[relation].mapper.entity
-            join.append(getattr(args.entity, relation))
+            entity_key = None
+            if "." in relation:
+                removed_relation, relation_field = relation.rsplit(".", maxsplit=1)
+                if removed_relation in entity_class_map:
+                    entity_key = removed_relation
+                    relation = relation_field
+                else:
+                    print(f"If join '{relation}' was meant to be that of the '{removed_relation}' removed relation, --join that removed relation prior.")
+                    break
+            entity = entity_class_map[entity_key]
+
+            if relation not in entity.__mapper__.relationships:
+                raise ValueError(f"Selected relation '{relation}' is not found in '{entity}'.")
+            relation_key = relation if entity_key is None else f"{entity_key}.{relation}"
+            entity_class_map[relation_key] = entity.__mapper__.relationships[relation].mapper.entity
+            join.append(getattr(entity, relation))
 
     selection = list(entity_class_map.values())
     if args.select is not None:
@@ -412,12 +427,13 @@ def cli_inspect():
         for field in args.select:
             entity = args.entity
             if "." in field:
-                relation, relation_field = field.split(".", maxsplit=1)
+                relation, relation_field = field.rsplit(".", maxsplit=1)
                 if relation in entity_class_map:
                     entity = entity_class_map[relation]
                     field = relation_field
                 else:
                     print(f"If selection '{field}' was meant to be that of the '{relation}' relation, --join the relation.")
+                    break
 
             if field == "*":
                 selection.append(entity)
@@ -438,8 +454,8 @@ def cli_inspect():
 
     with engine.session() as session:
         sql_query = session.query(*selection)
-        if len(join) > 0:
-            sql_query = sql_query.join(*join)
+        for relation in join:
+            sql_query = sql_query.join(relation)
         sql_query = (sql_query
             .filter(*criteria)
             .order_by(ordering)
