@@ -322,6 +322,12 @@ def cli_inspect():
         help="Show the structure of the entity instead of an instance."
     )
     parser.add_argument(
+        "-d",
+        "--distinct",
+        action="store_true",
+        help="Specify that the results should be distinct. Particularly useful with join queries that have sparse selections."
+    )
+    parser.add_argument(
         "-l",
         "--limit",
         type=int,
@@ -450,30 +456,32 @@ def cli_inspect():
     criteria = cli_parse_where_arguments(entity_class_map, args.where_criteria)
     ordering = cli_parse_orderby_argument(entity_class_map, args.orderby)
 
+    sql_query = sqlalchemy.select(*selection)
+    for relation in join:
+        sql_query = sql_query.join(relation)
+    sql_query = (sql_query
+        .where(*criteria)
+        .order_by(ordering)
+        .limit(args.limit)
+    )
+    if args.distinct:
+        sql_query = sql_query.distinct()
+
     engine = CosmicDB_Engine(engine_conf_yaml_filepath=args.cosmicdb_engine_configuration)
 
-    with engine.session() as session:
-        sql_query = session.query(*selection)
-        for relation in join:
-            sql_query = sql_query.join(relation)
-        sql_query = (sql_query
-            .filter(*criteria)
-            .order_by(ordering)
-            .limit(args.limit)
+    if args.pandas_output_filepath is not None or args.select is not None:
+        import pandas
+        df = pandas.read_sql_query(
+            sql = sql_query,
+            con = engine.engine
         )
-
-        if args.pandas_output_filepath is not None or args.select is not None:
-            import pandas
-            df = pandas.read_sql_query(
-                sql = sql_query.statement,
-                con = engine.engine
-            )
-            print(df)
-            if args.pandas_output_filepath is not None:
-                print(f"Output: {args.pandas_output_filepath}")
-                df.to_pickle(args.pandas_output_filepath)
-        else:
-            results = sql_query.all()
+        print(df)
+        if args.pandas_output_filepath is not None:
+            print(f"Output: {args.pandas_output_filepath}")
+            df.to_pickle(args.pandas_output_filepath)
+    else:
+        with engine.session() as session:
+            results = session.scalars(sql_query).all()
             result_num_str_len = len(str(len(results)))
             for result_enum, result in enumerate(results):
                 if len(join) == 0:

@@ -48,21 +48,20 @@ class Base(DeclarativeBase):
         self,
         verbosity: int = 0,
         join_lines: bool = True,
-        include_limitless_strings: bool = False,
         indentation: int = 0,
         object_name: str = None
     ) -> str:
         attr_strs = []
         for key, col in self.__table__.columns.items():
-            if type(col.type) == Text and not include_limitless_strings:
+            if type(col.type) == Text and verbosity < 1:
                 continue
 
             attr_strs.append(f'{key}={getattr(self, key)}')
 
         indentation_str = "\t"*indentation
         primarystr = f"{indentation_str}{'' if object_name is None else f'{object_name}: '}{self.__class__.__name__}({', '.join(attr_strs)})"
-        verbosity -= 1
-        if verbosity <= 0:
+        verbosity -= 2
+        if verbosity < 0:
             if not join_lines:
                 return [primarystr]
             return primarystr
