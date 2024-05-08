@@ -360,6 +360,11 @@ def cli_inspect():
         default=None,
         help=f"Specify a relationship to join on."
     )
+    parser.add_argument(
+        "--show-dataframe",
+        action="store_true",
+        help="Show the results as dataframe."
+    )
 
     args = parser.parse_args()
 
@@ -469,7 +474,10 @@ def cli_inspect():
 
     engine = CosmicDB_Engine(engine_conf_yaml_filepath=args.cosmicdb_engine_configuration)
 
-    if args.pandas_output_filepath is not None or args.select is not None:
+    if (args.show_dataframe
+      or args.pandas_output_filepath is not None
+      or args.select is not None
+    ):
         import pandas
         df = pandas.read_sql_query(
             sql = sql_query,
@@ -484,11 +492,11 @@ def cli_inspect():
             results = session.scalars(sql_query).all()
             result_num_str_len = len(str(len(results)))
             for result_enum, result in enumerate(results):
-                if len(join) == 0:
-                    result_str = result._get_str(args.verbosity)
-                else:
+                try:
                     result_str = "\n\t" + "\n\t".join(
                         res._get_str(args.verbosity)
                         for res in result
                     )
+                except TypeError:
+                    result_str = result._get_str(args.verbosity)
                 print(f"#{str(result_enum+1).ljust(result_num_str_len)} {result_str}")
