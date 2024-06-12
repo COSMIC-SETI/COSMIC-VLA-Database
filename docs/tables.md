@@ -74,24 +74,20 @@ Column | Type | Primary Key | Foreign Key(s) | Nullable
 id | INTEGER | X |  | 
 observation_id | INTEGER |  | [cosmic_observation](#table-cosmic_observation).id | 
 reference_antenna_name | VARCHAR(4) |  |  | 
-flagged_percentage | DOUBLE |  |  | 
 overall_grade | DOUBLE |  |  | 
 file_uri | VARCHAR(255) |  |  | 
 
-# Table `cosmic_calibration_gain`
+# Table `cosmic_calibration_antenna_result`
 
-Class [`cosmic_database.entities.CosmicDB_CalibrationGain`](./classes.md#class-CosmicDB_CalibrationGain)
+Class [`cosmic_database.entities.CosmicDB_AntennaCalibration`](./classes.md#class-CosmicDB_AntennaCalibration)
 
 Column | Type | Primary Key | Foreign Key(s) | Nullable
 -|-|-|-|-
-id | INTEGER | X |  | 
-calibration_id | INTEGER |  | [cosmic_observation_calibration](#table-cosmic_observation_calibration).id | 
-antenna_name | VARCHAR(4) |  |  | 
-tuning | VARCHAR(10) |  |  | 
-channel_frequency | DOUBLE |  |  | 
-polarization | VARCHAR(10) |  |  | 
-gain_real | DOUBLE |  |  | 
-gain_imag | DOUBLE |  |  | 
+calibration_id | INTEGER | X | [cosmic_observation_calibration](#table-cosmic_observation_calibration).id | 
+antenna_name | VARCHAR(4) | X |  | 
+tuning | VARCHAR(10) | X |  | 
+coarse_channels_processed | INTEGER |  |  | 
+coarse_channels_flagged_rfi | INTEGER |  |  | 
 
 # Table `cosmic_observation_beam`
 

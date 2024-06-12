@@ -273,6 +273,10 @@ class CosmicDB_ObservationBeam(Base):
     hits: Mapped[List["CosmicDB_ObservationHit"]] = relationship(
         back_populates="beam", cascade="all, delete-orphan"
     )
+    
+    stamps: Mapped[List["CosmicDB_ObservationStamp"]] = relationship(
+        back_populates="beam", cascade="all, delete-orphan"
+    )
 
 class CosmicDB_ObservationHit(Base):
     __tablename__ = f"cosmic_observation_hit{TABLE_SUFFIX}"
@@ -370,6 +374,10 @@ class CosmicDB_ObservationStamp(Base):
     beam_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_beam{TABLE_SUFFIX}.id"))
 
     observation_subband: Mapped["CosmicDB_ObservationSubband"] = relationship(
+        back_populates="stamps"
+    )
+    
+    beam: Mapped["CosmicDB_ObservationBeam"] = relationship(
         back_populates="stamps"
     )
 
