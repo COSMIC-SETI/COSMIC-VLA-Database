@@ -282,36 +282,65 @@ class CosmicDB_ObservationHit(Base):
     __tablename__ = f"cosmic_observation_hit{TABLE_SUFFIX}"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    # database ObservationBeam primary_key
     beam_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_beam{TABLE_SUFFIX}.id"))
 
+    # database Observation primary_key 
     observation_id: Mapped[int]
+    # Antenna LO name
     tuning: Mapped[String_Tuning]
+    # subband coarse-channel offset (lower bound of subband)
     subband_offset: Mapped[int]
 
+    # storage filepath
     file_uri: Mapped[String_URI]
+    # stamp index within file
     file_local_enumeration: Mapped[int]
 
+    # The frequency the top-hit starts at
     signal_frequency: Mapped[float]
+    # Which frequency bin the top-hit starts at. This is relative to the coarse channel.
     signal_index: Mapped[int]
+    # How many bins the top-hit drifts over. This counts the drift distance over the full rounded-up power-of-two time range.
     signal_drift_steps: Mapped[int]
+    # The drift rate in Hz/s
     signal_drift_rate: Mapped[float]
+    # The signal-to-noise ratio for the top-hit
     signal_snr: Mapped[float]
+    # Which coarse channel this top-hit is in
     signal_coarse_channel: Mapped[int]
+    # Which beam this top-hit is in. -1 for incoherent beam, or no beam
     signal_beam: Mapped[int]
+    # The number of timesteps in the associated filterbank. This does *not* use rounded-up-to-a-power-of-two timesteps.
     signal_num_timesteps: Mapped[int]
+    # The total power that is normalized to calculate snr. snr = (power - median) / stdev
     signal_power: Mapped[float]
+    # The total power for the same signal, calculated incoherently. This is available in the stamps files, but not in the top-hits files.
     signal_incoherent_power: Mapped[float]
+
+    # scan source name
     source_name: Mapped[String_SourceName]
+    # center-frequency of the first channel in the stamp
     fch1_mhz: Mapped[float]
+    # channel bandwidth
     foff_mhz: Mapped[float]
+    # start time of stamp (unix)
     tstart: Mapped[float] = mapped_column(index=True)
+    # spectrum timespan (seconds)
     tsamp: Mapped[float]
+    # phase center RA
     ra_hours: Mapped[float]
+    # phase center DEC
     dec_degrees: Mapped[float]
+    # telescope ID (Breakthrough listen convention???)
     telescope_id: Mapped[int]
+    # spectra count
     num_timesteps: Mapped[int]
+    # channel count
     num_channels: Mapped[int]
+    # top-hit's coarse-channel index (relative to subband, zero-indexed I believe)
     coarse_channel: Mapped[int]
+    # stamp fine-channel index (within coarse-channel)
     start_channel: Mapped[int]
 
     beam: Mapped["CosmicDB_ObservationBeam"] = relationship(
@@ -334,43 +363,75 @@ class CosmicDB_ObservationStamp(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
+    # database Observation primary_key 
     observation_id: Mapped[int]
+    # Antenna LO name
     tuning: Mapped[String_Tuning]
+    # subband coarse-channel offset (lower bound of subband)
     subband_offset: Mapped[int]
 
+    # storage filepath
     file_uri: Mapped[String_URI]
+    # stamp index within file
     file_local_enumeration: Mapped[int]
 
+    # scan source name
     source_name: Mapped[String_SourceName]
+    # phase center RA
     ra_hours: Mapped[float]
+    # phase center DEC
     dec_degrees: Mapped[float]
+    # center-frequency of the first channel in the stamp
     fch1_mhz: Mapped[float]
+    # channel bandwidth
     foff_mhz: Mapped[float]
+    # start time of stamp (unix)
     tstart: Mapped[float]
+    # spectrum timespan (seconds)
     tsamp: Mapped[float]
+    # telescope ID (Breakthrough listen convention???)
     telescope_id: Mapped[int]
+    # spectra count
     num_timesteps: Mapped[int]
+    # channel count
     num_channels: Mapped[int]
+    # polarization count
     num_polarizations: Mapped[int]
+    # antenna count
     num_antennas: Mapped[int]
+    # top-hit's coarse-channel index (relative to subband, zero-indexed I believe)
     coarse_channel: Mapped[int]
+    # upchannelisation rate
     fft_size: Mapped[int]
+    # stamp fine-channel index (within coarse-channel)
     start_channel: Mapped[int]
-    # signal: Mapped[float] :Hit.Signal;
+    # subband coarse-channel offset (lower bound of subband)
     schan: Mapped[int]
+    # scan observation ID
     obsid: Mapped[String_ScanID]
     
+    # The frequency the top-hit starts at
     signal_frequency: Mapped[float]
+    # Which frequency bin the top-hit starts at. This is relative to the coarse channel.
     signal_index: Mapped[int]
+    # How many bins the top-hit drifts over. This counts the drift distance over the full rounded-up power-of-two time range.
     signal_drift_steps: Mapped[int]
+    # The drift rate in Hz/s
     signal_drift_rate: Mapped[float]
+    # The signal-to-noise ratio for the top-hit
     signal_snr: Mapped[float]
+    # Which coarse channel this top-hit is in
     signal_beam: Mapped[int]
+    # Which beam this top-hit is in. -1 for incoherent beam, or no beam
     signal_coarse_channel: Mapped[int]
+    # The number of timesteps in the associated filterbank. This does *not* use rounded-up-to-a-power-of-two timesteps.
     signal_num_timesteps: Mapped[int]
+    # The total power that is normalized to calculate snr. snr = (power - median) / stdev
     signal_power: Mapped[float]
+    # The total power for the same signal, calculated incoherently. This is available in the stamps files, but not in the top-hits files.
     signal_incoherent_power: Mapped[float]
 
+    # database ObservationBeam primary_key
     beam_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_beam{TABLE_SUFFIX}.id"))
 
     observation_subband: Mapped["CosmicDB_ObservationSubband"] = relationship(
