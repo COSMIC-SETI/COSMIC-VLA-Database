@@ -178,6 +178,7 @@ class CosmicDB_Observation(Base):
     start: Mapped[datetime]
     end: Mapped[datetime]
     criteria_json: Mapped[String_JSON]
+    validity_code: Mapped[int] = mapped_column(default=1) # TODO make this TINYINT...
 
     configuration: Mapped["CosmicDB_ObservationConfiguration"] = relationship()
 
