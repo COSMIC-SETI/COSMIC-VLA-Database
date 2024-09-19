@@ -48,6 +48,7 @@ class Base(DeclarativeBase):
         self,
         verbosity: int = 0,
         join_lines: bool = True,
+        include_limitless_strings: bool = False,
         indentation: int = 0,
         object_name: str = None
     ) -> str:
@@ -287,7 +288,7 @@ class CosmicDB_ObservationHit(Base):
     beam_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_beam{TABLE_SUFFIX}.id"))
 
     # database Observation primary_key 
-    observation_id: Mapped[int]
+    observation_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation{TABLE_SUFFIX}.id"))
     # Antenna LO name
     tuning: Mapped[String_Tuning]
     # subband coarse-channel offset (lower bound of subband)
@@ -348,8 +349,13 @@ class CosmicDB_ObservationHit(Base):
         back_populates="hits"
     )
 
+    observation: Mapped["CosmicDB_Observation"] = relationship(
+        overlaps="hits"
+    )
+
     observation_subband: Mapped["CosmicDB_ObservationSubband"] = relationship(
-        back_populates="hits"
+        back_populates="hits",
+        overlaps="observation"
     )
 
     __table_args__ = (
@@ -365,7 +371,7 @@ class CosmicDB_ObservationStamp(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
 
     # database Observation primary_key 
-    observation_id: Mapped[int]
+    observation_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation{TABLE_SUFFIX}.id"))
     # Antenna LO name
     tuning: Mapped[String_Tuning]
     # subband coarse-channel offset (lower bound of subband)
@@ -435,8 +441,13 @@ class CosmicDB_ObservationStamp(Base):
     # database ObservationBeam primary_key
     beam_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_beam{TABLE_SUFFIX}.id"))
 
+    observation: Mapped["CosmicDB_Observation"] = relationship(
+        overlaps="stamps"
+    )
+
     observation_subband: Mapped["CosmicDB_ObservationSubband"] = relationship(
-        back_populates="stamps"
+        back_populates="stamps",
+        overlaps="observation"
     )
     
     beam: Mapped["CosmicDB_ObservationBeam"] = relationship(
