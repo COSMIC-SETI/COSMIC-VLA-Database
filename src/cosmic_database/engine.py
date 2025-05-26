@@ -1,3 +1,4 @@
+import os
 import yaml
 from datetime import datetime
 
@@ -334,6 +335,12 @@ def cli_inspect():
         default=None,
         help="Limit the number of instances selected."
     )
+    parser.add_argument(
+        "--pandas-chunksize",
+        type=int,
+        default=int(1e6),
+        help="The pandas chunksize limit for queries."
+    )
     cli_add_orderby_argument(parser)    
     parser.add_argument(
         "-v",
@@ -474,19 +481,25 @@ def cli_inspect():
 
     engine = CosmicDB_Engine(engine_conf_yaml_filepath=args.cosmicdb_engine_configuration)
 
+    pandas_output_filepath_splitext = None
     if (args.show_dataframe
       or args.pandas_output_filepath is not None
       or args.select is not None
     ):
         import pandas
-        df = pandas.read_sql_query(
+        for chunk_i, df in enumerate(pandas.read_sql_query(
             sql = sql_query,
-            con = engine.engine
-        )
-        print(df)
-        if args.pandas_output_filepath is not None:
-            print(f"Output: {args.pandas_output_filepath}")
-            df.to_pickle(args.pandas_output_filepath)
+            con = engine.engine,
+            chunksize=args.pandas_chunksize
+        )):
+            print(f"dataframe #{chunk_i}\n", df)
+            if args.pandas_output_filepath is not None:
+                if chunk_i == 1:
+                    pandas_output_filepath_splitext = os.path.splitext(args.pandas_output_filepath)
+                if chunk_i > 0:
+                    args.pandas_output_filepath = f"{pandas_output_filepath_splitext[0]}.{chunk_i}{pandas_output_filepath_splitext[1]}"
+                print(f"Output: {args.pandas_output_filepath}")
+                df.to_pickle(args.pandas_output_filepath)
     else:
         with engine.session() as session:
             results = session.scalars(sql_query).all()
