@@ -52,6 +52,7 @@ configuration_id | INTEGER |  | [cosmic_observation_configuration](#table-cosmic
 start | DATETIME |  |  | 
 end | DATETIME |  |  | 
 criteria_json | TEXT |  |  | 
+validity_code | INTEGER |  |  | 
 
 # Table `cosmic_observation_subband`
 
@@ -89,6 +90,59 @@ tuning | VARCHAR(10) | X |  |
 coarse_channels_processed | INTEGER |  |  | 
 coarse_channels_flagged_rfi | INTEGER |  |  | 
 
+# Table `cosmic_hit_flags`
+
+Class [`cosmic_database.entities.CosmicDB_HitFlags`](./classes.md#class-CosmicDB_HitFlags)
+
+Column | Type | Primary Key | Foreign Key(s) | Nullable
+-|-|-|-|-
+hit_id | INTEGER | X | [cosmic_observation_hit](#table-cosmic_observation_hit).id | 
+sarfi | BOOLEAN |  |  | X
+location_out_of_date | BOOLEAN |  |  | X
+no_stamp | BOOLEAN |  |  | X
+
+# Table `cosmic_stamp_flags`
+
+Class [`cosmic_database.entities.CosmicDB_StampFlags`](./classes.md#class-CosmicDB_StampFlags)
+
+Column | Type | Primary Key | Foreign Key(s) | Nullable
+-|-|-|-|-
+stamp_id | INTEGER | X | [cosmic_observation_stamp](#table-cosmic_observation_stamp).id | 
+sarfi | BOOLEAN |  |  | X
+location_out_of_date | BOOLEAN |  |  | X
+redundant_to | INTEGER |  | [cosmic_observation_stamp](#table-cosmic_observation_stamp).id | X
+no_hits | BOOLEAN |  |  | X
+
+# Table `cosmic_stamp_hit_relationship`
+
+Class [`cosmic_database.entities.CosmicDB_StampHitRelationship`](./classes.md#class-CosmicDB_StampHitRelationship)
+
+Column | Type | Primary Key | Foreign Key(s) | Nullable
+-|-|-|-|-
+stamp_id | INTEGER | X | [cosmic_observation_stamp](#table-cosmic_observation_stamp).id | 
+hit_id | INTEGER | X | [cosmic_observation_hit](#table-cosmic_observation_hit).id | 
+
+# Table `cosmic_file`
+
+Class [`cosmic_database.entities.CosmicDB_File`](./classes.md#class-CosmicDB_File)
+
+Column | Type | Primary Key | Foreign Key(s) | Nullable
+-|-|-|-|-
+id | INTEGER | X |  | 
+uri | VARCHAR(255) |  |  | 
+
+# Table `cosmic_file_flags`
+
+Class [`cosmic_database.entities.CosmicDB_FileFlags`](./classes.md#class-CosmicDB_FileFlags)
+
+Column | Type | Primary Key | Foreign Key(s) | Nullable
+-|-|-|-|-
+file_id | INTEGER | X | [cosmic_file](#table-cosmic_file).id | 
+missing | BOOLEAN |  |  | X
+irregular_filename | BOOLEAN |  |  | X
+to_delete | BOOLEAN |  |  | X
+no_known_dataset | BOOLEAN |  |  | X
+
 # Table `cosmic_observation_beam`
 
 Class [`cosmic_database.entities.CosmicDB_ObservationBeam`](./classes.md#class-CosmicDB_ObservationBeam)
@@ -111,10 +165,11 @@ Column | Type | Primary Key | Foreign Key(s) | Nullable
 -|-|-|-|-
 id | INTEGER | X |  | 
 beam_id | INTEGER |  | [cosmic_observation_beam](#table-cosmic_observation_beam).id | 
-observation_id | INTEGER |  | [cosmic_observation_subband](#table-cosmic_observation_subband).observation_id | 
+observation_id | INTEGER |  | [cosmic_observation](#table-cosmic_observation).id,[cosmic_observation_subband](#table-cosmic_observation_subband).observation_id | 
 tuning | VARCHAR(10) |  | [cosmic_observation_subband](#table-cosmic_observation_subband).tuning | 
 subband_offset | INTEGER |  | [cosmic_observation_subband](#table-cosmic_observation_subband).subband_offset | 
-file_uri | VARCHAR(255) |  |  | 
+file_id | INTEGER |  | [cosmic_file](#table-cosmic_file).id | X
+file_uri | VARCHAR(255) |  |  | X
 file_local_enumeration | INTEGER |  |  | 
 signal_frequency | DOUBLE |  |  | 
 signal_index | INTEGER |  |  | 
@@ -146,10 +201,10 @@ Class [`cosmic_database.entities.CosmicDB_ObservationStamp`](./classes.md#class-
 Column | Type | Primary Key | Foreign Key(s) | Nullable
 -|-|-|-|-
 id | INTEGER | X |  | 
-observation_id | INTEGER |  | [cosmic_observation_subband](#table-cosmic_observation_subband).observation_id | 
+observation_id | INTEGER |  | [cosmic_observation_subband](#table-cosmic_observation_subband).observation_id,[cosmic_observation](#table-cosmic_observation).id | 
 tuning | VARCHAR(10) |  | [cosmic_observation_subband](#table-cosmic_observation_subband).tuning | 
 subband_offset | INTEGER |  | [cosmic_observation_subband](#table-cosmic_observation_subband).subband_offset | 
-file_uri | VARCHAR(255) |  |  | 
+file_id | INTEGER |  | [cosmic_file](#table-cosmic_file).id | X
 file_local_enumeration | INTEGER |  |  | 
 source_name | VARCHAR(80) |  |  | 
 ra_hours | DOUBLE |  |  | 
