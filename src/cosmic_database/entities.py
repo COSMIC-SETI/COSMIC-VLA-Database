@@ -40,7 +40,7 @@ class Base(DeclarativeBase):
         String_SourceName: String(80),
         float: Double,
         datetime: DateTime().with_variant(
-            mysql.DATETIME(fsp=6), 'mysql'
+            mysql.DATETIME(fsp=6), "mysql"
         )
     }
 
@@ -57,7 +57,7 @@ class Base(DeclarativeBase):
             if type(col.type) == Text and verbosity < 1:
                 continue
 
-            attr_strs.append(f'{key}={getattr(self, key)}')
+            attr_strs.append(f"{key}={getattr(self, key)}")
 
         indentation_str = "\t"*indentation
         primarystr = f"{indentation_str}{'' if object_name is None else f'{object_name}: '}{self.__class__.__name__}({', '.join(attr_strs)})"
@@ -120,12 +120,11 @@ class CosmicDB_Dataset(Base):
         back_populates="dataset", cascade="all, delete-orphan"
     )
 
-
 class CosmicDB_Scan(Base):
     __tablename__ = f"cosmic_scan{TABLE_SUFFIX}"
 
     id: Mapped[String_ScanID] = mapped_column(primary_key=True)
-    dataset_id: Mapped[String_DatasetID] = mapped_column(ForeignKey(f"cosmic_dataset{TABLE_SUFFIX}.id"), index=True)
+    dataset_id: Mapped[String_DatasetID] = mapped_column(ForeignKey(f"{CosmicDB_Dataset.__tablename__}.id"), index=True)
     start: Mapped[datetime]
     metadata_json: Mapped[String_JSON]
     
@@ -133,7 +132,7 @@ class CosmicDB_Scan(Base):
         back_populates="scans"
     )
 
-    configurations: Mapped[List["CosmicDB_ObservationConfiguration"]] = relationship(
+    configurations: Mapped[List["CosmicDB_Configuration"]] = relationship(
         back_populates="scan", cascade="all, delete-orphan"
     )
 
@@ -141,11 +140,12 @@ class CosmicDB_Scan(Base):
         back_populates="scan", cascade="all, delete-orphan"
     )
 
-class CosmicDB_ObservationConfiguration(Base):
-    __tablename__ = f"cosmic_observation_configuration{TABLE_SUFFIX}"
+class CosmicDB_Configuration(Base):
+    __tablename__ = f"cosmic_configuration{TABLE_SUFFIX}"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    scan_id: Mapped[String_ScanID] = mapped_column(ForeignKey(f"cosmic_scan{TABLE_SUFFIX}.id"))
+    scan_id: Mapped[String_ScanID] = mapped_column(ForeignKey(f"{CosmicDB_Scan.__tablename__}.id"))
+
     start: Mapped[datetime]
     end: Mapped[datetime]
     criteria_json: Mapped[String_JSON]
@@ -159,29 +159,40 @@ class CosmicDB_ObservationConfiguration(Base):
     antenna: Mapped[List["CosmicDB_ConfigurationAntenna"]] = relationship(
         back_populates="configuration", cascade="all, delete-orphan"
     )
+    
+    observations: Mapped[List["CosmicDB_Observation"]] = relationship(
+        back_populates="configuration", cascade="all, delete-orphan"
+    )
 
 class CosmicDB_ConfigurationAntenna(Base):
     __tablename__ = f"cosmic_configuration_antenna{TABLE_SUFFIX}"
 
-    configuration_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_configuration{TABLE_SUFFIX}.id"), primary_key=True)
     name: Mapped[String_AntennaName] = mapped_column(primary_key=True)
+    configuration_id: Mapped[int] = mapped_column(ForeignKey(f"{CosmicDB_Configuration.__tablename__}.id"), primary_key=True)
+    enumeration: Mapped[int]
     
-    configuration: Mapped["CosmicDB_ObservationConfiguration"] = relationship(
+    configuration: Mapped["CosmicDB_Configuration"] = relationship(
         back_populates="antenna"
     )
 
 class CosmicDB_Observation(Base):
     __tablename__ = f"cosmic_observation{TABLE_SUFFIX}"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    scan_id: Mapped[String_ScanID] = mapped_column(ForeignKey(f"cosmic_scan{TABLE_SUFFIX}.id"))
-    configuration_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_configuration{TABLE_SUFFIX}.id"))
+    id: Mapped[int] = mapped_column(primary_key=True) # support multiple observations per configuration
+    scan_id: Mapped[String_ScanID] = mapped_column(ForeignKey(f"{CosmicDB_Scan.__tablename__}.id"))
+    configuration_id: Mapped[int] = mapped_column(ForeignKey(f"{CosmicDB_Configuration.__tablename__}.id"))
+    
+    calibration_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_calibration{TABLE_SUFFIX}.id"))
+
     start: Mapped[datetime]
     end: Mapped[datetime]
     criteria_json: Mapped[String_JSON]
     validity_code: Mapped[int] = mapped_column(default=1) # TODO make this TINYINT...
 
-    configuration: Mapped["CosmicDB_ObservationConfiguration"] = relationship()
+    
+    configuration: Mapped["CosmicDB_Configuration"] = relationship(
+        back_populates="observations",
+    )
 
     scan: Mapped["CosmicDB_Scan"] = relationship(
         back_populates="observations"
@@ -195,47 +206,30 @@ class CosmicDB_Observation(Base):
         back_populates="observation", cascade="all, delete-orphan"
     )
 
-    calibration: Mapped[Optional["CosmicDB_ObservationCalibration"]] = relationship(
-        back_populates="observation", cascade="all, delete-orphan"
+    active_calibration: Mapped[Optional["CosmicDB_Calibration"]] = relationship(
+        back_populates="observations_applied",
+        foreign_keys=[calibration_id]
     )
 
-class CosmicDB_ObservationSubband(Base):
-    __tablename__ = f"cosmic_observation_subband{TABLE_SUFFIX}"
-
-    observation_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation{TABLE_SUFFIX}.id"), primary_key=True)
-    tuning: Mapped[String_Tuning] = mapped_column(primary_key=True)
-    subband_offset: Mapped[int] = mapped_column(primary_key=True)
-    percentage_recorded: Mapped[float]
-    successful_participation: Mapped[bool]
-    
-    # node_uri: Mapped[String_URI]
-    # subband_length: Mapped[int]
-
-    observation: Mapped["CosmicDB_Observation"] = relationship(
-        back_populates="subbands"
-    )
-
-    hits: Mapped[List["CosmicDB_ObservationHit"]] = relationship(
-        back_populates="observation_subband", cascade="all, delete-orphan"
-    )
-
-    stamps: Mapped[List["CosmicDB_ObservationStamp"]] = relationship(
-        back_populates="observation_subband", cascade="all, delete-orphan"
-    )
-
-
-class CosmicDB_ObservationCalibration(Base):
-    __tablename__ = f"cosmic_observation_calibration{TABLE_SUFFIX}"
+class CosmicDB_Calibration(Base):
+    __tablename__ = f"cosmic_calibration{TABLE_SUFFIX}"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    observation_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation{TABLE_SUFFIX}.id"))
+
+    # ID of the observation that calibration was produced by
+    observation_id: Mapped[int] = mapped_column(ForeignKey(f"{CosmicDB_Observation.__tablename__}.id"))
 
     reference_antenna_name: Mapped[String_AntennaName]
     overall_grade: Mapped[float]
     file_uri: Mapped[String_URI]
 
     observation : Mapped["CosmicDB_Observation"] = relationship(
-        back_populates="calibration"
+        foreign_keys=observation_id
+    )
+
+    observations_applied : Mapped[List["CosmicDB_Observation"]] = relationship(
+        back_populates="active_calibration",
+        foreign_keys=CosmicDB_Observation.calibration_id
     )
 
     antenna: Mapped[List["CosmicDB_AntennaCalibration"]] = relationship(
@@ -245,203 +239,85 @@ class CosmicDB_ObservationCalibration(Base):
 class CosmicDB_AntennaCalibration(Base):
     __tablename__ = f"cosmic_calibration_antenna_result{TABLE_SUFFIX}"
 
-    calibration_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_calibration{TABLE_SUFFIX}.id"), primary_key=True)
+    calibration_id: Mapped[int] = mapped_column(ForeignKey(f"{CosmicDB_Calibration.__tablename__}.id"), primary_key=True)
     antenna_name: Mapped[String_AntennaName] = mapped_column(primary_key=True)
     tuning: Mapped[String_Tuning] = mapped_column(primary_key=True)
 
     coarse_channels_processed: Mapped[int]
     coarse_channels_flagged_rfi: Mapped[int]
 
-    calibration: Mapped["CosmicDB_ObservationCalibration"] = relationship(
+    calibration: Mapped["CosmicDB_Calibration"] = relationship(
         back_populates="antenna"
     )
 
-class CosmicDB_HitFlags(Base):
-    __tablename__ = f"cosmic_hit_flags{TABLE_SUFFIX}"
+class CosmicDB_ObservationSubband(Base):
+    __tablename__ = f"cosmic_observation_subband{TABLE_SUFFIX}"
 
-    hit_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_hit{TABLE_SUFFIX}.id"), primary_key=True)
-    
-    sarfi: Mapped[Optional[bool]]
-    location_out_of_date: Mapped[Optional[bool]]
-    no_stamp: Mapped[Optional[bool]]
+    observation_id: Mapped[int] = mapped_column(ForeignKey(f"{CosmicDB_Observation.__tablename__}.id"), primary_key=True)
+    tuning: Mapped[String_Tuning] = mapped_column(primary_key=True)
+    subband_offset: Mapped[int] = mapped_column(primary_key=True)
 
-    hit: Mapped["CosmicDB_ObservationHit"] = relationship(
-        back_populates="flags"
-    )
+    percentage_recorded: Mapped[float]
+    successful_participation: Mapped[bool]
 
-class CosmicDB_StampFlags(Base):
-    __tablename__ = f"cosmic_stamp_flags{TABLE_SUFFIX}"
+    node_uri: Mapped[String_URI]
+    subband_length: Mapped[int]
 
-    stamp_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_stamp{TABLE_SUFFIX}.id"), primary_key=True)
-    
-    sarfi: Mapped[Optional[bool]]
-    location_out_of_date: Mapped[Optional[bool]]
-    redundant_to: Mapped[Optional[int]] = mapped_column(ForeignKey(f"cosmic_observation_stamp{TABLE_SUFFIX}.id"), nullable=True)
-    no_hits: Mapped[Optional[bool]]
+    subband_frequency_lower_MHz: Mapped[float]
+    subband_bandwidth_MHz: Mapped[float]
 
-    stamp: Mapped["CosmicDB_ObservationStamp"] = relationship(
-        back_populates="flags",
-        foreign_keys=stamp_id
-    )
-
-class CosmicDB_StampHitRelationship(Base):
-    __tablename__ = f"cosmic_stamp_hit_relationship{TABLE_SUFFIX}"
-
-    stamp_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_stamp{TABLE_SUFFIX}.id"), primary_key=True)
-    hit_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_hit{TABLE_SUFFIX}.id"), primary_key=True)
-
-class CosmicDB_File(Base):
-    __tablename__ = f"cosmic_file{TABLE_SUFFIX}"
-    id: Mapped[int] = mapped_column(primary_key=True)
-
-    uri: Mapped[String_URI] = mapped_column(unique=True, index=True)
-    
-    flags: Mapped["CosmicDB_FileFlags"] = relationship(
-        back_populates="file",
-    )
-
-class CosmicDB_FileFlags(Base):
-    __tablename__ = f"cosmic_file_flags{TABLE_SUFFIX}"
-    file_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_file{TABLE_SUFFIX}.id"), primary_key=True)
-
-    missing: Mapped[Optional[bool]]
-    irregular_filename: Mapped[Optional[bool]]
-    to_delete: Mapped[Optional[bool]]
-    no_known_dataset: Mapped[Optional[bool]]
-
-    file: Mapped["CosmicDB_File"] = relationship(
-        back_populates="flags"
+    observation: Mapped["CosmicDB_Observation"] = relationship(
+        back_populates="subbands"
     )
 
 class CosmicDB_ObservationBeam(Base):
     __tablename__ = f"cosmic_observation_beam{TABLE_SUFFIX}"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    observation_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation{TABLE_SUFFIX}.id"))
+    observation_id: Mapped[int] = mapped_column(ForeignKey(f"{CosmicDB_Observation.__tablename__}.id"), primary_key=True)
+    enumeration: Mapped[int] = mapped_column(primary_key=True) # enumerated from 0 per observation
 
     ra_radians: Mapped[float] = mapped_column(index=True)
     dec_radians: Mapped[float] = mapped_column(index=True)
-    source: Mapped[String_SourceName]
-    start: Mapped[datetime]
+    source: Mapped[String_SourceName] = mapped_column(index=True)
+    start: Mapped[datetime] = mapped_column(index=True)
     end: Mapped[datetime]
 
     observation : Mapped["CosmicDB_Observation"] = relationship(
         back_populates="beams"
     )
 
+### Observation Products below ###
+# These are stored in a separate database that is local to the storage medium which can be physically relocated
+
+class CosmicDB_ObservationKey(Base):
+    __tablename__ = f"cosmic_observation_key{TABLE_SUFFIX}"
+
+    # This is the primary bridge between the storage database and that of COSMIC
+    # Dislocated foreign keys
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=False) # ForeignKey(f"{CosmicDB_Observation.__tablename__}.id") in COSMIC Head DB
+    scan_id: Mapped[String_ScanID] # ForeignKey(f"{CosmicDB_Scan.__tablename__}.id") in COSMIC Head DB
+    configuration_id: Mapped[int] # ForeignKey(f"{CosmicDB_Configuration.__tablename__}.id") in COSMIC Head DB
+
     hits: Mapped[List["CosmicDB_ObservationHit"]] = relationship(
-        back_populates="beam", cascade="all, delete-orphan"
+        back_populates="observation_key", cascade="all, delete-orphan"
     )
-    
+
     stamps: Mapped[List["CosmicDB_ObservationStamp"]] = relationship(
-        back_populates="beam", cascade="all, delete-orphan"
-    )
-
-class CosmicDB_ObservationHit(Base):
-    __tablename__ = f"cosmic_observation_hit{TABLE_SUFFIX}"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    # database ObservationBeam primary_key
-    beam_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_beam{TABLE_SUFFIX}.id"))
-
-    # database Observation primary_key 
-    observation_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation{TABLE_SUFFIX}.id"))
-    # Antenna LO name
-    tuning: Mapped[String_Tuning]
-    # subband coarse-channel offset (lower bound of subband)
-    subband_offset: Mapped[int]
-
-    file_id: Mapped[Optional[int]] = mapped_column(ForeignKey(f"cosmic_file{TABLE_SUFFIX}.id"), nullable=True, index=True)
-    # storage filepath
-    file_uri: Mapped[Optional[String_URI]]
-    # stamp index within file
-    file_local_enumeration: Mapped[int]
-
-    # The frequency the top-hit starts at
-    signal_frequency: Mapped[float]
-    # Which frequency bin the top-hit starts at. This is relative to the coarse channel.
-    signal_index: Mapped[int]
-    # How many bins the top-hit drifts over. This counts the drift distance over the full rounded-up power-of-two time range.
-    signal_drift_steps: Mapped[int]
-    # The drift rate in Hz/s
-    signal_drift_rate: Mapped[float]
-    # The signal-to-noise ratio for the top-hit
-    signal_snr: Mapped[float]
-    # Which coarse channel this top-hit is in
-    signal_coarse_channel: Mapped[int]
-    # Which beam this top-hit is in. -1 for incoherent beam, or no beam
-    signal_beam: Mapped[int]
-    # The number of timesteps in the associated filterbank. This does *not* use rounded-up-to-a-power-of-two timesteps.
-    signal_num_timesteps: Mapped[int]
-    # The total power that is normalized to calculate snr. snr = (power - median) / stdev
-    signal_power: Mapped[float]
-    # The total power for the same signal, calculated incoherently. This is available in the stamps files, but not in the top-hits files.
-    signal_incoherent_power: Mapped[float]
-
-    # scan source name
-    source_name: Mapped[String_SourceName]
-    # center-frequency of the first channel in the stamp
-    fch1_mhz: Mapped[float]
-    # channel bandwidth
-    foff_mhz: Mapped[float]
-    # start time of stamp (unix)
-    tstart: Mapped[float] = mapped_column(index=True)
-    # spectrum timespan (seconds)
-    tsamp: Mapped[float]
-    # phase center RA
-    ra_hours: Mapped[float]
-    # phase center DEC
-    dec_degrees: Mapped[float]
-    # telescope ID (Breakthrough listen convention???)
-    telescope_id: Mapped[int]
-    # spectra count
-    num_timesteps: Mapped[int]
-    # channel count
-    num_channels: Mapped[int]
-    # top-hit's coarse-channel index (relative to subband, zero-indexed I believe)
-    coarse_channel: Mapped[int]
-    # stamp fine-channel index (within coarse-channel)
-    start_channel: Mapped[int]
-
-    beam: Mapped["CosmicDB_ObservationBeam"] = relationship(
-        back_populates="hits"
-    )
-
-    observation: Mapped["CosmicDB_Observation"] = relationship(
-        overlaps="hits"
-    )
-
-    observation_subband: Mapped["CosmicDB_ObservationSubband"] = relationship(
-        back_populates="hits",
-        overlaps="observation"
-    )
-
-    flags: Mapped["CosmicDB_HitFlags"] = relationship(
-        back_populates="hit",
-    )
-
-    file: Mapped["CosmicDB_File"] = relationship()
-
-    __table_args__ = (
-        ForeignKeyConstraint(
-            ['observation_id', 'tuning', 'subband_offset'],
-            [f'cosmic_observation_subband{TABLE_SUFFIX}.observation_id', f'cosmic_observation_subband{TABLE_SUFFIX}.tuning', f'cosmic_observation_subband{TABLE_SUFFIX}.subband_offset'],
-        ),
+        back_populates="observation_key", cascade="all, delete-orphan"
     )
 
 class CosmicDB_ObservationStamp(Base):
     __tablename__ = f"cosmic_observation_stamp{TABLE_SUFFIX}"
-
+    
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    # database Observation primary_key 
-    observation_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation{TABLE_SUFFIX}.id"))
-    # Antenna LO name
+    observation_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_key{TABLE_SUFFIX}.id"))
+
+    # Dislocated foreign keys
     tuning: Mapped[String_Tuning]
-    # subband coarse-channel offset (lower bound of subband)
     subband_offset: Mapped[int]
 
-    file_id: Mapped[Optional[int]] = mapped_column(ForeignKey(f"cosmic_file{TABLE_SUFFIX}.id"), nullable=True, index=True)
+    file_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_file{TABLE_SUFFIX}.id"), nullable=True, index=True)
     # stamp index within file
     file_local_enumeration: Mapped[int]
 
@@ -492,7 +368,7 @@ class CosmicDB_ObservationStamp(Base):
     signal_snr: Mapped[float]
     # Which coarse channel this top-hit is in
     signal_beam: Mapped[int]
-    # Which beam this top-hit is in. -1 for incoherent beam, or no beam
+    # Which beam this top-hit is in. -1 for incoherent beam, or no beam, enumerated from 0
     signal_coarse_channel: Mapped[int]
     # The number of timesteps in the associated filterbank. This does *not* use rounded-up-to-a-power-of-two timesteps.
     signal_num_timesteps: Mapped[int]
@@ -500,33 +376,182 @@ class CosmicDB_ObservationStamp(Base):
     signal_power: Mapped[float]
     # The total power for the same signal, calculated incoherently. This is available in the stamps files, but not in the top-hits files.
     signal_incoherent_power: Mapped[float]
-
-    # database ObservationBeam primary_key
-    beam_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_beam{TABLE_SUFFIX}.id"))
-
-    observation: Mapped["CosmicDB_Observation"] = relationship(
-        overlaps="stamps"
-    )
-
-    observation_subband: Mapped["CosmicDB_ObservationSubband"] = relationship(
-        back_populates="stamps",
-        overlaps="observation"
-    )
     
-    beam: Mapped["CosmicDB_ObservationBeam"] = relationship(
-        back_populates="stamps"
-    )
-    
-    flags: Mapped["CosmicDB_StampFlags"] = relationship(
-        back_populates="stamp",
-        foreign_keys=CosmicDB_StampFlags.stamp_id
-    )
 
     file: Mapped["CosmicDB_File"] = relationship()
 
-    __table_args__ = (
-        ForeignKeyConstraint(
-            ['observation_id', 'tuning', 'subband_offset'],
-            [f'cosmic_observation_subband{TABLE_SUFFIX}.observation_id', f'cosmic_observation_subband{TABLE_SUFFIX}.tuning', f'cosmic_observation_subband{TABLE_SUFFIX}.subband_offset'],
-        ),
+    observation_key: Mapped["CosmicDB_ObservationKey"] = relationship(
+        back_populates="stamps",
     )
+
+    flags: Mapped["CosmicDB_StampFlags"] = relationship(
+        back_populates="stamp",
+        foreign_keys="CosmicDB_StampFlags.stamp_id"
+    )
+    
+    hits: Mapped["CosmicDB_ObservationHit"] = relationship(
+        back_populates="stamp",
+    )
+
+class CosmicDB_ObservationHit(Base):
+    __tablename__ = f"cosmic_observation_hit{TABLE_SUFFIX}"
+    
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    observation_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_key{TABLE_SUFFIX}.id"))
+    
+    # Dislocated foreign keys
+    tuning: Mapped[String_Tuning]
+    subband_offset: Mapped[int]
+
+    stamp_id: Mapped[Optional[int]] = mapped_column(ForeignKey(f"cosmic_observation_stamp{TABLE_SUFFIX}.id"))
+
+    file_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_file{TABLE_SUFFIX}.id"), nullable=True, index=True)
+    # stamp index within file
+    file_local_enumeration: Mapped[int]
+
+    # The frequency the hit starts at
+    signal_frequency: Mapped[float]
+    # Which frequency bin the hit starts at. This is relative to the coarse channel.
+    signal_index: Mapped[int]
+    # How many bins the hit drifts over. This counts the drift distance over the full rounded-up power-of-two time range.
+    signal_drift_steps: Mapped[int]
+    # The drift rate in Hz/s
+    signal_drift_rate: Mapped[float]
+    # The signal-to-noise ratio for the hit
+    signal_snr: Mapped[float]
+    # Which coarse channel this hit is in
+    signal_coarse_channel: Mapped[int]
+    # Which beam this hit is in. -1 for incoherent beam, or no beam, enumerated from 0, effectively ObservationBeam.enumeration
+    signal_beam: Mapped[int]
+    # The number of timesteps in the associated filterbank. This does *not* use rounded-up-to-a-power-of-two timesteps.
+    signal_num_timesteps: Mapped[int]
+    # The total power that is normalized to calculate snr. snr = (power - median) / stdev
+    signal_power: Mapped[float]
+
+    # scan source name
+    source_name: Mapped[String_SourceName]
+    # center-frequency of the first channel in the stamp
+    fch1_mhz: Mapped[float]
+    # channel bandwidth
+    foff_mhz: Mapped[float]
+    # start time of stamp (unix)
+    tstart: Mapped[float] = mapped_column(index=True)
+    # spectrum timespan (seconds)
+    tsamp: Mapped[float]
+    # phase center RA
+    ra_hours: Mapped[float] = mapped_column(index=True)
+    # phase center DEC
+    dec_degrees: Mapped[float] = mapped_column(index=True)
+    # telescope ID (Breakthrough listen convention???)
+    telescope_id: Mapped[int]
+    # spectra count
+    num_timesteps: Mapped[int]
+    # channel count
+    num_channels: Mapped[int]
+    # top-hit's coarse-channel index (relative to subband, zero-indexed I believe)
+    coarse_channel: Mapped[int]
+    # stamp fine-channel index (within coarse-channel)
+    start_channel: Mapped[int]
+
+
+    file: Mapped["CosmicDB_File"] = relationship()
+
+    observation_key: Mapped["CosmicDB_ObservationKey"] = relationship(
+        back_populates="hits",
+    )
+
+    flags: Mapped["CosmicDB_HitFlags"] = relationship(
+        back_populates="hit",
+    )
+
+    stamp: Mapped["CosmicDB_ObservationStamp"] = relationship(
+        back_populates="hits",
+    )
+
+class CosmicDB_HitFlags(Base):
+    __tablename__ = f"cosmic_hit_flags{TABLE_SUFFIX}"
+
+    hit_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_hit{TABLE_SUFFIX}.id"), primary_key=True)
+    
+    sarfi: Mapped[Optional[bool]]
+    location_out_of_date: Mapped[Optional[bool]]
+    no_stamp: Mapped[Optional[bool]]
+
+    hit: Mapped["CosmicDB_ObservationHit"] = relationship(
+        back_populates="flags"
+    )
+
+class CosmicDB_StampFlags(Base):
+    __tablename__ = f"cosmic_stamp_flags{TABLE_SUFFIX}"
+
+    stamp_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_stamp{TABLE_SUFFIX}.id"), primary_key=True)
+    
+    sarfi: Mapped[Optional[bool]]
+    location_out_of_date: Mapped[Optional[bool]]
+    redundant_to: Mapped[Optional[int]] = mapped_column(ForeignKey(f"cosmic_observation_stamp{TABLE_SUFFIX}.id"))
+    no_hits: Mapped[Optional[bool]]
+
+    stamp: Mapped["CosmicDB_ObservationStamp"] = relationship(
+        back_populates="flags",
+        foreign_keys=stamp_id
+    )
+
+class CosmicDB_File(Base):
+    __tablename__ = f"cosmic_file{TABLE_SUFFIX}"
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    uri: Mapped[String_URI] = mapped_column(unique=True, index=True)
+    
+    flags: Mapped["CosmicDB_FileFlags"] = relationship(
+        back_populates="file",
+    )
+
+class CosmicDB_FileFlags(Base):
+    __tablename__ = f"cosmic_file_flags{TABLE_SUFFIX}"
+    file_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_file{TABLE_SUFFIX}.id"), primary_key=True)
+
+    missing: Mapped[Optional[bool]]
+    irregular_filename: Mapped[Optional[bool]]
+    to_delete: Mapped[Optional[bool]]
+    no_known_dataset: Mapped[Optional[bool]]
+
+    file: Mapped["CosmicDB_File"] = relationship(
+        back_populates="flags"
+    )
+
+## Hardcoded meta-data about the overarching database
+
+DATABASE_SCOPES = {
+    "Operation": [
+        CosmicDB_Dataset,
+        CosmicDB_Scan,
+        CosmicDB_Configuration,
+        CosmicDB_ConfigurationAntenna,
+        CosmicDB_Calibration,
+        CosmicDB_AntennaCalibration,
+        CosmicDB_Observation,
+        CosmicDB_ObservationSubband,
+        CosmicDB_ObservationBeam,
+    ],
+    "Storage": [
+        CosmicDB_ObservationKey,
+        CosmicDB_ObservationStamp,
+        CosmicDB_ObservationHit,
+        CosmicDB_HitFlags,
+        CosmicDB_StampFlags,
+        CosmicDB_File,
+        CosmicDB_FileFlags  
+    ]
+}
+
+SCOPE_BRIDGES = {
+    "Storage": { # From
+        "Operation": { # To
+            CosmicDB_ObservationKey.scan_id: CosmicDB_Scan.id,
+            CosmicDB_ObservationKey.configuration_id: CosmicDB_Configuration.id,
+            CosmicDB_ObservationKey.scan_id: CosmicDB_Observation.id,
+            CosmicDB_ObservationHit.signal_beam: CosmicDB_ObservationBeam.enumeration,
+        }
+    }
+}
