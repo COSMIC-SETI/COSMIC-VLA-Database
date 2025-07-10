@@ -4,7 +4,28 @@ This library explicates the [entities](./docs/tables.md) of the database used to
 
 The relationships can be inferred from the [classes](./docs/classes.md).
 
-## Rundown
+## Entity Hierarchy
+
+### Operation Scope
+![Operation Class Relations](./docs/entities_Operation.png)
+
+The commensal observations made under COSMIC are made within the 'scan's that the VLA sections its time into. Scans are grouped into datasets higher up.
+
+An observation during a scan requires COSMIC to configure its components (FEngines primarily, but also the data-acquisition and post-processing pipeline).
+An observation is undertaken with some calibration in place.
+An observation is a collection of subbands
+An observation can have beams that are produced in the processing of the data.
+
+Calibrations are the result of observations.
+
+
+
+Observation outputs are separated into their own database that is local to their storage unit.
+
+### Storage Scope
+![Storage Class Relations](./docs/entities_Storage.png)
+
+## Operational Rundown
 
 The programmatic interface is pythonic, using SQLAlchemy (see the page about using select statements, our implementation uses their Object Relational Mapper (ORM) entities (quickstart)).
 The boilerplate script is (selecting CosmicDB_Observation entities that have a start field after 04/09, and before 04/10, and printing each result):
