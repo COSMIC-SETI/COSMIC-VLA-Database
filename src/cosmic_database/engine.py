@@ -64,15 +64,21 @@ class CosmicDB_Engine:
             session.commit()
 
     def select_entity(self, session, entity_class, **criteria_kwargs):
-        return session.execute(
+        return session.scalars(
             sqlalchemy.select(entity_class)
             .where(*[
                 getattr(entity_class, colname) == colval
                 for colname, colval in criteria_kwargs.items()
             ])
-        ).scalar_one_or_none()
+        ).one_or_none()
 
-    def update_entity(self, session, entity, assert_exists=False):
+    def update_entity(self,
+        session,
+        entity,
+        field_update_filter=None,
+        assert_exists=False
+    ):
+        # Returns 
         remote_entity = self.select_entity(
             session,
             entity.__class__,
@@ -85,16 +91,34 @@ class CosmicDB_Engine:
         if remote_entity is None:
             if assert_exists:
                 raise AssertionError(f"Provided entity does not exist for update: {entity}.")
-            session.add(entity)
-        else:
-            for col in entity.__table__.columns:
-                if not col.primary_key:
-                    setattr(remote_entity, col.name, getattr(entity, col.name))
-            
-        session.commit()
-        session.refresh(remote_entity)
-        return remote_entity
+            return True, entity
+        
+        for col in entity.__table__.columns:
+            if col.primary_key:
+                continue
+            if field_update_filter is not None and col.name not in field_update_filter:
+                continue
+            setattr(remote_entity, col.name, getattr(entity, col.name))
+        return False, remote_entity
 
+    def update_entity_and_commit(self,
+        session,
+        entity,
+        field_update_filter=None,
+        assert_exists=False
+    ):
+        is_new, ent = self.update_entity(
+            session,
+            entity,
+            field_update_filter=field_update_filter,
+            assert_exists=assert_exists
+        )
+        if is_new:
+            session.add(ent)
+        session.commit()
+        
+        session.refresh(ent)
+        return ent
 
 def cli_create_all_tables():
     import argparse
@@ -112,7 +136,7 @@ def cli_create_all_tables():
     parser.add_argument(
         "-c", "--engine-configuration",
         type=str,
-        default=None,
+        default="/home/cosmic/conf/cosmicdb_conf.yaml",
         help="The YAML file path containing the instantiation arguments for the SQLAlchemy.engine.url.URL instance specifying the database."
     )
 
@@ -141,6 +165,8 @@ def cli_create_engine_url():
 
 
 criterion_operations = {
+    "is": lambda lhs, rhs: lhs.is_(rhs),
+    "isnot": lambda lhs, rhs: lhs.is_not(rhs),
     "eq": lambda lhs, rhs: lhs == rhs,
     "gt": lambda lhs, rhs: lhs > rhs,
     "geq": lambda lhs, rhs: lhs >= rhs,
@@ -168,6 +194,7 @@ value_conversions = {
     int: lambda val: int(val),
     float: lambda val: float(val),
     str: lambda val: val,
+    bool: lambda val: str(val).lower()[0] == "t",
 }
 
 def cli_replace_fieldnames_with_column_instances(
@@ -244,7 +271,16 @@ def cli_parse_where_criterion(operand, operator: str, value:str):
             )
         )
     else:
-        value = value_conversions[value_type](value)
+        if value_type not in value_conversions:
+            assert value in ["null", "none", "None", "NULL"], f"Can only compare entity ({operand}) against `None`."
+            assert operator in ["is", "isnot"], f"Only 'is' and 'isnot' compare entities ({operand})."
+            return criterion_operations[operator](operand, None)
+
+        if value in ["null", "none", "None", "NULL"]:
+            value = None
+        else:
+            assert operator not in ["is", "isnot"], f"Only use 'is' and 'isnot' to compare entities."
+            value = value_conversions[value_type](value)
     return criterion_operations[operator](operand, value)
 
 def cli_parse_where_arguments(entity_class_map, where_criteria: list):
@@ -284,6 +320,70 @@ def cli_parse_orderby_argument(entity_class_map, orderby):
             [field]
         )[0]
     )
+
+def cli_alter_table():
+    import argparse
+
+    from cosmic_database import entities
+    from alembic.migration import MigrationContext
+    from alembic.operations import Operations
+
+    parser = argparse.ArgumentParser(
+        description="Minor interface to expose COSMIC database entities.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    parser.add_argument(
+        "--cosmicdb-engine-configuration",
+        type=str,
+        default="/home/cosmic/conf/cosmicdb_conf.yaml",
+        help="The YAML file path specifying the COSMIC database.",
+    )
+    parser.add_argument(
+        "entity",
+        type=str,
+        choices=[
+            m.class_.__qualname__[9:] # after 'CosmicDB_' prefix
+            for m in entities.Base.registry.mappers
+        ],
+        help="The entity to alter.",
+    )
+    parser.add_argument(
+        "field",
+        type=str,
+        help="The field of the entity to alter.",
+    )
+    parser.add_argument(
+        "-d", "--drop",
+        action="store_true",
+        help="Remove the field from the entity.",
+    )
+    parser.add_argument(
+        "-a", "--add",
+        action="store_true",
+        help="Add the field to the entity.",
+    )
+    parser.add_argument(
+        "-c", "--create",
+        action="store_true",
+        help="Create the table for the entity.",
+    )
+    
+    args = parser.parse_args()
+    assert sum([args.drop, args.add, args.create]) == 1, "Choose one alteration!"
+
+    entity_name = f"CosmicDB_{args.entity}"
+    args.entity = getattr(entities, entity_name)
+    args.field = getattr(args.entity, args.field)
+
+    conn = CosmicDB_Engine(engine_conf_yaml_filepath=args.cosmicdb_engine_configuration).engine.connect()
+    ctx = MigrationContext.configure(conn)
+    op = Operations(ctx)
+    if args.create:
+        op.add_column(args.entity.__table__.fullname, args.field)
+    elif args.add:
+        op.add_column(args.entity.__table__.fullname, args.field)
+    elif args.drop:
+        op.drop_column(args.entity.__table__.fullname, args.field.name)
 
 def cli_inspect():
     import argparse
@@ -410,7 +510,7 @@ def cli_inspect():
             lines.append(f"\t{relation}: {relationship.mapper.entity.__qualname__}")
         print('\n'.join(lines))
 
-        exit(0)
+        return
 
     """
     The default entity is keyed under `None`. All relations are keyed
@@ -434,7 +534,7 @@ def cli_inspect():
             entity = entity_class_map[entity_key]
 
             if relation not in entity.__mapper__.relationships:
-                raise ValueError(f"Selected relation '{relation}' is not found in '{entity}'.")
+                raise ValueError(f"Selected relation '{relation}' is not found in '{entity}'. Relationships are:\n{entity.__mapper__.relationships.keys()}")
             relation_key = relation if entity_key is None else f"{entity_key}.{relation}"
             entity_class_map[relation_key] = entity.__mapper__.relationships[relation].mapper.entity
             join.append(getattr(entity, relation))

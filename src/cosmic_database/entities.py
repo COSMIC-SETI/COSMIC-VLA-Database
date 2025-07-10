@@ -125,7 +125,7 @@ class CosmicDB_Scan(Base):
     __tablename__ = f"cosmic_scan{TABLE_SUFFIX}"
 
     id: Mapped[String_ScanID] = mapped_column(primary_key=True)
-    dataset_id: Mapped[String_DatasetID] = mapped_column(ForeignKey(f"cosmic_dataset{TABLE_SUFFIX}.id"))
+    dataset_id: Mapped[String_DatasetID] = mapped_column(ForeignKey(f"cosmic_dataset{TABLE_SUFFIX}.id"), index=True)
     start: Mapped[datetime]
     metadata_json: Mapped[String_JSON]
     
@@ -256,14 +256,71 @@ class CosmicDB_AntennaCalibration(Base):
         back_populates="antenna"
     )
 
+class CosmicDB_HitFlags(Base):
+    __tablename__ = f"cosmic_hit_flags{TABLE_SUFFIX}"
+
+    hit_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_hit{TABLE_SUFFIX}.id"), primary_key=True)
+    
+    sarfi: Mapped[Optional[bool]]
+    location_out_of_date: Mapped[Optional[bool]]
+    no_stamp: Mapped[Optional[bool]]
+
+    hit: Mapped["CosmicDB_ObservationHit"] = relationship(
+        back_populates="flags"
+    )
+
+class CosmicDB_StampFlags(Base):
+    __tablename__ = f"cosmic_stamp_flags{TABLE_SUFFIX}"
+
+    stamp_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_stamp{TABLE_SUFFIX}.id"), primary_key=True)
+    
+    sarfi: Mapped[Optional[bool]]
+    location_out_of_date: Mapped[Optional[bool]]
+    redundant_to: Mapped[Optional[int]] = mapped_column(ForeignKey(f"cosmic_observation_stamp{TABLE_SUFFIX}.id"), nullable=True)
+    no_hits: Mapped[Optional[bool]]
+
+    stamp: Mapped["CosmicDB_ObservationStamp"] = relationship(
+        back_populates="flags",
+        foreign_keys=stamp_id
+    )
+
+class CosmicDB_StampHitRelationship(Base):
+    __tablename__ = f"cosmic_stamp_hit_relationship{TABLE_SUFFIX}"
+
+    stamp_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_stamp{TABLE_SUFFIX}.id"), primary_key=True)
+    hit_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_hit{TABLE_SUFFIX}.id"), primary_key=True)
+
+class CosmicDB_File(Base):
+    __tablename__ = f"cosmic_file{TABLE_SUFFIX}"
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    uri: Mapped[String_URI] = mapped_column(unique=True, index=True)
+    
+    flags: Mapped["CosmicDB_FileFlags"] = relationship(
+        back_populates="file",
+    )
+
+class CosmicDB_FileFlags(Base):
+    __tablename__ = f"cosmic_file_flags{TABLE_SUFFIX}"
+    file_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_file{TABLE_SUFFIX}.id"), primary_key=True)
+
+    missing: Mapped[Optional[bool]]
+    irregular_filename: Mapped[Optional[bool]]
+    to_delete: Mapped[Optional[bool]]
+    no_known_dataset: Mapped[Optional[bool]]
+
+    file: Mapped["CosmicDB_File"] = relationship(
+        back_populates="flags"
+    )
+
 class CosmicDB_ObservationBeam(Base):
     __tablename__ = f"cosmic_observation_beam{TABLE_SUFFIX}"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     observation_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation{TABLE_SUFFIX}.id"))
 
-    ra_radians: Mapped[float]
-    dec_radians: Mapped[float]
+    ra_radians: Mapped[float] = mapped_column(index=True)
+    dec_radians: Mapped[float] = mapped_column(index=True)
     source: Mapped[String_SourceName]
     start: Mapped[datetime]
     end: Mapped[datetime]
@@ -294,8 +351,9 @@ class CosmicDB_ObservationHit(Base):
     # subband coarse-channel offset (lower bound of subband)
     subband_offset: Mapped[int]
 
+    file_id: Mapped[Optional[int]] = mapped_column(ForeignKey(f"cosmic_file{TABLE_SUFFIX}.id"), nullable=True, index=True)
     # storage filepath
-    file_uri: Mapped[String_URI]
+    file_uri: Mapped[Optional[String_URI]]
     # stamp index within file
     file_local_enumeration: Mapped[int]
 
@@ -358,6 +416,12 @@ class CosmicDB_ObservationHit(Base):
         overlaps="observation"
     )
 
+    flags: Mapped["CosmicDB_HitFlags"] = relationship(
+        back_populates="hit",
+    )
+
+    file: Mapped["CosmicDB_File"] = relationship()
+
     __table_args__ = (
         ForeignKeyConstraint(
             ['observation_id', 'tuning', 'subband_offset'],
@@ -377,8 +441,7 @@ class CosmicDB_ObservationStamp(Base):
     # subband coarse-channel offset (lower bound of subband)
     subband_offset: Mapped[int]
 
-    # storage filepath
-    file_uri: Mapped[String_URI]
+    file_id: Mapped[Optional[int]] = mapped_column(ForeignKey(f"cosmic_file{TABLE_SUFFIX}.id"), nullable=True, index=True)
     # stamp index within file
     file_local_enumeration: Mapped[int]
 
@@ -453,6 +516,13 @@ class CosmicDB_ObservationStamp(Base):
     beam: Mapped["CosmicDB_ObservationBeam"] = relationship(
         back_populates="stamps"
     )
+    
+    flags: Mapped["CosmicDB_StampFlags"] = relationship(
+        back_populates="stamp",
+        foreign_keys=CosmicDB_StampFlags.stamp_id
+    )
+
+    file: Mapped["CosmicDB_File"] = relationship()
 
     __table_args__ = (
         ForeignKeyConstraint(

@@ -58,3 +58,13 @@ class CosmicDB_Observation(Base):
 
 I.e. asides from the fields of its cosmic_observation table, it has `CosmicDB_ObservationConfiguration, CosmicDB_Scan, List["CosmicDB_ObservationSubband"], List["CosmicDB_ObservationBeam"]` attributes... these would be accessible in the results of the boilerplate script above (ie result.subbands).
 
+## Database Maintenance
+### Create a table for a new ORM entity
+
+```
+from cosmic_database import entities
+from cosmic_database.engine import CosmicDB_Engine
+
+engine = CosmicDB_Engine(engine_conf_yaml_filepath="/home/cosmic/conf/cosmicdb_conf.yaml")
+entities.CosmicDB_StampHitRelationship.__table__.create(engine.engine)
+```

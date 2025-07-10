@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cosmic_database"
-version = "0.0.33"
+version = "0.1.0"
 authors = [
   { name="Ross Donnachie", email="code@radonn.co.za" },
 ]
@@ -22,6 +22,7 @@ dependencies = [
 ]
 
 [project.scripts]
+cosmicdb_alter_table = "cosmic_database:engine.cli_alter_table"
 cosmicdb_create_all_tables = "cosmic_database:engine.cli_create_all_tables"
 cosmicdb_create_engine_url = "cosmic_database:engine.cli_create_engine_url"
 cosmicdb_inspect = "cosmic_database:engine.cli_inspect"
