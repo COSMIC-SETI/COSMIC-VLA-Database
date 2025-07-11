@@ -4,7 +4,6 @@ from datetime import datetime
 from typing import List
 from typing import Optional
 from sqlalchemy import ForeignKey
-from sqlalchemy import ForeignKeyConstraint
 from sqlalchemy import String
 from sqlalchemy import Text
 from sqlalchemy import DateTime
@@ -14,6 +13,7 @@ from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import RelationshipDirection
+from sqlalchemy import UniqueConstraint
 
 from sqlalchemy.dialects import mysql
 
@@ -26,18 +26,20 @@ String_ScanID = Annotated[str, 100]
 String_AntennaName = Annotated[str, 4]
 String_JSON = str
 String_URI = Annotated[str, 255]
+String_UUID = Annotated[str, 64]
 String_Tuning = Annotated[str, 10]
 String_SourceName = Annotated[str, 80]
 
 class Base(DeclarativeBase):
     type_annotation_map = {
-        String_DatasetID: String(60),
-        String_ScanID: String(100),
-        String_AntennaName: String(4),
+        String_DatasetID: String(String_DatasetID.__metadata__[0]),
+        String_ScanID: String(String_ScanID.__metadata__[0]),
+        String_AntennaName: String(String_AntennaName.__metadata__[0]),
         String_JSON: Text,
-        String_URI: String(255),
-        String_Tuning: String(10),
-        String_SourceName: String(80),
+        String_URI: String(String_URI.__metadata__[0]),
+        String_UUID: String(String_UUID.__metadata__[0]),
+        String_Tuning: String(String_Tuning.__metadata__[0]),
+        String_SourceName: String(String_SourceName.__metadata__[0]),
         float: Double,
         datetime: DateTime().with_variant(
             mysql.DATETIME(fsp=6), "mysql"
@@ -306,18 +308,83 @@ class CosmicDB_ObservationKey(Base):
         back_populates="observation_key", cascade="all, delete-orphan"
     )
 
+class CosmicDB_Filesystem(Base):
+    __tablename__ = f"cosmic_filesystem{TABLE_SUFFIX}"
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    uuid: Mapped[String_UUID] = mapped_column(unique=True)
+    label: Mapped[String_URI]
+
+    files: Mapped[List["CosmicDB_File"]] = relationship(
+        back_populates="filesystem"
+    )
+
+    mount_history: Mapped[List["CosmicDB_FilesystemMount"]] = relationship(
+        back_populates="filesystem"
+    )
+
+class CosmicDB_FilesystemMount(Base):
+    __tablename__ = f"cosmic_filesystem_mount{TABLE_SUFFIX}"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    filesystem_id: Mapped[int] = mapped_column(ForeignKey(f"{CosmicDB_Filesystem.__tablename__}.id"), index=True)
+
+    host: Mapped[String_URI]
+    host_mountpoint: Mapped[String_URI]
+    start: Mapped[datetime] = mapped_column(index=True)
+    end: Mapped[Optional[datetime]]
+
+    network_uri: Mapped[Optional[String_URI]]
+
+    filesystem: Mapped["CosmicDB_Filesystem"] = relationship(
+        back_populates="mount_history"
+    )
+
+class CosmicDB_File(Base):
+    __tablename__ = f"cosmic_file{TABLE_SUFFIX}"
+    __table_args__ = (
+        UniqueConstraint("filesystem_id", "local_uri", name="uix_filesystem_uri"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    filesystem_id: Mapped[int] = mapped_column(ForeignKey(f"{CosmicDB_Filesystem.__tablename__}.id"), index=True)
+    local_uri: Mapped[String_URI] = mapped_column(index=True)
+    
+    flags: Mapped["CosmicDB_FileFlags"] = relationship(
+        back_populates="file",
+    )
+    
+    filesystem: Mapped["CosmicDB_Filesystem"] = relationship(
+        back_populates="files"
+    )
+
+
+class CosmicDB_FileFlags(Base):
+    __tablename__ = f"cosmic_file_flags{TABLE_SUFFIX}"
+    file_id: Mapped[int] = mapped_column(ForeignKey(f"{CosmicDB_File.__tablename__}.id"), primary_key=True)
+    
+    missing: Mapped[Optional[bool]]
+    irregular_filename: Mapped[Optional[bool]]
+    to_delete: Mapped[Optional[bool]]
+    no_known_dataset: Mapped[Optional[bool]]
+
+    file: Mapped["CosmicDB_File"] = relationship(
+        back_populates="flags"
+    )
+
 class CosmicDB_ObservationStamp(Base):
     __tablename__ = f"cosmic_observation_stamp{TABLE_SUFFIX}"
     
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    observation_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_key{TABLE_SUFFIX}.id"))
+    observation_id: Mapped[int] = mapped_column(ForeignKey(f"{CosmicDB_ObservationKey.__tablename__}.id"))
 
     # Dislocated foreign keys
     tuning: Mapped[String_Tuning]
     subband_offset: Mapped[int]
 
-    file_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_file{TABLE_SUFFIX}.id"), nullable=True, index=True)
+    file_id: Mapped[int] = mapped_column(ForeignKey(f"{CosmicDB_File.__tablename__}.id"), nullable=True, index=True)
     # stamp index within file
     file_local_enumeration: Mapped[int]
 
@@ -398,15 +465,15 @@ class CosmicDB_ObservationHit(Base):
     
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    observation_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_key{TABLE_SUFFIX}.id"))
+    observation_id: Mapped[int] = mapped_column(ForeignKey(f"{CosmicDB_ObservationKey.__tablename__}.id"))
     
     # Dislocated foreign keys
     tuning: Mapped[String_Tuning]
     subband_offset: Mapped[int]
 
-    stamp_id: Mapped[Optional[int]] = mapped_column(ForeignKey(f"cosmic_observation_stamp{TABLE_SUFFIX}.id"))
+    stamp_id: Mapped[Optional[int]] = mapped_column(ForeignKey(f"{CosmicDB_ObservationStamp.__tablename__}.id"))
 
-    file_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_file{TABLE_SUFFIX}.id"), nullable=True, index=True)
+    file_id: Mapped[int] = mapped_column(ForeignKey(f"{CosmicDB_File.__tablename__}.id"), nullable=True, index=True)
     # stamp index within file
     file_local_enumeration: Mapped[int]
 
@@ -472,7 +539,7 @@ class CosmicDB_ObservationHit(Base):
 class CosmicDB_HitFlags(Base):
     __tablename__ = f"cosmic_hit_flags{TABLE_SUFFIX}"
 
-    hit_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_hit{TABLE_SUFFIX}.id"), primary_key=True)
+    hit_id: Mapped[int] = mapped_column(ForeignKey(f"{CosmicDB_ObservationHit.__tablename__}.id"), primary_key=True)
     
     sarfi: Mapped[Optional[bool]]
     location_out_of_date: Mapped[Optional[bool]]
@@ -485,39 +552,16 @@ class CosmicDB_HitFlags(Base):
 class CosmicDB_StampFlags(Base):
     __tablename__ = f"cosmic_stamp_flags{TABLE_SUFFIX}"
 
-    stamp_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_stamp{TABLE_SUFFIX}.id"), primary_key=True)
+    stamp_id: Mapped[int] = mapped_column(ForeignKey(f"{CosmicDB_ObservationStamp.__tablename__}.id"), primary_key=True)
     
     sarfi: Mapped[Optional[bool]]
     location_out_of_date: Mapped[Optional[bool]]
-    redundant_to: Mapped[Optional[int]] = mapped_column(ForeignKey(f"cosmic_observation_stamp{TABLE_SUFFIX}.id"))
+    redundant_to: Mapped[Optional[int]] = mapped_column(ForeignKey(f"{CosmicDB_ObservationStamp.__tablename__}.id"))
     no_hits: Mapped[Optional[bool]]
 
     stamp: Mapped["CosmicDB_ObservationStamp"] = relationship(
         back_populates="flags",
         foreign_keys=stamp_id
-    )
-
-class CosmicDB_File(Base):
-    __tablename__ = f"cosmic_file{TABLE_SUFFIX}"
-    id: Mapped[int] = mapped_column(primary_key=True)
-
-    uri: Mapped[String_URI] = mapped_column(unique=True, index=True)
-    
-    flags: Mapped["CosmicDB_FileFlags"] = relationship(
-        back_populates="file",
-    )
-
-class CosmicDB_FileFlags(Base):
-    __tablename__ = f"cosmic_file_flags{TABLE_SUFFIX}"
-    file_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_file{TABLE_SUFFIX}.id"), primary_key=True)
-
-    missing: Mapped[Optional[bool]]
-    irregular_filename: Mapped[Optional[bool]]
-    to_delete: Mapped[Optional[bool]]
-    no_known_dataset: Mapped[Optional[bool]]
-
-    file: Mapped["CosmicDB_File"] = relationship(
-        back_populates="flags"
     )
 
 ## Hardcoded meta-data about the overarching database
@@ -536,12 +580,14 @@ DATABASE_SCOPES = {
     ],
     "Storage": [
         CosmicDB_ObservationKey,
+        CosmicDB_Filesystem,
+        CosmicDB_FilesystemMount,
+        CosmicDB_File,
+        CosmicDB_FileFlags,
         CosmicDB_ObservationStamp,
         CosmicDB_ObservationHit,
         CosmicDB_HitFlags,
         CosmicDB_StampFlags,
-        CosmicDB_File,
-        CosmicDB_FileFlags  
     ]
 }
 

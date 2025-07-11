@@ -120,6 +120,52 @@ id | INTEGER | X |  |  |  |
 scan_id | VARCHAR(100) |  |  |  |  | 
 configuration_id | INTEGER |  |  |  |  | 
 
+# Table `cosmic_filesystem`
+
+Class [`cosmic_database.entities.CosmicDB_Filesystem`](./classes.md#class-CosmicDB_Filesystem)
+
+Column | Type | Primary Key | Foreign Key(s) | Indexed | Nullable | Unique
+-|-|-|-|-|-|-
+id | INTEGER | X |  |  |  | 
+uuid | VARCHAR(64) |  |  |  |  | X
+label | VARCHAR(255) |  |  |  |  | 
+
+# Table `cosmic_filesystem_mount`
+
+Class [`cosmic_database.entities.CosmicDB_FilesystemMount`](./classes.md#class-CosmicDB_FilesystemMount)
+
+Column | Type | Primary Key | Foreign Key(s) | Indexed | Nullable | Unique
+-|-|-|-|-|-|-
+id | INTEGER | X |  |  |  | 
+filesystem_id | INTEGER |  | [cosmic_filesystem](#table-cosmic_filesystem).id | X |  | 
+host | VARCHAR(255) |  |  |  |  | 
+host_mountpoint | VARCHAR(255) |  |  |  |  | 
+start | DATETIME |  |  | X |  | 
+end | DATETIME |  |  |  | X | 
+network_uri | VARCHAR(255) |  |  |  | X | 
+
+# Table `cosmic_file`
+
+Class [`cosmic_database.entities.CosmicDB_File`](./classes.md#class-CosmicDB_File)
+
+Column | Type | Primary Key | Foreign Key(s) | Indexed | Nullable | Unique
+-|-|-|-|-|-|-
+id | INTEGER | X |  |  |  | 
+filesystem_id | INTEGER |  | [cosmic_filesystem](#table-cosmic_filesystem).id | X |  | 
+local_uri | VARCHAR(255) |  |  | X |  | 
+
+# Table `cosmic_file_flags`
+
+Class [`cosmic_database.entities.CosmicDB_FileFlags`](./classes.md#class-CosmicDB_FileFlags)
+
+Column | Type | Primary Key | Foreign Key(s) | Indexed | Nullable | Unique
+-|-|-|-|-|-|-
+file_id | INTEGER | X | [cosmic_file](#table-cosmic_file).id |  |  | 
+missing | BOOLEAN |  |  |  | X | 
+irregular_filename | BOOLEAN |  |  |  | X | 
+to_delete | BOOLEAN |  |  |  | X | 
+no_known_dataset | BOOLEAN |  |  |  | X | 
+
 # Table `cosmic_observation_stamp`
 
 Class [`cosmic_database.entities.CosmicDB_ObservationStamp`](./classes.md#class-CosmicDB_ObservationStamp)
@@ -217,24 +263,3 @@ sarfi | BOOLEAN |  |  |  | X |
 location_out_of_date | BOOLEAN |  |  |  | X | 
 redundant_to | INTEGER |  | [cosmic_observation_stamp](#table-cosmic_observation_stamp).id |  | X | 
 no_hits | BOOLEAN |  |  |  | X | 
-
-# Table `cosmic_file`
-
-Class [`cosmic_database.entities.CosmicDB_File`](./classes.md#class-CosmicDB_File)
-
-Column | Type | Primary Key | Foreign Key(s) | Indexed | Nullable | Unique
--|-|-|-|-|-|-
-id | INTEGER | X |  |  |  | 
-uri | VARCHAR(255) |  |  | X |  | X
-
-# Table `cosmic_file_flags`
-
-Class [`cosmic_database.entities.CosmicDB_FileFlags`](./classes.md#class-CosmicDB_FileFlags)
-
-Column | Type | Primary Key | Foreign Key(s) | Indexed | Nullable | Unique
--|-|-|-|-|-|-
-file_id | INTEGER | X | [cosmic_file](#table-cosmic_file).id |  |  | 
-missing | BOOLEAN |  |  |  | X | 
-irregular_filename | BOOLEAN |  |  |  | X | 
-to_delete | BOOLEAN |  |  |  | X | 
-no_known_dataset | BOOLEAN |  |  |  | X | 
