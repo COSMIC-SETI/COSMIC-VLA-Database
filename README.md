@@ -2,11 +2,21 @@
 
 This library explicates the [entities](./docs/tables.md) of the database used to capture observational results from COSMIC.
 
-The relationships can be inferred from the [classes](./docs/classes.md).
+Class diagrams for showing the fields and relationships are included in the generated [classes documentation](./docs/classes.md).
+
+<details>
+<summary>Expand this to see the class diagrams.</summary>
+
+![Operation Class Diagram](./docs/classes_Operation.png)
+
+![Storage Class Diagram](./docs/classes_Storage.png)
+</details>
 
 ## Entity Hierarchy
 
 ### Operation Scope
+[Full class documentation](./docs/classes.md#operation-database-scope)
+
 ![Operation Class Relations](./docs/entities_Operation.png)
 
 The commensal observations made under COSMIC are made within the 'scan's that the VLA sections its time into. Scans are grouped into datasets higher up.
@@ -18,17 +28,23 @@ An observation can have beams that are produced in the processing of the data.
 
 Calibrations are the result of observations.
 
-
-
 Observation outputs are separated into their own database that is local to their storage unit.
 
 ### Storage Scope
+[Full class documentation](./docs/classes.md#storage-database-scope)
+
 ![Storage Class Relations](./docs/entities_Storage.png)
 
-## Operational Rundown
+## Operation
+
+### CLI
+
+Provided by the package is the `cosmicdb_inspect` executable which allows selection queries to be made with results printed or written to file.
+
+### Programmatic
 
 The programmatic interface is pythonic, using SQLAlchemy (see the page about using select statements, our implementation uses their Object Relational Mapper (ORM) entities (quickstart)).
-The boilerplate script is (selecting CosmicDB_Observation entities that have a start field after 04/09, and before 04/10, and printing each result):
+An exemplary script follows, selecting CosmicDB_Observation entities that have a start field after 04/09, and before 04/10, and printing each result:
 
 ```
 from sqlalchemy
