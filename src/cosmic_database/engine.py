@@ -321,7 +321,7 @@ def cli_parse_orderby_argument(entity_class_map, orderby):
         )[0]
     )
 
-def cli_alter_table():
+def cli_alter_db():
     import argparse
 
     from cosmic_database import entities
@@ -349,8 +349,10 @@ def cli_alter_table():
     )
     parser.add_argument(
         "field",
+        nargs="?",
         type=str,
-        help="The field of the entity to alter.",
+        default=None,
+        help="The field of the entity to alter (omit to affect the entity's table).",
     )
     parser.add_argument(
         "-d", "--drop",
@@ -373,11 +375,22 @@ def cli_alter_table():
 
     entity_name = f"CosmicDB_{args.entity}"
     args.entity = getattr(entities, entity_name)
-    args.field = getattr(args.entity, args.field)
 
-    conn = CosmicDB_Engine(engine_conf_yaml_filepath=args.cosmicdb_engine_configuration).engine.connect()
+    engine = CosmicDB_Engine(engine_conf_yaml_filepath=args.cosmicdb_engine_configuration)
+    if args.field is None:
+        assert sum([args.drop, args.create]) == 1, "Table alterations are limited to create and drop."
+
+        if args.create:
+            args.entity.__table__.create(engine.engine)
+        elif args.drop:
+            args.entity.__table__.drop(engine.engine)
+        return
+    
+    conn = engine.engine.connect()
     ctx = MigrationContext.configure(conn)
     op = Operations(ctx)
+
+    args.field = getattr(args.entity, args.field)
     if args.create:
         op.add_column(args.entity.__table__.fullname, args.field)
     elif args.add:

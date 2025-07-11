@@ -22,7 +22,7 @@ dependencies = [
 ]
 
 [project.scripts]
-cosmicdb_alter_table = "cosmic_database:engine.cli_alter_table"
+cosmicdb_alter = "cosmic_database:engine.cli_alter_db"
 cosmicdb_create_all_tables = "cosmic_database:engine.cli_create_all_tables"
 cosmicdb_create_engine_url = "cosmic_database:engine.cli_create_engine_url"
 cosmicdb_inspect = "cosmic_database:engine.cli_inspect"
