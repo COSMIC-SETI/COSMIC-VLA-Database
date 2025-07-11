@@ -137,6 +137,54 @@ id | `int`
 scan_id | `str`
 hits | list([CosmicDB_ObservationHit](#class-cosmicdb_observationhit))
 stamps | list([CosmicDB_ObservationStamp](#class-cosmicdb_observationstamp))
+## Class `CosmicDB_Filesystem`
+
+Table [`cosmic_filesystem`](./tables.md#table-cosmic_filesystem)
+
+Attribute | Type
+-|-
+id | `int`
+label | `str`
+uuid | `str`
+files | list([CosmicDB_File](#class-cosmicdb_file))
+mount_history | list([CosmicDB_FilesystemMount](#class-cosmicdb_filesystemmount))
+## Class `CosmicDB_FilesystemMount`
+
+Table [`cosmic_filesystem_mount`](./tables.md#table-cosmic_filesystem_mount)
+
+Attribute | Type
+-|-
+end | `datetime`
+filesystem_id | `int`
+host | `str`
+host_mountpoint | `str`
+id | `int`
+network_uri | `str`
+start | `datetime`
+filesystem | [CosmicDB_Filesystem](#class-cosmicdb_filesystem)
+## Class `CosmicDB_File`
+
+Table [`cosmic_file`](./tables.md#table-cosmic_file)
+
+Attribute | Type
+-|-
+filesystem_id | `int`
+id | `int`
+local_uri | `str`
+flags | [CosmicDB_FileFlags](#class-cosmicdb_fileflags)
+filesystem | [CosmicDB_Filesystem](#class-cosmicdb_filesystem)
+## Class `CosmicDB_FileFlags`
+
+Table [`cosmic_file_flags`](./tables.md#table-cosmic_file_flags)
+
+Attribute | Type
+-|-
+file_id | `int`
+irregular_filename | `bool`
+missing | `bool`
+no_known_dataset | `bool`
+to_delete | `bool`
+file | [CosmicDB_File](#class-cosmicdb_file)
 ## Class `CosmicDB_ObservationStamp`
 
 Table [`cosmic_observation_stamp`](./tables.md#table-cosmic_observation_stamp)
@@ -241,24 +289,3 @@ redundant_to | `int`
 sarfi | `bool`
 stamp_id | `int`
 stamp | [CosmicDB_ObservationStamp](#class-cosmicdb_observationstamp)
-## Class `CosmicDB_File`
-
-Table [`cosmic_file`](./tables.md#table-cosmic_file)
-
-Attribute | Type
--|-
-id | `int`
-uri | `str`
-flags | [CosmicDB_FileFlags](#class-cosmicdb_fileflags)
-## Class `CosmicDB_FileFlags`
-
-Table [`cosmic_file_flags`](./tables.md#table-cosmic_file_flags)
-
-Attribute | Type
--|-
-file_id | `int`
-irregular_filename | `bool`
-missing | `bool`
-no_known_dataset | `bool`
-to_delete | `bool`
-file | [CosmicDB_File](#class-cosmicdb_file)

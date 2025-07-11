@@ -64,7 +64,7 @@ with open(os.path.join(DOCS_DIR, "tables.md"), "w") as tables_fio:
     tables_fio.write('\n'.join(docstr_lines))
 
 # Class diagraming
-
+# print(help(pydot.Dot))
 docstr_lines = []
 for db_scope, scope_entities in entities.DATABASE_SCOPES.items():
     docstr_lines.extend([
@@ -74,8 +74,8 @@ for db_scope, scope_entities in entities.DATABASE_SCOPES.items():
         "",
     ])
 
-    graph = pydot.Dot(f"CosmicDB_{db_scope}", graph_type="digraph", rankdir="LR")
-    entity_graph = pydot.Dot(f"{db_scope}_Entities", graph_type="digraph", rankdir="LR")
+    graph = pydot.Dot(f"CosmicDB_{db_scope}", graph_type="digraph", rankdir="LR", layout="dot", ranksep="1.75")
+    entity_graph = pydot.Dot(f"{db_scope}_Entities", graph_type="digraph", rankdir="LR", layout="dot", ranksep="1.0")
     scope_entity_relations = {}
     
     # for class_table_name, class_table in entities.Base.metadata.tables.items():
@@ -141,13 +141,6 @@ for db_scope, scope_entities in entities.DATABASE_SCOPES.items():
                     "innerHtml": attr_name
                 }
             )
-            
-            graph.add_edge(
-                pydot.Edge(
-                    f"{class_.__qualname__}:{attr_name}",
-                    f"{relationship.mapper.entity.__qualname__}:class"
-                )
-            )
             entity_relations.append(
                 (relationship.mapper.entity.__qualname__, attr_name, relationship.direction)
             )
@@ -189,10 +182,6 @@ for db_scope, scope_entities in entities.DATABASE_SCOPES.items():
         
         scope_entity_relations[class_.__qualname__] = entity_relations
 
-    graph.write_raw(f"classes_{db_scope}.dot")
-    graph.write_png(f"classes_{db_scope}.png", prog="dot")
-    
-    print(scope_entity_relations)
     for entity_name, entity_relations in scope_entity_relations.items():
 
         entity_table_rows = []
@@ -209,17 +198,27 @@ for db_scope, scope_entities in entities.DATABASE_SCOPES.items():
                         is_reversal = True
                     break
                 if is_reversal:
-                    print(f"IsReversal({entity_name}->{relation})")
-                    continue
-
-            print(f"{entity_name}:{entity_attr} -> {relation}: {direction}")
-            entity_graph.add_edge(
-                pydot.Edge(
-                    f"{entity_name}:{entity_attr}",
-                    f"{relation}:class",
-                    arrowhead="crow" if RelationshipDirection.ONETOMANY else "none"
+                    direction = None
+            
+            arrowhead = "none"
+            arrowtail = "none"
+            if direction == RelationshipDirection.ONETOMANY:
+                arrowhead = "none"
+                arrowtail = "inv"
+            
+            for g in [graph, entity_graph]:
+                g.add_edge(
+                    pydot.Edge(
+                        f"{entity_name}:{entity_attr}",
+                        f"{relation}:class",
+                        arrowhead=arrowhead,
+                        arrowtail=arrowtail,
+                        dir="both"
+                    )
                 )
-            )
+
+    graph.write_raw(f"classes_{db_scope}.dot")
+    graph.write_png(f"classes_{db_scope}.png", prog="dot")
 
     entity_graph.write_raw(f"entities_{db_scope}.dot")
     entity_graph.write_png(f"entities_{db_scope}.png", prog="dot")
