@@ -74,13 +74,15 @@ for db_scope, scope_entities in entities.DATABASE_SCOPES.items():
         "",
     ])
 
-    graph = pydot.Dot(f"CosmicDB_{db_scope}", graph_type="digraph", rankdir="LR", layout="dot", ranksep="1.75")
+    graph = pydot.Dot(f"CosmicDB_{db_scope}", graph_type="digraph", rankdir="LR", layout="dot", ranksep="2.25")
     entity_graph = pydot.Dot(f"{db_scope}_Entities", graph_type="digraph", rankdir="LR", layout="dot", ranksep="1.0")
     scope_entity_relations = {}
+    scope_fk_relations = {}
     
     # for class_table_name, class_table in entities.Base.metadata.tables.items():
     for class_ in scope_entities:
         entity_relations = []
+        fk_relations = []
 
         # class_ = table_class_map[class_table_name]
         class_table_name = class_.__tablename__
@@ -96,8 +98,63 @@ for db_scope, scope_entities in entities.DATABASE_SCOPES.items():
         ]
 
         
+        dot_node_pk_field = None
+        dot_node_fk_fields = []
+        dot_node_fields = []
+
+        pk_insertion_index = 1
+        for attr_name in dir(class_):
+            if attr_name not in class_table.columns:
+                continue
+            
+            docstr_lines.append(
+                " | ".join([
+                    attr_name,
+                    f"`{column.type.python_type.__qualname__}`"
+                ])
+            )
+            
+            td = {
+                "port": attr_name
+            }
+            print(f"{class_.__qualname__}.{attr_name}")
+            display_name = attr_name
+            column = class_table.columns[attr_name]
+            if column.primary_key:
+                td["port"] = "pk"
+                td["bgcolor"] = "lightgrey"
+                td["border"] = 3
+            if column.nullable:
+                td["bgcolor"] = "lightgrey:white"
+                td["style"] = "radial"
+                display_name += "*"
+            if len(column.foreign_keys) > 0:
+                display_name += " (FK)"
+                fk_relations.append((
+                    td["port"],
+                    [
+                        table_class_map[fk.column.table.name].__qualname__
+                        for fk in column.foreign_keys
+                    ]
+                ))
+
+            dot_node_field = {
+                "tr": {},
+                "td": td,
+                "innerHtml": display_name
+            }
+            if column.primary_key:
+                if dot_node_pk_field is None:
+                    dot_node_pk_field = dot_node_field
+                else:
+                    dot_node_pk_field["innerHtml"] += "<br/>" + display_name
+            elif len(column.foreign_keys) > 0:
+                dot_node_fk_fields.append(dot_node_field)
+            else:
+                dot_node_fields.append(dot_node_field)
+        
         dot_node_fields = [
-            {
+            { # header
                 "tr": {},
                 "td": {
                     "bgcolor": "black",
@@ -107,27 +164,9 @@ for db_scope, scope_entities in entities.DATABASE_SCOPES.items():
                     "color": "white"
                 },
                 "innerHtml": class_.__qualname__
-            }
-        ]
-
-        for attr_name in dir(class_):
-            if attr_name not in class_table.columns:
-                continue
-            
-            dot_node_fields.append(
-                {
-                    "tr": {},
-                    "td": {},
-                    "innerHtml": attr_name
-                }
-            )
-
-            docstr_lines.append(
-                " | ".join([
-                    attr_name,
-                    f"`{class_table.columns[attr_name].type.python_type.__qualname__}`"
-                ])
-            )
+            },
+            dot_node_pk_field
+        ] + dot_node_fk_fields + dot_node_fields
 
         entity_relationship_field_index = len(dot_node_fields)
         for attr_name, relationship in class_.__mapper__.relationships.items():
@@ -181,10 +220,9 @@ for db_scope, scope_entities in entities.DATABASE_SCOPES.items():
         )
         
         scope_entity_relations[class_.__qualname__] = entity_relations
+        scope_fk_relations[class_.__qualname__] = fk_relations
 
     for entity_name, entity_relations in scope_entity_relations.items():
-
-        entity_table_rows = []
         for relationship in entity_relations:
             relation, entity_attr, direction = relationship
             if direction == RelationshipDirection.MANYTOONE:
@@ -199,11 +237,9 @@ for db_scope, scope_entities in entities.DATABASE_SCOPES.items():
                     break
                 if is_reversal:
                     direction = None
-            
-            arrowhead = "none"
+
             arrowtail = "none"
             if direction == RelationshipDirection.ONETOMANY:
-                arrowhead = "none"
                 arrowtail = "inv"
             
             for g in [graph, entity_graph]:
@@ -211,9 +247,22 @@ for db_scope, scope_entities in entities.DATABASE_SCOPES.items():
                     pydot.Edge(
                         f"{entity_name}:{entity_attr}",
                         f"{relation}:class",
-                        arrowhead=arrowhead,
                         arrowtail=arrowtail,
-                        dir="both"
+                        dir="back",
+                    )
+                )
+
+    for entity_name, fk_relations in scope_fk_relations.items():
+        for fk_relation in fk_relations:
+            entity_attr, fk_links = fk_relation
+            for relation in fk_links:
+                graph.add_edge(
+                    pydot.Edge(
+                        f"{entity_name}:{entity_attr}",
+                        f"{relation}:pk",
+                        arrowtail="none",
+                        dir="back",
+                        color="darkgrey",
                     )
                 )
 

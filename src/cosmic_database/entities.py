@@ -384,7 +384,7 @@ class CosmicDB_ObservationStamp(Base):
     tuning: Mapped[String_Tuning]
     subband_offset: Mapped[int]
 
-    file_id: Mapped[int] = mapped_column(ForeignKey(f"{CosmicDB_File.__tablename__}.id"), nullable=True, index=True)
+    file_id: Mapped[int] = mapped_column(ForeignKey(f"{CosmicDB_File.__tablename__}.id"), index=True)
     # stamp index within file
     file_local_enumeration: Mapped[int]
 
@@ -473,7 +473,7 @@ class CosmicDB_ObservationHit(Base):
 
     stamp_id: Mapped[Optional[int]] = mapped_column(ForeignKey(f"{CosmicDB_ObservationStamp.__tablename__}.id"))
 
-    file_id: Mapped[int] = mapped_column(ForeignKey(f"{CosmicDB_File.__tablename__}.id"), nullable=True, index=True)
+    file_id: Mapped[int] = mapped_column(ForeignKey(f"{CosmicDB_File.__tablename__}.id"), index=True)
     # stamp index within file
     file_local_enumeration: Mapped[int]
 

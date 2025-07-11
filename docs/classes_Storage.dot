@@ -1,86 +1,86 @@
 digraph CosmicDB_Storage {
 layout=dot;
 rankdir=LR;
-ranksep="1.75";
+ranksep="2.25";
 CosmicDB_ObservationKey [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
 	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_ObservationKey</font></td></tr>
-	<tr><td>configuration_id</td></tr>
-	<tr><td>id</td></tr>
-	<tr><td>scan_id</td></tr>
+	<tr><td port="pk" bgcolor="lightgrey" border="3">id</td></tr>
+	<tr><td port="configuration_id">configuration_id</td></tr>
+	<tr><td port="scan_id">scan_id</td></tr>
 	<tr><td bgcolor="darkgrey" port="hits">hits</td></tr>
 	<tr><td bgcolor="darkgrey" port="stamps">stamps</td></tr>
 </table>>, shape=plain];
 CosmicDB_Filesystem [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
 	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_Filesystem</font></td></tr>
-	<tr><td>id</td></tr>
-	<tr><td>label</td></tr>
-	<tr><td>uuid</td></tr>
+	<tr><td port="pk" bgcolor="lightgrey" border="3">id</td></tr>
+	<tr><td port="label">label</td></tr>
+	<tr><td port="uuid">uuid</td></tr>
 	<tr><td bgcolor="darkgrey" port="files">files</td></tr>
 	<tr><td bgcolor="darkgrey" port="mount_history">mount_history</td></tr>
 </table>>, shape=plain];
 CosmicDB_FilesystemMount [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
 	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_FilesystemMount</font></td></tr>
-	<tr><td>end</td></tr>
-	<tr><td>filesystem_id</td></tr>
-	<tr><td>host</td></tr>
-	<tr><td>host_mountpoint</td></tr>
-	<tr><td>id</td></tr>
-	<tr><td>network_uri</td></tr>
-	<tr><td>start</td></tr>
+	<tr><td port="pk" bgcolor="lightgrey" border="3">id</td></tr>
+	<tr><td port="filesystem_id">filesystem_id (FK)</td></tr>
+	<tr><td port="end" bgcolor="lightgrey:white" style="radial">end*</td></tr>
+	<tr><td port="host">host</td></tr>
+	<tr><td port="host_mountpoint">host_mountpoint</td></tr>
+	<tr><td port="network_uri" bgcolor="lightgrey:white" style="radial">network_uri*</td></tr>
+	<tr><td port="start">start</td></tr>
 	<tr><td bgcolor="darkgrey" port="filesystem">filesystem</td></tr>
 </table>>, shape=plain];
 CosmicDB_File [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
 	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_File</font></td></tr>
-	<tr><td>filesystem_id</td></tr>
-	<tr><td>id</td></tr>
-	<tr><td>local_uri</td></tr>
+	<tr><td port="pk" bgcolor="lightgrey" border="3">id</td></tr>
+	<tr><td port="filesystem_id">filesystem_id (FK)</td></tr>
+	<tr><td port="local_uri">local_uri</td></tr>
 	<tr><td bgcolor="darkgrey" port="flags">flags</td></tr>
 	<tr><td bgcolor="darkgrey" port="filesystem">filesystem</td></tr>
 </table>>, shape=plain];
 CosmicDB_FileFlags [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
 	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_FileFlags</font></td></tr>
-	<tr><td>file_id</td></tr>
-	<tr><td>irregular_filename</td></tr>
-	<tr><td>missing</td></tr>
-	<tr><td>no_known_dataset</td></tr>
-	<tr><td>to_delete</td></tr>
+	<tr><td port="pk" bgcolor="lightgrey" border="3">file_id (FK)</td></tr>
+	<tr><td port="irregular_filename" bgcolor="lightgrey:white" style="radial">irregular_filename*</td></tr>
+	<tr><td port="missing" bgcolor="lightgrey:white" style="radial">missing*</td></tr>
+	<tr><td port="no_known_dataset" bgcolor="lightgrey:white" style="radial">no_known_dataset*</td></tr>
+	<tr><td port="to_delete" bgcolor="lightgrey:white" style="radial">to_delete*</td></tr>
 	<tr><td bgcolor="darkgrey" port="file">file</td></tr>
 </table>>, shape=plain];
 CosmicDB_ObservationStamp [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
 	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_ObservationStamp</font></td></tr>
-	<tr><td>coarse_channel</td></tr>
-	<tr><td>dec_degrees</td></tr>
-	<tr><td>fch1_mhz</td></tr>
-	<tr><td>fft_size</td></tr>
-	<tr><td>file_id</td></tr>
-	<tr><td>file_local_enumeration</td></tr>
-	<tr><td>foff_mhz</td></tr>
-	<tr><td>id</td></tr>
-	<tr><td>num_antennas</td></tr>
-	<tr><td>num_channels</td></tr>
-	<tr><td>num_polarizations</td></tr>
-	<tr><td>num_timesteps</td></tr>
-	<tr><td>observation_id</td></tr>
-	<tr><td>obsid</td></tr>
-	<tr><td>ra_hours</td></tr>
-	<tr><td>schan</td></tr>
-	<tr><td>signal_beam</td></tr>
-	<tr><td>signal_coarse_channel</td></tr>
-	<tr><td>signal_drift_rate</td></tr>
-	<tr><td>signal_drift_steps</td></tr>
-	<tr><td>signal_frequency</td></tr>
-	<tr><td>signal_incoherent_power</td></tr>
-	<tr><td>signal_index</td></tr>
-	<tr><td>signal_num_timesteps</td></tr>
-	<tr><td>signal_power</td></tr>
-	<tr><td>signal_snr</td></tr>
-	<tr><td>source_name</td></tr>
-	<tr><td>start_channel</td></tr>
-	<tr><td>subband_offset</td></tr>
-	<tr><td>telescope_id</td></tr>
-	<tr><td>tsamp</td></tr>
-	<tr><td>tstart</td></tr>
-	<tr><td>tuning</td></tr>
+	<tr><td port="pk" bgcolor="lightgrey" border="3">id</td></tr>
+	<tr><td port="file_id">file_id (FK)</td></tr>
+	<tr><td port="observation_id">observation_id (FK)</td></tr>
+	<tr><td port="coarse_channel">coarse_channel</td></tr>
+	<tr><td port="dec_degrees">dec_degrees</td></tr>
+	<tr><td port="fch1_mhz">fch1_mhz</td></tr>
+	<tr><td port="fft_size">fft_size</td></tr>
+	<tr><td port="file_local_enumeration">file_local_enumeration</td></tr>
+	<tr><td port="foff_mhz">foff_mhz</td></tr>
+	<tr><td port="num_antennas">num_antennas</td></tr>
+	<tr><td port="num_channels">num_channels</td></tr>
+	<tr><td port="num_polarizations">num_polarizations</td></tr>
+	<tr><td port="num_timesteps">num_timesteps</td></tr>
+	<tr><td port="obsid">obsid</td></tr>
+	<tr><td port="ra_hours">ra_hours</td></tr>
+	<tr><td port="schan">schan</td></tr>
+	<tr><td port="signal_beam">signal_beam</td></tr>
+	<tr><td port="signal_coarse_channel">signal_coarse_channel</td></tr>
+	<tr><td port="signal_drift_rate">signal_drift_rate</td></tr>
+	<tr><td port="signal_drift_steps">signal_drift_steps</td></tr>
+	<tr><td port="signal_frequency">signal_frequency</td></tr>
+	<tr><td port="signal_incoherent_power">signal_incoherent_power</td></tr>
+	<tr><td port="signal_index">signal_index</td></tr>
+	<tr><td port="signal_num_timesteps">signal_num_timesteps</td></tr>
+	<tr><td port="signal_power">signal_power</td></tr>
+	<tr><td port="signal_snr">signal_snr</td></tr>
+	<tr><td port="source_name">source_name</td></tr>
+	<tr><td port="start_channel">start_channel</td></tr>
+	<tr><td port="subband_offset">subband_offset</td></tr>
+	<tr><td port="telescope_id">telescope_id</td></tr>
+	<tr><td port="tsamp">tsamp</td></tr>
+	<tr><td port="tstart">tstart</td></tr>
+	<tr><td port="tuning">tuning</td></tr>
 	<tr><td bgcolor="darkgrey" port="file">file</td></tr>
 	<tr><td bgcolor="darkgrey" port="observation_key">observation_key</td></tr>
 	<tr><td bgcolor="darkgrey" port="flags">flags</td></tr>
@@ -88,34 +88,34 @@ CosmicDB_ObservationStamp [label=<<table border="0" cellborder="1" cellspacing="
 </table>>, shape=plain];
 CosmicDB_ObservationHit [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
 	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_ObservationHit</font></td></tr>
-	<tr><td>coarse_channel</td></tr>
-	<tr><td>dec_degrees</td></tr>
-	<tr><td>fch1_mhz</td></tr>
-	<tr><td>file_id</td></tr>
-	<tr><td>file_local_enumeration</td></tr>
-	<tr><td>foff_mhz</td></tr>
-	<tr><td>id</td></tr>
-	<tr><td>num_channels</td></tr>
-	<tr><td>num_timesteps</td></tr>
-	<tr><td>observation_id</td></tr>
-	<tr><td>ra_hours</td></tr>
-	<tr><td>signal_beam</td></tr>
-	<tr><td>signal_coarse_channel</td></tr>
-	<tr><td>signal_drift_rate</td></tr>
-	<tr><td>signal_drift_steps</td></tr>
-	<tr><td>signal_frequency</td></tr>
-	<tr><td>signal_index</td></tr>
-	<tr><td>signal_num_timesteps</td></tr>
-	<tr><td>signal_power</td></tr>
-	<tr><td>signal_snr</td></tr>
-	<tr><td>source_name</td></tr>
-	<tr><td>stamp_id</td></tr>
-	<tr><td>start_channel</td></tr>
-	<tr><td>subband_offset</td></tr>
-	<tr><td>telescope_id</td></tr>
-	<tr><td>tsamp</td></tr>
-	<tr><td>tstart</td></tr>
-	<tr><td>tuning</td></tr>
+	<tr><td port="pk" bgcolor="lightgrey" border="3">id</td></tr>
+	<tr><td port="file_id">file_id (FK)</td></tr>
+	<tr><td port="observation_id">observation_id (FK)</td></tr>
+	<tr><td port="stamp_id" bgcolor="lightgrey:white" style="radial">stamp_id* (FK)</td></tr>
+	<tr><td port="coarse_channel">coarse_channel</td></tr>
+	<tr><td port="dec_degrees">dec_degrees</td></tr>
+	<tr><td port="fch1_mhz">fch1_mhz</td></tr>
+	<tr><td port="file_local_enumeration">file_local_enumeration</td></tr>
+	<tr><td port="foff_mhz">foff_mhz</td></tr>
+	<tr><td port="num_channels">num_channels</td></tr>
+	<tr><td port="num_timesteps">num_timesteps</td></tr>
+	<tr><td port="ra_hours">ra_hours</td></tr>
+	<tr><td port="signal_beam">signal_beam</td></tr>
+	<tr><td port="signal_coarse_channel">signal_coarse_channel</td></tr>
+	<tr><td port="signal_drift_rate">signal_drift_rate</td></tr>
+	<tr><td port="signal_drift_steps">signal_drift_steps</td></tr>
+	<tr><td port="signal_frequency">signal_frequency</td></tr>
+	<tr><td port="signal_index">signal_index</td></tr>
+	<tr><td port="signal_num_timesteps">signal_num_timesteps</td></tr>
+	<tr><td port="signal_power">signal_power</td></tr>
+	<tr><td port="signal_snr">signal_snr</td></tr>
+	<tr><td port="source_name">source_name</td></tr>
+	<tr><td port="start_channel">start_channel</td></tr>
+	<tr><td port="subband_offset">subband_offset</td></tr>
+	<tr><td port="telescope_id">telescope_id</td></tr>
+	<tr><td port="tsamp">tsamp</td></tr>
+	<tr><td port="tstart">tstart</td></tr>
+	<tr><td port="tuning">tuning</td></tr>
 	<tr><td bgcolor="darkgrey" port="file">file</td></tr>
 	<tr><td bgcolor="darkgrey" port="observation_key">observation_key</td></tr>
 	<tr><td bgcolor="darkgrey" port="flags">flags</td></tr>
@@ -123,37 +123,48 @@ CosmicDB_ObservationHit [label=<<table border="0" cellborder="1" cellspacing="0"
 </table>>, shape=plain];
 CosmicDB_HitFlags [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
 	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_HitFlags</font></td></tr>
-	<tr><td>hit_id</td></tr>
-	<tr><td>location_out_of_date</td></tr>
-	<tr><td>no_stamp</td></tr>
-	<tr><td>sarfi</td></tr>
+	<tr><td port="pk" bgcolor="lightgrey" border="3">hit_id (FK)</td></tr>
+	<tr><td port="location_out_of_date" bgcolor="lightgrey:white" style="radial">location_out_of_date*</td></tr>
+	<tr><td port="no_stamp" bgcolor="lightgrey:white" style="radial">no_stamp*</td></tr>
+	<tr><td port="sarfi" bgcolor="lightgrey:white" style="radial">sarfi*</td></tr>
 	<tr><td bgcolor="darkgrey" port="hit">hit</td></tr>
 </table>>, shape=plain];
 CosmicDB_StampFlags [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
 	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_StampFlags</font></td></tr>
-	<tr><td>location_out_of_date</td></tr>
-	<tr><td>no_hits</td></tr>
-	<tr><td>redundant_to</td></tr>
-	<tr><td>sarfi</td></tr>
-	<tr><td>stamp_id</td></tr>
+	<tr><td port="pk" bgcolor="lightgrey" border="3">stamp_id (FK)</td></tr>
+	<tr><td port="redundant_to" bgcolor="lightgrey:white" style="radial">redundant_to* (FK)</td></tr>
+	<tr><td port="location_out_of_date" bgcolor="lightgrey:white" style="radial">location_out_of_date*</td></tr>
+	<tr><td port="no_hits" bgcolor="lightgrey:white" style="radial">no_hits*</td></tr>
+	<tr><td port="sarfi" bgcolor="lightgrey:white" style="radial">sarfi*</td></tr>
 	<tr><td bgcolor="darkgrey" port="stamp">stamp</td></tr>
 </table>>, shape=plain];
-CosmicDB_ObservationKey:hits -> CosmicDB_ObservationHit:class  [arrowhead=none, arrowtail=inv, dir=both];
-CosmicDB_ObservationKey:stamps -> CosmicDB_ObservationStamp:class  [arrowhead=none, arrowtail=inv, dir=both];
-CosmicDB_Filesystem:files -> CosmicDB_File:class  [arrowhead=none, arrowtail=inv, dir=both];
-CosmicDB_Filesystem:mount_history -> CosmicDB_FilesystemMount:class  [arrowhead=none, arrowtail=inv, dir=both];
-CosmicDB_FilesystemMount:filesystem -> CosmicDB_Filesystem:class  [arrowhead=none, arrowtail=none, dir=both];
-CosmicDB_File:flags -> CosmicDB_FileFlags:class  [arrowhead=none, arrowtail=inv, dir=both];
-CosmicDB_File:filesystem -> CosmicDB_Filesystem:class  [arrowhead=none, arrowtail=none, dir=both];
-CosmicDB_FileFlags:file -> CosmicDB_File:class  [arrowhead=none, arrowtail=none, dir=both];
-CosmicDB_ObservationStamp:file -> CosmicDB_File:class  [arrowhead=none, arrowtail=none, dir=both];
-CosmicDB_ObservationStamp:observation_key -> CosmicDB_ObservationKey:class  [arrowhead=none, arrowtail=none, dir=both];
-CosmicDB_ObservationStamp:flags -> CosmicDB_StampFlags:class  [arrowhead=none, arrowtail=inv, dir=both];
-CosmicDB_ObservationStamp:hits -> CosmicDB_ObservationHit:class  [arrowhead=none, arrowtail=inv, dir=both];
-CosmicDB_ObservationHit:file -> CosmicDB_File:class  [arrowhead=none, arrowtail=none, dir=both];
-CosmicDB_ObservationHit:observation_key -> CosmicDB_ObservationKey:class  [arrowhead=none, arrowtail=none, dir=both];
-CosmicDB_ObservationHit:flags -> CosmicDB_HitFlags:class  [arrowhead=none, arrowtail=inv, dir=both];
-CosmicDB_ObservationHit:stamp -> CosmicDB_ObservationStamp:class  [arrowhead=none, arrowtail=none, dir=both];
-CosmicDB_HitFlags:hit -> CosmicDB_ObservationHit:class  [arrowhead=none, arrowtail=none, dir=both];
-CosmicDB_StampFlags:stamp -> CosmicDB_ObservationStamp:class  [arrowhead=none, arrowtail=none, dir=both];
+CosmicDB_ObservationKey:hits -> CosmicDB_ObservationHit:class  [arrowtail=inv, dir=back];
+CosmicDB_ObservationKey:stamps -> CosmicDB_ObservationStamp:class  [arrowtail=inv, dir=back];
+CosmicDB_Filesystem:files -> CosmicDB_File:class  [arrowtail=inv, dir=back];
+CosmicDB_Filesystem:mount_history -> CosmicDB_FilesystemMount:class  [arrowtail=inv, dir=back];
+CosmicDB_FilesystemMount:filesystem -> CosmicDB_Filesystem:class  [arrowtail=none, dir=back];
+CosmicDB_File:flags -> CosmicDB_FileFlags:class  [arrowtail=inv, dir=back];
+CosmicDB_File:filesystem -> CosmicDB_Filesystem:class  [arrowtail=none, dir=back];
+CosmicDB_FileFlags:file -> CosmicDB_File:class  [arrowtail=none, dir=back];
+CosmicDB_ObservationStamp:file -> CosmicDB_File:class  [arrowtail=none, dir=back];
+CosmicDB_ObservationStamp:observation_key -> CosmicDB_ObservationKey:class  [arrowtail=none, dir=back];
+CosmicDB_ObservationStamp:flags -> CosmicDB_StampFlags:class  [arrowtail=inv, dir=back];
+CosmicDB_ObservationStamp:hits -> CosmicDB_ObservationHit:class  [arrowtail=inv, dir=back];
+CosmicDB_ObservationHit:file -> CosmicDB_File:class  [arrowtail=none, dir=back];
+CosmicDB_ObservationHit:observation_key -> CosmicDB_ObservationKey:class  [arrowtail=none, dir=back];
+CosmicDB_ObservationHit:flags -> CosmicDB_HitFlags:class  [arrowtail=inv, dir=back];
+CosmicDB_ObservationHit:stamp -> CosmicDB_ObservationStamp:class  [arrowtail=none, dir=back];
+CosmicDB_HitFlags:hit -> CosmicDB_ObservationHit:class  [arrowtail=none, dir=back];
+CosmicDB_StampFlags:stamp -> CosmicDB_ObservationStamp:class  [arrowtail=none, dir=back];
+CosmicDB_FilesystemMount:filesystem_id -> CosmicDB_Filesystem:pk  [arrowtail=none, color=darkgrey, dir=back];
+CosmicDB_File:filesystem_id -> CosmicDB_Filesystem:pk  [arrowtail=none, color=darkgrey, dir=back];
+CosmicDB_FileFlags:pk -> CosmicDB_File:pk  [arrowtail=none, color=darkgrey, dir=back];
+CosmicDB_ObservationStamp:file_id -> CosmicDB_File:pk  [arrowtail=none, color=darkgrey, dir=back];
+CosmicDB_ObservationStamp:observation_id -> CosmicDB_ObservationKey:pk  [arrowtail=none, color=darkgrey, dir=back];
+CosmicDB_ObservationHit:file_id -> CosmicDB_File:pk  [arrowtail=none, color=darkgrey, dir=back];
+CosmicDB_ObservationHit:observation_id -> CosmicDB_ObservationKey:pk  [arrowtail=none, color=darkgrey, dir=back];
+CosmicDB_ObservationHit:stamp_id -> CosmicDB_ObservationStamp:pk  [arrowtail=none, color=darkgrey, dir=back];
+CosmicDB_HitFlags:pk -> CosmicDB_ObservationHit:pk  [arrowtail=none, color=darkgrey, dir=back];
+CosmicDB_StampFlags:redundant_to -> CosmicDB_ObservationStamp:pk  [arrowtail=none, color=darkgrey, dir=back];
+CosmicDB_StampFlags:pk -> CosmicDB_ObservationStamp:pk  [arrowtail=none, color=darkgrey, dir=back];
 }

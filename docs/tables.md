@@ -176,7 +176,7 @@ id | INTEGER | X |  |  |  |
 observation_id | INTEGER |  | [cosmic_observation_key](#table-cosmic_observation_key).id |  |  | 
 tuning | VARCHAR(10) |  |  |  |  | 
 subband_offset | INTEGER |  |  |  |  | 
-file_id | INTEGER |  | [cosmic_file](#table-cosmic_file).id | X | X | 
+file_id | INTEGER |  | [cosmic_file](#table-cosmic_file).id | X |  | 
 file_local_enumeration | INTEGER |  |  |  |  | 
 source_name | VARCHAR(80) |  |  |  |  | 
 ra_hours | DOUBLE |  |  |  |  | 
@@ -217,7 +217,7 @@ observation_id | INTEGER |  | [cosmic_observation_key](#table-cosmic_observation
 tuning | VARCHAR(10) |  |  |  |  | 
 subband_offset | INTEGER |  |  |  |  | 
 stamp_id | INTEGER |  | [cosmic_observation_stamp](#table-cosmic_observation_stamp).id |  | X | 
-file_id | INTEGER |  | [cosmic_file](#table-cosmic_file).id | X | X | 
+file_id | INTEGER |  | [cosmic_file](#table-cosmic_file).id | X |  | 
 file_local_enumeration | INTEGER |  |  |  |  | 
 signal_frequency | DOUBLE |  |  |  |  | 
 signal_index | INTEGER |  |  |  |  | 
