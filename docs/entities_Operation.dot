@@ -48,6 +48,14 @@ CosmicDB_ObservationBeam [label=<<table border="0" cellborder="1" cellspacing="0
 	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_ObservationBeam</font></td></tr>
 	<tr><td bgcolor="darkgrey" port="observation">observation</td></tr>
 </table>>, shape=plain];
+CosmicDB_Filesystem [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_Filesystem</font></td></tr>
+	<tr><td bgcolor="darkgrey" port="mount_history">mount_history</td></tr>
+</table>>, shape=plain];
+CosmicDB_FilesystemMount [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_FilesystemMount</font></td></tr>
+	<tr><td bgcolor="darkgrey" port="filesystem">filesystem</td></tr>
+</table>>, shape=plain];
 CosmicDB_Dataset:scans -> CosmicDB_Scan:class  [arrowtail=inv, dir=back];
 CosmicDB_Scan:dataset -> CosmicDB_Dataset:class  [arrowtail=none, dir=back];
 CosmicDB_Scan:configurations -> CosmicDB_Configuration:class  [arrowtail=inv, dir=back];
@@ -67,4 +75,6 @@ CosmicDB_Observation:beams -> CosmicDB_ObservationBeam:class  [arrowtail=inv, di
 CosmicDB_Observation:active_calibration -> CosmicDB_Calibration:class  [arrowtail=none, dir=back];
 CosmicDB_ObservationSubband:observation -> CosmicDB_Observation:class  [arrowtail=none, dir=back];
 CosmicDB_ObservationBeam:observation -> CosmicDB_Observation:class  [arrowtail=none, dir=back];
+CosmicDB_Filesystem:mount_history -> CosmicDB_FilesystemMount:class  [arrowtail=inv, dir=back];
+CosmicDB_FilesystemMount:filesystem -> CosmicDB_Filesystem:class  [arrowtail=none, dir=back];
 }

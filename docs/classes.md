@@ -123,6 +123,29 @@ ra_radians | `int`
 source | `float`
 start | `str`
 observation | [CosmicDB_Observation](#class-cosmicdb_observation)
+## Class `CosmicDB_Filesystem`
+
+Table [`cosmic_filesystem`](./tables.md#table-cosmic_filesystem)
+
+Attribute | Type
+-|-
+id | `datetime`
+label | `str`
+mount_history | list([CosmicDB_FilesystemMount](#class-cosmicdb_filesystemmount))
+## Class `CosmicDB_FilesystemMount`
+
+Table [`cosmic_filesystem_mount`](./tables.md#table-cosmic_filesystem_mount)
+
+Attribute | Type
+-|-
+end | `str`
+filesystem_id | `datetime`
+host | `str`
+host_mountpoint | `str`
+id | `str`
+network_uri | `int`
+start | `str`
+filesystem | [CosmicDB_Filesystem](#class-cosmicdb_filesystem)
 # Storage Database Scope
 ![Storage Class Diagram](./classes_Storage.png)
 
@@ -137,42 +160,16 @@ id | `int`
 scan_id | `int`
 hits | list([CosmicDB_ObservationHit](#class-cosmicdb_observationhit))
 stamps | list([CosmicDB_ObservationStamp](#class-cosmicdb_observationstamp))
-## Class `CosmicDB_Filesystem`
-
-Table [`cosmic_filesystem`](./tables.md#table-cosmic_filesystem)
-
-Attribute | Type
--|-
-id | `str`
-label | `int`
-uuid | `str`
-files | list([CosmicDB_File](#class-cosmicdb_file))
-mount_history | list([CosmicDB_FilesystemMount](#class-cosmicdb_filesystemmount))
-## Class `CosmicDB_FilesystemMount`
-
-Table [`cosmic_filesystem_mount`](./tables.md#table-cosmic_filesystem_mount)
-
-Attribute | Type
--|-
-end | `str`
-filesystem_id | `datetime`
-host | `int`
-host_mountpoint | `str`
-id | `str`
-network_uri | `int`
-start | `str`
-filesystem | [CosmicDB_Filesystem](#class-cosmicdb_filesystem)
 ## Class `CosmicDB_File`
 
 Table [`cosmic_file`](./tables.md#table-cosmic_file)
 
 Attribute | Type
 -|-
-filesystem_id | `datetime`
-id | `int`
+filesystem_id | `str`
+id | `str`
 local_uri | `int`
 flags | [CosmicDB_FileFlags](#class-cosmicdb_fileflags)
-filesystem | [CosmicDB_Filesystem](#class-cosmicdb_filesystem)
 ## Class `CosmicDB_FileFlags`
 
 Table [`cosmic_file_flags`](./tables.md#table-cosmic_file_flags)

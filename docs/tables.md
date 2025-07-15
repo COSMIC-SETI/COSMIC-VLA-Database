@@ -110,6 +110,29 @@ source | VARCHAR(80) |  |  | X |  |
 start | DATETIME |  |  | X |  | 
 end | DATETIME |  |  |  |  | 
 
+# Table `cosmic_filesystem`
+
+Class [`cosmic_database.entities.CosmicDB_Filesystem`](./classes.md#class-CosmicDB_Filesystem)
+
+Column | Type | Primary Key | Foreign Key(s) | Indexed | Nullable | Unique
+-|-|-|-|-|-|-
+id | VARCHAR(64) | X |  |  |  | 
+label | VARCHAR(255) |  |  |  |  | 
+
+# Table `cosmic_filesystem_mount`
+
+Class [`cosmic_database.entities.CosmicDB_FilesystemMount`](./classes.md#class-CosmicDB_FilesystemMount)
+
+Column | Type | Primary Key | Foreign Key(s) | Indexed | Nullable | Unique
+-|-|-|-|-|-|-
+id | INTEGER | X |  |  |  | 
+filesystem_id | VARCHAR(64) |  | [cosmic_filesystem](#table-cosmic_filesystem).id | X |  | 
+host | VARCHAR(255) |  |  |  |  | 
+host_mountpoint | VARCHAR(255) |  |  |  |  | 
+start | DATETIME |  |  | X |  | 
+end | DATETIME |  |  |  | X | 
+network_uri | VARCHAR(255) |  |  |  | X | 
+
 # Table `cosmic_observation_key`
 
 Class [`cosmic_database.entities.CosmicDB_ObservationKey`](./classes.md#class-CosmicDB_ObservationKey)
@@ -120,30 +143,6 @@ id | INTEGER | X |  |  |  |
 scan_id | VARCHAR(100) |  |  |  |  | 
 configuration_id | INTEGER |  |  |  |  | 
 
-# Table `cosmic_filesystem`
-
-Class [`cosmic_database.entities.CosmicDB_Filesystem`](./classes.md#class-CosmicDB_Filesystem)
-
-Column | Type | Primary Key | Foreign Key(s) | Indexed | Nullable | Unique
--|-|-|-|-|-|-
-id | INTEGER | X |  |  |  | 
-uuid | VARCHAR(64) |  |  |  |  | X
-label | VARCHAR(255) |  |  |  |  | 
-
-# Table `cosmic_filesystem_mount`
-
-Class [`cosmic_database.entities.CosmicDB_FilesystemMount`](./classes.md#class-CosmicDB_FilesystemMount)
-
-Column | Type | Primary Key | Foreign Key(s) | Indexed | Nullable | Unique
--|-|-|-|-|-|-
-id | INTEGER | X |  |  |  | 
-filesystem_id | INTEGER |  | [cosmic_filesystem](#table-cosmic_filesystem).id | X |  | 
-host | VARCHAR(255) |  |  |  |  | 
-host_mountpoint | VARCHAR(255) |  |  |  |  | 
-start | DATETIME |  |  | X |  | 
-end | DATETIME |  |  |  | X | 
-network_uri | VARCHAR(255) |  |  |  | X | 
-
 # Table `cosmic_file`
 
 Class [`cosmic_database.entities.CosmicDB_File`](./classes.md#class-CosmicDB_File)
@@ -151,7 +150,7 @@ Class [`cosmic_database.entities.CosmicDB_File`](./classes.md#class-CosmicDB_Fil
 Column | Type | Primary Key | Foreign Key(s) | Indexed | Nullable | Unique
 -|-|-|-|-|-|-
 id | INTEGER | X |  |  |  | 
-filesystem_id | INTEGER |  | [cosmic_filesystem](#table-cosmic_filesystem).id | X |  | 
+filesystem_id | VARCHAR(64) |  |  | X |  | 
 local_uri | VARCHAR(255) |  |  | X |  | 
 
 # Table `cosmic_file_flags`

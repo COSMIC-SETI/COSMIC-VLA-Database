@@ -117,7 +117,7 @@ for db_scope, scope_entities in entities.DATABASE_SCOPES.items():
             td = {
                 "port": attr_name
             }
-            print(f"{class_.__qualname__}.{attr_name}")
+
             display_name = attr_name
             column = class_table.columns[attr_name]
             if column.primary_key:
