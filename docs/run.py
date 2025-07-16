@@ -64,7 +64,69 @@ with open(os.path.join(DOCS_DIR, "tables.md"), "w") as tables_fio:
     tables_fio.write('\n'.join(docstr_lines))
 
 # Class diagraming
-# print(help(pydot.Dot))
+
+scoped_entity_graph = pydot.Dot(f"CosmicDB", graph_type="digraph", rankdir="LR", layout="dot", nodesep=0.25, ranksep=1)
+scope_subgraph_map = {
+    scope: pydot.Subgraph(graph_name=scope, label=f'"{scope} Scope"', cluster=True)
+    for scope in entities.DATABASE_SCOPES.keys()
+}
+
+entity_fields_map = {}
+entity_scope_map = {}
+for one_end, other_end in entities.SCOPE_BRIDGES.items():
+    edge_ends = []
+    for end_tup in [(one_end, "e"), (other_end, "w")]:
+        end, end_edge_portpos = end_tup
+        end_class = table_class_map[end.table.name]
+        edge_ends.append(f"{end_class.__qualname__}:{end.name}:{end_edge_portpos}")
+
+        end_scope_name = None
+        for scope, scope_entities in entities.DATABASE_SCOPES.items():
+            if end_class in scope_entities:
+                end_scope_name = scope
+                break
+        
+        assert end_scope_name is not None
+        entity_scope_map[end_class.__qualname__] = end_scope_name
+
+        entity_bridge_fields = entity_fields_map.get(
+            end_class.__qualname__,
+            [{ # header
+                "tr": {},
+                "td": {
+                    "bgcolor": "black",
+                    "port": "class",
+                },
+                "font": {
+                    "color": "white"
+                },
+                "innerHtml": end_class.__qualname__
+            }],
+        )
+        entity_bridge_fields.append(
+            {
+                "tr": {},
+                "td": {
+                    "port": end.name
+                },
+                "innerHtml": end.name
+            }
+        )
+
+        entity_fields_map[end_class.__qualname__] = entity_bridge_fields
+
+    scoped_entity_graph.add_edge(
+        pydot.Edge(
+            edge_ends[0],
+            edge_ends[1],
+            arrowtail="none",
+            dir="back",
+            color="darkgrey",
+            penwidth=3.0,
+            weight=100
+        )
+    )
+
 docstr_lines = []
 for db_scope, scope_entities in entities.DATABASE_SCOPES.items():
     docstr_lines.extend([
@@ -74,8 +136,8 @@ for db_scope, scope_entities in entities.DATABASE_SCOPES.items():
         "",
     ])
 
-    graph = pydot.Dot(f"CosmicDB_{db_scope}", graph_type="digraph", rankdir="LR", layout="dot", ranksep="2.25")
-    entity_graph = pydot.Dot(f"{db_scope}_Entities", graph_type="digraph", rankdir="LR", layout="dot", ranksep="1.0")
+    graph = pydot.Dot(f"CosmicDB_{db_scope}", graph_type="digraph", rankdir="LR", layout="dot", nodesep=0.5, ranksep=2.5)
+    entity_graph = scope_subgraph_map[db_scope] #pydot.Dot(f"{db_scope}_Entities", graph_type="digraph", rankdir="LR", layout="dot", ranksep="1.0")
     scope_entity_relations = {}
     scope_fk_relations = {}
     
@@ -124,6 +186,9 @@ for db_scope, scope_entities in entities.DATABASE_SCOPES.items():
                 td["port"] = "pk"
                 td["bgcolor"] = "lightgrey"
                 td["border"] = 3
+                if column.type.python_type != int:
+                    display_name += f" {{{column.type.python_type.__qualname__}}}"
+
             if column.nullable:
                 td["bgcolor"] = "lightgrey:white"
                 td["style"] = "radial"
@@ -195,6 +260,20 @@ for db_scope, scope_entities in entities.DATABASE_SCOPES.items():
                 ])
             )
         
+        if class_.__qualname__ not in entity_fields_map:
+            # entity doesn't bridge scopes and hasn't been processed
+            entity_fields_map[class_.__qualname__] = dot_node_fields[0:1]
+            scope_name = None
+            for scope, scope_entities in entities.DATABASE_SCOPES.items():
+                if class_ in scope_entities:
+                    scope_name = scope
+                    break
+            
+            assert scope_name is not None, f"{class_.__qualname__} has not been assigned to a scope."
+            entity_scope_map[class_.__qualname__] = scope_name
+
+        entity_fields_map[class_.__qualname__].extend(dot_node_fields[entity_relationship_field_index:])
+
         dot_node_fields = list(map(
             field_html,
             dot_node_fields
@@ -208,17 +287,7 @@ for db_scope, scope_entities in entities.DATABASE_SCOPES.items():
                 label=f'<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">\n\t{table_rows}\n</table>>'
             )
         )
-    
-        
-        table_rows = "\n\t".join(dot_node_fields[0:1] + dot_node_fields[entity_relationship_field_index:])
-        entity_graph.add_node(
-            pydot.Node(
-                class_.__qualname__,
-                shape="plain",
-                label=f'<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">\n\t{table_rows}\n</table>>'
-            )
-        )
-        
+
         scope_entity_relations[class_.__qualname__] = entity_relations
         scope_fk_relations[class_.__qualname__] = fk_relations
 
@@ -242,7 +311,7 @@ for db_scope, scope_entities in entities.DATABASE_SCOPES.items():
             if direction == RelationshipDirection.ONETOMANY:
                 arrowtail = "inv"
             
-            for g in [graph, entity_graph]:
+            for g in [graph, scoped_entity_graph]:
                 g.add_edge(
                     pydot.Edge(
                         f"{entity_name}:{entity_attr}",
@@ -263,14 +332,107 @@ for db_scope, scope_entities in entities.DATABASE_SCOPES.items():
                         arrowtail="none",
                         dir="back",
                         color="darkgrey",
+                        penwidth=3.0,
                     )
                 )
 
+    
+    legend_subgraph = pydot.Subgraph(graph_name="legend", label=f'"Legend"', cluster=True)
+    for edge_name, edge_attr in {
+        "Foreign Relations": {
+            "arrowtail": "none",
+            "dir": "back",
+            "color": "black",
+        },
+        "Foreign Keys": {
+            "arrowtail": "none",
+            "dir": "back",
+            "color": "darkgrey",
+            "penwidth": 3.0,
+        },
+    }.items():
+        
+        for i in [0, 1]:
+            legend_subgraph.add_node(
+                pydot.Node(
+                    f"{edge_name}_{i}",
+                    label="" if i == 0 else edge_name,
+                    shape="none",
+                )
+            )
+        
+        legend_subgraph.add_edge(
+            pydot.Edge(
+                f"{edge_name}_0",
+                f"{edge_name}_1",
+                **edge_attr
+            )
+        )
+
+    graph.add_subgraph(legend_subgraph)
     graph.write_raw(f"classes_{db_scope}.dot")
     graph.write_png(f"classes_{db_scope}.png", prog="dot")
 
-    entity_graph.write_raw(f"entities_{db_scope}.dot")
-    entity_graph.write_png(f"entities_{db_scope}.png", prog="dot")
 
 with open(os.path.join(DOCS_DIR, "classes.md"), "w") as classes_fio:
     classes_fio.write('\n'.join(docstr_lines))
+
+for entity_name, fields in entity_fields_map.items():
+    scope = entity_scope_map[entity_name]
+    subgraph = scope_subgraph_map[scope]
+    
+    table_rows = list(map(
+        field_html,
+        fields
+    ))
+    
+    table_rows = "\n\t".join(table_rows)
+    
+    subgraph.add_node(
+        pydot.Node(
+            entity_name,
+            shape="plain",
+            label=f'<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">\n\t{table_rows}\n</table>>'
+        )
+    )
+
+for _, subgraph in scope_subgraph_map.items():
+    scoped_entity_graph.add_subgraph(subgraph)
+
+legend_subgraph = pydot.Subgraph(graph_name="legend", label=f'"Legend"', cluster=True)
+for edge_name, edge_attr in {
+    "Foreign Relations": {
+        "arrowtail": "none",
+        "dir": "back",
+        "color": "black",
+    },
+    "Dislocated Foreign Keys": {
+        "arrowtail": "none",
+        "dir": "back",
+        "color": "darkgrey",
+        "penwidth": 3.0,
+    },
+}.items():
+    
+    for i in [0, 1]:
+        legend_subgraph.add_node(
+            pydot.Node(
+                f"{edge_name}_{i}",
+                label="" if i == 0 else edge_name,
+                shape="none",
+            )
+        )
+    
+    legend_subgraph.add_edge(
+        pydot.Edge(
+            f"{edge_name}_0",
+            f"{edge_name}_1",
+            **edge_attr
+        )
+    )
+
+
+scoped_entity_graph.add_subgraph(legend_subgraph)
+
+scoped_entity_graph.write_raw(f"entity_relationships.dot")
+scoped_entity_graph.write_png(f"entity_relationships.png", prog="dot")

@@ -1,3 +1,26 @@
+# Table `cosmic_filesystem`
+
+Class [`cosmic_database.entities.CosmicDB_Filesystem`](./classes.md#class-CosmicDB_Filesystem)
+
+Column | Type | Primary Key | Foreign Key(s) | Indexed | Nullable | Unique
+-|-|-|-|-|-|-
+uuid | VARCHAR(64) | X |  |  |  | 
+label | VARCHAR(255) |  |  |  |  | 
+
+# Table `cosmic_filesystem_mount`
+
+Class [`cosmic_database.entities.CosmicDB_FilesystemMount`](./classes.md#class-CosmicDB_FilesystemMount)
+
+Column | Type | Primary Key | Foreign Key(s) | Indexed | Nullable | Unique
+-|-|-|-|-|-|-
+id | INTEGER | X |  |  |  | 
+filesystem_uuid | VARCHAR(64) |  | [cosmic_filesystem](#table-cosmic_filesystem).uuid | X |  | 
+host | VARCHAR(255) |  |  |  |  | 
+host_mountpoint | VARCHAR(255) |  |  |  |  | 
+start | DATETIME |  |  | X |  | 
+end | DATETIME |  |  |  | X | 
+network_uri | VARCHAR(255) |  |  |  | X | 
+
 # Table `cosmic_dataset`
 
 Class [`cosmic_database.entities.CosmicDB_Dataset`](./classes.md#class-CosmicDB_Dataset)
@@ -51,6 +74,7 @@ id | INTEGER | X |  |  |  |
 scan_id | VARCHAR(100) |  | [cosmic_scan](#table-cosmic_scan).id |  |  | 
 configuration_id | INTEGER |  | [cosmic_configuration](#table-cosmic_configuration).id |  |  | 
 calibration_id | INTEGER |  | [cosmic_calibration](#table-cosmic_calibration).id |  |  | 
+archival_filesystem_uuid | VARCHAR(64) |  | [cosmic_filesystem](#table-cosmic_filesystem).uuid |  |  | 
 start | DATETIME |  |  |  |  | 
 end | DATETIME |  |  |  |  | 
 criteria_json | TEXT |  |  |  |  | 
@@ -110,28 +134,14 @@ source | VARCHAR(80) |  |  | X |  |
 start | DATETIME |  |  | X |  | 
 end | DATETIME |  |  |  |  | 
 
-# Table `cosmic_filesystem`
+# Table `cosmic_database_info`
 
-Class [`cosmic_database.entities.CosmicDB_Filesystem`](./classes.md#class-CosmicDB_Filesystem)
-
-Column | Type | Primary Key | Foreign Key(s) | Indexed | Nullable | Unique
--|-|-|-|-|-|-
-id | VARCHAR(64) | X |  |  |  | 
-label | VARCHAR(255) |  |  |  |  | 
-
-# Table `cosmic_filesystem_mount`
-
-Class [`cosmic_database.entities.CosmicDB_FilesystemMount`](./classes.md#class-CosmicDB_FilesystemMount)
+Class [`cosmic_database.entities.CosmicDB_StorageDatabaseInfo`](./classes.md#class-CosmicDB_StorageDatabaseInfo)
 
 Column | Type | Primary Key | Foreign Key(s) | Indexed | Nullable | Unique
 -|-|-|-|-|-|-
 id | INTEGER | X |  |  |  | 
-filesystem_id | VARCHAR(64) |  | [cosmic_filesystem](#table-cosmic_filesystem).id | X |  | 
-host | VARCHAR(255) |  |  |  |  | 
-host_mountpoint | VARCHAR(255) |  |  |  |  | 
-start | DATETIME |  |  | X |  | 
-end | DATETIME |  |  |  | X | 
-network_uri | VARCHAR(255) |  |  |  | X | 
+filesystem_uuid | VARCHAR(64) |  |  | X |  | 
 
 # Table `cosmic_observation_key`
 
@@ -139,7 +149,7 @@ Class [`cosmic_database.entities.CosmicDB_ObservationKey`](./classes.md#class-Co
 
 Column | Type | Primary Key | Foreign Key(s) | Indexed | Nullable | Unique
 -|-|-|-|-|-|-
-id | INTEGER | X |  |  |  | 
+observation_id | INTEGER | X |  |  |  | 
 scan_id | VARCHAR(100) |  |  |  |  | 
 configuration_id | INTEGER |  |  |  |  | 
 
@@ -150,8 +160,7 @@ Class [`cosmic_database.entities.CosmicDB_File`](./classes.md#class-CosmicDB_Fil
 Column | Type | Primary Key | Foreign Key(s) | Indexed | Nullable | Unique
 -|-|-|-|-|-|-
 id | INTEGER | X |  |  |  | 
-filesystem_id | VARCHAR(64) |  |  | X |  | 
-local_uri | VARCHAR(255) |  |  | X |  | 
+local_uri | VARCHAR(255) |  |  | X |  | X
 
 # Table `cosmic_file_flags`
 
@@ -172,7 +181,7 @@ Class [`cosmic_database.entities.CosmicDB_ObservationStamp`](./classes.md#class-
 Column | Type | Primary Key | Foreign Key(s) | Indexed | Nullable | Unique
 -|-|-|-|-|-|-
 id | INTEGER | X |  |  |  | 
-observation_id | INTEGER |  | [cosmic_observation_key](#table-cosmic_observation_key).id |  |  | 
+observation_id | INTEGER |  | [cosmic_observation_key](#table-cosmic_observation_key).observation_id |  |  | 
 tuning | VARCHAR(10) |  |  |  |  | 
 subband_offset | INTEGER |  |  |  |  | 
 file_id | INTEGER |  | [cosmic_file](#table-cosmic_file).id | X |  | 
@@ -212,7 +221,7 @@ Class [`cosmic_database.entities.CosmicDB_ObservationHit`](./classes.md#class-Co
 Column | Type | Primary Key | Foreign Key(s) | Indexed | Nullable | Unique
 -|-|-|-|-|-|-
 id | INTEGER | X |  |  |  | 
-observation_id | INTEGER |  | [cosmic_observation_key](#table-cosmic_observation_key).id |  |  | 
+observation_id | INTEGER |  | [cosmic_observation_key](#table-cosmic_observation_key).observation_id |  |  | 
 tuning | VARCHAR(10) |  |  |  |  | 
 subband_offset | INTEGER |  |  |  |  | 
 stamp_id | INTEGER |  | [cosmic_observation_stamp](#table-cosmic_observation_stamp).id |  | X | 
