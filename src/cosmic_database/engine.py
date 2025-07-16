@@ -10,6 +10,7 @@ class CosmicDB_Engine:
 
     def __init__(
         self,
+        database_scope: entities.DatabaseScope = None,
         engine_url: str = None,
         engine_conf_yaml_filepath: str = None,
         **kwargs
@@ -21,24 +22,42 @@ class CosmicDB_Engine:
         """
 
         if engine_conf_yaml_filepath is not None:
-            engine_url = self._create_url(engine_conf_yaml_filepath)
+            engine_url, self.scope = self._create_url(
+                engine_conf_yaml_filepath,
+                database_scope
+            )
         
         if engine_url is None:
             raise ValueError("No value provided for the engine URL.")
 
+        if self.scope is None:
+            raise ValueError("No scope specified.")
+
         kwargs["pool_recycle"] = kwargs.get("pool_recycle", 3600)
+        self.engine_url = engine_url
         self.engine = sqlalchemy.create_engine(
             engine_url,
             **kwargs
         )
     
     @staticmethod
-    def _create_url(engine_conf_yaml_filepath):
+    def _create_url(engine_conf_yaml_filepath, scope: entities.DatabaseScope = None):
         with open(engine_conf_yaml_filepath, "r") as yaml_fio:
-            engine_url = sqlalchemy.engine.url.URL.create(
-                **yaml.safe_load(yaml_fio)
-            )
-        return engine_url
+            yaml_dict = yaml.safe_load(yaml_fio)
+            if len(yaml_dict) == 1:
+                scope, yaml_dict = next(iter(yaml_dict.items()))
+                scope = entities.DatabaseScope(scope)
+            else:
+                assert any(scope.value in yaml_dict for scope in entities.DatabaseScope), f"Expecting a Multi-scope engine configuration YAML."
+                assert scope is not None, f"Multi-scope engine configuration YAML requires a scope selection."
+                try:
+                    yaml_dict = yaml_dict[scope.value]
+                except KeyError:
+                    raise KeyError(f"'{scope.value}' not found in: {{{yaml_dict.keys()}}}")
+
+            return sqlalchemy.engine.url.URL.create(
+                **yaml_dict
+            ), scope
 
     def session(self):
         """
@@ -49,8 +68,14 @@ class CosmicDB_Engine:
         return sqlalchemy.orm.Session(self.engine)
 
     def create_all_tables(self):
-        """Setup schema according to all tables under `cosmic_database.entities`."""
-        return entities.Base.metadata.create_all(self.engine)
+        """Setup schema according to all tables within scope under `cosmic_database.entities`."""
+        return entities.Base.metadata.create_all(
+            self.engine,
+            tables = [
+                entities.Base.metadata.tables[entity.__tablename__]
+                for entity in entities.DATABASE_SCOPES[self.scope]
+            ]
+        )
 
     def commit_entity(self, entity):
         with self.session() as session:
@@ -120,6 +145,29 @@ class CosmicDB_Engine:
         session.refresh(ent)
         return ent
 
+def cli_add_engine_arguments(parser, default_scope: entities.DatabaseScope = None):
+    parser.add_argument(
+        "--engine-configuration",
+        type=str,
+        default="/home/cosmic/conf/cosmicdb_v2.0_conf.yaml",
+        help="The YAML file path containing the instantiation arguments for the SQLAlchemy.engine.url.URL instance specifying the database."
+    )
+    if default_scope is not False:
+        parser.add_argument(
+            "--scope",
+            type=str,
+            default=default_scope,
+            choices=[
+                v
+                for v, __ in entities.DatabaseScope.__members__.items()
+            ],
+            help="Scope selection for multi-scope configurations."
+        )
+
+def cli_parse_engine_scope_argument(args):
+    if args.scope is not None:
+        args.scope = entities.DatabaseScope(args.scope)
+
 def cli_create_all_tables():
     import argparse
     
@@ -133,16 +181,12 @@ def cli_create_all_tables():
         default=None,
         help="The SQLAlchemy.engine.url.URL string specifying the database."
     )
-    parser.add_argument(
-        "-c", "--engine-configuration",
-        type=str,
-        default="/home/cosmic/conf/cosmicdb_conf.yaml",
-        help="The YAML file path containing the instantiation arguments for the SQLAlchemy.engine.url.URL instance specifying the database."
-    )
+    cli_add_engine_arguments(parser)
 
     args = parser.parse_args()
+    cli_parse_engine_scope_argument(args)
     
-    engine = CosmicDB_Engine(engine_url = args.engine_url, engine_conf_yaml_filepath = args.engine_configuration)
+    engine = CosmicDB_Engine(engine_url = args.engine_url, engine_conf_yaml_filepath = args.engine_configuration, database_scope = args.scope)
     engine.create_all_tables()
 
 
@@ -153,15 +197,13 @@ def cli_create_engine_url():
         description="COSMIC Database: show the URL generated from a configuration file.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    parser.add_argument(
-        "engine_configuration",
-        type=str,
-        help="The YAML file path containing the instantiation arguments for the SQLAlchemy.engine.url.URL instance specifying the database."
-    )
+    cli_add_engine_arguments(parser)
 
     args = parser.parse_args()
-    
-    print(CosmicDB_Engine._create_url(args.engine_configuration))
+    cli_parse_engine_scope_argument(args)
+
+    url, scope = CosmicDB_Engine._create_url(args.engine_configuration, args.scope)
+    print(f"{scope.value}: '{url}'")
 
 
 criterion_operations = {
@@ -233,7 +275,6 @@ def cli_replace_fieldnames_with_column_instances(
         ret_list.append(element_setter(el_, replacement))
 
     return ret_list
-
 
 def cli_add_where_argument(parser):
     parser.add_argument(
@@ -324,20 +365,11 @@ def cli_parse_orderby_argument(entity_class_map, orderby):
 def cli_alter_db():
     import argparse
 
-    from cosmic_database import entities
-    from alembic.migration import MigrationContext
-    from alembic.operations import Operations
-
     parser = argparse.ArgumentParser(
-        description="Minor interface to expose COSMIC database entities.",
+        description="Minor interface to create or drop COSMIC database tables and columns.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    parser.add_argument(
-        "--cosmicdb-engine-configuration",
-        type=str,
-        default="/home/cosmic/conf/cosmicdb_conf.yaml",
-        help="The YAML file path specifying the COSMIC database.",
-    )
+    cli_add_engine_arguments(parser)
     parser.add_argument(
         "entity",
         type=str,
@@ -360,59 +392,211 @@ def cli_alter_db():
         help="Remove the field from the entity.",
     )
     parser.add_argument(
-        "-a", "--add",
-        action="store_true",
-        help="Add the field to the entity.",
-    )
-    parser.add_argument(
         "-c", "--create",
         action="store_true",
         help="Create the table for the entity.",
     )
-    
+
     args = parser.parse_args()
-    assert sum([args.drop, args.add, args.create]) == 1, "Choose one alteration!"
+    cli_parse_engine_scope_argument(args)
+    assert sum([args.drop, args.create]) == 1, "Choose one alteration!"
 
     entity_name = f"CosmicDB_{args.entity}"
     args.entity = getattr(entities, entity_name)
 
-    engine = CosmicDB_Engine(engine_conf_yaml_filepath=args.cosmicdb_engine_configuration)
+    engine = CosmicDB_Engine(engine_conf_yaml_filepath=args.engine_configuration, database_scope=args.scope)
+    assert args.entity in entities.DATABASE_SCOPES[engine.scope]
     if args.field is None:
-        assert sum([args.drop, args.create]) == 1, "Table alterations are limited to create and drop."
-
         if args.create:
             args.entity.__table__.create(engine.engine)
         elif args.drop:
             args.entity.__table__.drop(engine.engine)
         return
     
-    conn = engine.engine.connect()
-    ctx = MigrationContext.configure(conn)
-    op = Operations(ctx)
+    from alembic.migration import MigrationContext
+    from alembic.operations import Operations
 
-    args.field = getattr(args.entity, args.field)
-    if args.create:
-        op.add_column(args.entity.__table__.fullname, args.field)
-    elif args.add:
-        op.add_column(args.entity.__table__.fullname, args.field)
-    elif args.drop:
-        op.drop_column(args.entity.__table__.fullname, args.field.name)
+    with engine.engine.connect() as conn:
+        ctx = MigrationContext.configure(conn)
+        op = Operations(ctx)
+
+        args.field = getattr(args.entity, args.field)
+        if args.create:
+            op.add_column(args.entity.__table__.fullname, args.field)
+        elif args.drop:
+            op.drop_column(args.entity.__table__.fullname, args.field.name)
+
+def cli_write_filesystem_mount():
+    import argparse
+    from datetime import datetime
+    now_str = datetime.now().isoformat()
+
+    parser = argparse.ArgumentParser(
+        description="Minor interface to write COSMIC FilesystemMount and Filesystem entities.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    cli_add_engine_arguments(parser, default_scope=False)
+    
+    parser.add_argument(
+        "--uuid",
+        type=str,
+        required=True,
+        help="The filesystem's uuid, see `$ lsblk -o name,size,mountpoint,label,uuid`.",
+    )
+    parser.add_argument(
+        "--host",
+        type=str,
+        required=True,
+        help="The host of the filesystem.",
+    )
+    parser.add_argument(
+        "--label",
+        type=str,
+        default=None,
+        help="The filesystem's label, see `$ lsblk -o name,size,mountpoint,label,uuid`. Optional for existing Filesystems.",
+    )
+    parser.add_argument(
+        "--time",
+        type=str,
+        default=now_str,
+        help="The start time of mount (ISO format, `date -Iseconds`). Is also set as the end time of the prior mount. Defaults to now.",
+    )
+    parser.add_argument(
+        "--first-mount",
+        action='store_true',
+        help="Expect no previous mount history.",
+    )
+    parser.add_argument(
+        "--prompt",
+        action='store_true',
+        help="Prompt before committing.",
+    )
+
+    args = parser.parse_args()
+
+
+    engine = CosmicDB_Engine(
+        engine_conf_yaml_filepath=args.engine_configuration,
+        database_scope=entities.DatabaseScope.Operation
+    )
+    with engine.session() as session:
+        filesystem_entity = session.scalars(
+            sqlalchemy.select(
+                entities.CosmicDB_Filesystem
+            ).where(
+                entities.CosmicDB_Filesystem.uuid == args.uuid
+            )
+        ).one_or_none()
+        if filesystem_entity is None:
+            assert args.first_mount, f"Filesystem is new to the database."
+
+            filesystem_entity = entities.CosmicDB_Filesystem(
+                uuid=args.uuid,
+                label=args.label,
+            )
+            session.add(filesystem_entity)
+            print(f"Committing: {filesystem_entity}")
+            if args.prompt:
+                assert input("Continue (Y/n)? ") in ["Y", "y", "yes", ""]
+            session.commit()
+        else:
+            last_mount = filesystem_entity.get_latest_mount(session)
+            if args.first_mount:
+                assert last_mount is None, f"Unexpected previous mount for existing filesystem: {last_mount}.\nRemove `--first-mount`."
+            else:
+                assert last_mount is not None, f"No previous mount to close for existing: {filesystem_entity}.\nConsider `--first-mount`."
+
+                assert last_mount.is_current()
+                last_mount.end = value_conversions[datetime](args.time)
+                print(f"Updated: {last_mount}")
+                if args.prompt:
+                    assert input("Continue (Y/n)? ") in ["Y", "y", "yes", ""]
+                session.commit()
+        
+        filesystem_mount_entity = entities.CosmicDB_FilesystemMount(
+            filesystem_uuid=args.uuid,
+            host=args.host,
+            host_mountpoint=f"/srv/{filesystem_entity.label}",
+            network_uri=f"/mnt/{args.host}/{filesystem_entity.label}",
+            start=value_conversions[datetime](args.time)
+        )
+
+        print(f"Committing: {filesystem_mount_entity}")
+        if args.prompt:
+            assert input("Continue (Y/n)? ") in ["Y", "y", "yes", ""]
+        session.add(filesystem_mount_entity)
+        session.commit()
+
+def cli_write():
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Minor interface to write COSMIC database entities.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    cli_add_engine_arguments(parser)
+    parser.add_argument(
+        "entity",
+        type=str,
+        choices=[
+            m.class_.__qualname__[9:] # after 'CosmicDB_' prefix
+            for m in entities.Base.registry.mappers
+        ],
+        help="The entity to alter.",
+    )
+    parser.add_argument(
+        "fields",
+        nargs="*",
+        action="extend",
+        metavar=("'name value' pair"),
+        help="The entity's field and value.",
+    )
+
+    args = parser.parse_args()
+    cli_parse_engine_scope_argument(args)
+
+    entity_name = f"CosmicDB_{args.entity}"
+    args.entity = getattr(entities, entity_name)
+
+    assert len(args.fields)%2 == 0, "Provide field names and values in pairs."
+    given_field_values = {
+        args.fields[i+0]: args.fields[i+1]
+        for i in range(0, len(args.fields), 2)
+    }
+
+    field_values = {}
+    for field, column in entities.Base.metadata.tables[args.entity.__tablename__].columns.items():
+        if field not in given_field_values:
+            assert (column.primary_key and column.type.python_type == int) or column.nullable, f"No required value provided for '{field}': {column.type.python_type.__name__} ({column.type})"
+            continue
+        
+        field_values[field] = value_conversions[
+            column.type.python_type
+        ](given_field_values.pop(field))
+    
+    assert len(given_field_values) == 0, f"Provided extraneous values: {given_field_values}"
+    
+    entity = args.entity(**field_values)
+
+    engine = CosmicDB_Engine(engine_conf_yaml_filepath=args.engine_configuration, database_scope=args.scope)
+    with engine.session() as session:
+        session.add(entity)
+        try:
+            session.commit()
+        except BaseException as err:
+            raise ValueError(f"{entity}") from err
+
+        session.refresh(entity)
+        print(entity)
 
 def cli_inspect():
     import argparse
-
-    from cosmic_database import entities
 
     parser = argparse.ArgumentParser(
         description="Minor interface to expose COSMIC database entities.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    parser.add_argument(
-        "--cosmicdb-engine-configuration",
-        type=str,
-        default="/home/cosmic/conf/cosmicdb_conf.yaml",
-        help="The YAML file path specifying the COSMIC database.",
-    )
+    cli_add_engine_arguments(parser, default_scope=entities.DatabaseScope.Operation.value)
     parser.add_argument(
         "--pandas-output-filepath",
         type=str,
@@ -487,42 +671,13 @@ def cli_inspect():
     )
 
     args = parser.parse_args()
+    cli_parse_engine_scope_argument(args)
 
     entity_name = f"CosmicDB_{args.entity}"
     args.entity = getattr(entities, entity_name)
 
     if args.entity_schema:
-        lines = [
-            f"{args.entity.__qualname__}",
-            f"Table: '{args.entity.__table__}'",
-            f"Fields:"
-        ]
-
-        value_matrix = []
-        col_name_max = max(map(len, (col.name for col in args.entity.__table__.columns)))
-        for col in args.entity.__table__.columns:
-            value_matrix.append(
-                [
-                    f"{col.name}{' (PK)' if col.primary_key else ''}",
-                    f"{col.type} ({col.type.python_type.__name__})"
-                ]
-            )
-        
-        value_matrix_col_maxes = [
-            max(map(len, (value_row[coli] for value_row in value_matrix)))
-            for coli in range(len(value_matrix[0]))
-        ]
-        lines += [
-            "\t" + " ".join(list(
-                map(lambda iv_tup: iv_tup[1].ljust(value_matrix_col_maxes[iv_tup[0]]), enumerate(value_row))
-            ))
-            for value_row in value_matrix
-        ]
-        lines.append("Relations:")
-        for relation, relationship in args.entity.__mapper__.relationships.items():
-            lines.append(f"\t{relation}: {relationship.mapper.entity.__qualname__}")
-        print('\n'.join(lines))
-
+        print(args.entity.schema_string())
         return
 
     """
@@ -592,7 +747,10 @@ def cli_inspect():
     if args.distinct:
         sql_query = sql_query.distinct()
 
-    engine = CosmicDB_Engine(engine_conf_yaml_filepath=args.cosmicdb_engine_configuration)
+    engine = CosmicDB_Engine(
+        engine_conf_yaml_filepath=args.engine_configuration,
+        database_scope=args.scope
+    )
 
     pandas_output_filepath_splitext = None
     if (args.show_dataframe

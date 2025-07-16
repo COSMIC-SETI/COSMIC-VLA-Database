@@ -54,7 +54,7 @@ Provided by the package is the `cosmicdb_inspect` executable which allows select
 The programmatic interface is pythonic, using SQLAlchemy (see the page about using select statements, our implementation uses their Object Relational Mapper (ORM) entities (quickstart)).
 An exemplary script follows, selecting CosmicDB_Observation entities that have a start field after 04/09, and before 04/10, and printing each result:
 
-```
+```python
 from sqlalchemy
 
 from cosmic_database import entities
@@ -73,40 +73,32 @@ with engine.session() as session:
         print(result)
 ```
 
-Look at the definition for the ORM entities [here](./src/cosmic_database/entities.py) for the definition of nested entities and fields... For instance, the selected `CosmicDB_Observation` ORM entity instance is defined as
-
-```
-class CosmicDB_Observation(Base):
-    __tablename__ = f"cosmic_observation{TABLE_SUFFIX}"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    scan_id: Mapped[String_ScanID] = mapped_column(ForeignKey(f"cosmic_scan{TABLE_SUFFIX}.id"))
-    configuration_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_configuration{TABLE_SUFFIX}.id"))
-    start: Mapped[datetime]
-    end: Mapped[datetime]
-    criteria_json: Mapped[String_JSON]
-
-    configuration: Mapped["CosmicDB_ObservationConfiguration"] = relationship()
-
-    scan: Mapped["CosmicDB_Scan"] = relationship(
-        back_populates="observations"
-    )
-
-    subbands: Mapped[List["CosmicDB_ObservationSubband"]] = relationship(
-        back_populates="observation", cascade="all, delete-orphan"
-    )
-
-    beams: Mapped[List["CosmicDB_ObservationBeam"]] = relationship(
-        back_populates="observation", cascade="all, delete-orphan"
-    )
-```
+Look at the definition for the ORM entities [here](./src/cosmic_database/entities.py) for the definition of nested entities and fields.
 
 I.e. asides from the fields of its cosmic_observation table, it has `CosmicDB_ObservationConfiguration, CosmicDB_Scan, List["CosmicDB_ObservationSubband"], List["CosmicDB_ObservationBeam"]` attributes... these would be accessible in the results of the boilerplate script above (ie result.subbands).
 
 ## Database Maintenance
+
+### Committing Filesystem and Mount Entities
+
+Gather information about the filesystem to be written to the database, from the host machine:
+```bash
+$ lsblk -o name,size,mountpoint,label,uuid
+```
+
+A provided convenience CLI, `cosmicdb_write_filesystem_mount`, minimises the admin of creating novel Filesystems when necessary and leverages the expected pattern of host-mount and network-mount paths.
+
+A more manual method would be to write the appropriate entities to the database using the provided `cosmicdb_write` CLI.
+
+### Create a database
+```
+mysql> CREATE DATABASE dbname;
+mysql> GRANT ALL PRIVILEGES ON `dbname`.* TO `cosmic`@`%`;
+```
+
 ### Create a table for a new ORM entity
 
-```
+```python
 from cosmic_database import entities
 from cosmic_database.engine import CosmicDB_Engine
 
