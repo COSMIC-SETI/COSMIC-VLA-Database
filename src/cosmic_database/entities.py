@@ -6,6 +6,7 @@ from typing import List
 from typing import Optional
 from typing_extensions import Annotated
 
+from sqlalchemy import select
 from sqlalchemy import ForeignKey
 from sqlalchemy import String
 from sqlalchemy import Text
@@ -170,6 +171,17 @@ class CosmicDB_Filesystem(Base):
         back_populates="archival_filesystem"
     )
 
+    def get_latest_mount(self, session) -> Optional["CosmicDB_FilesystemMount"]:
+        return session.scalars(
+            select(CosmicDB_FilesystemMount)
+            .where(
+                CosmicDB_FilesystemMount.filesystem_uuid == self.uuid
+            )
+            .order_by(
+                CosmicDB_FilesystemMount.start.desc()
+            )
+        ).first()
+
 class CosmicDB_FilesystemMount(Base):
     __tablename__ = f"cosmic_filesystem_mount{TABLE_SUFFIX}"
 
@@ -186,6 +198,9 @@ class CosmicDB_FilesystemMount(Base):
     filesystem: Mapped["CosmicDB_Filesystem"] = relationship(
         back_populates="mount_history"
     )
+
+    def is_current(self) -> bool:
+        return self.end is None
 
 class CosmicDB_Dataset(Base):
     __tablename__ = f"cosmic_dataset{TABLE_SUFFIX}"
