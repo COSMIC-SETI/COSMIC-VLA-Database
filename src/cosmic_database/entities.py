@@ -1,8 +1,11 @@
 import os
 from datetime import datetime
+from enum import Enum
 
 from typing import List
 from typing import Optional
+from typing_extensions import Annotated
+
 from sqlalchemy import ForeignKey
 from sqlalchemy import String
 from sqlalchemy import Text
@@ -18,7 +21,9 @@ from sqlalchemy.dialects import mysql
 
 TABLE_SUFFIX = os.environ.get("COSMIC_DB_TABLE_SUFFIX", "")
 
-from typing_extensions import Annotated
+class DatabaseScope(str, Enum):
+    Operation = "Operation"
+    Storage = "Storage"
 
 String_DatasetID = Annotated[str, 60]
 String_ScanID = Annotated[str, 100]
@@ -613,7 +618,7 @@ class CosmicDB_StampFlags(Base):
 ## Hardcoded meta-data about the overarching database
 
 DATABASE_SCOPES = {
-    "Operation": [
+    DatabaseScope.Operation: [
         CosmicDB_Dataset,
         CosmicDB_Scan,
         CosmicDB_Configuration,
@@ -626,7 +631,7 @@ DATABASE_SCOPES = {
         CosmicDB_Filesystem,
         CosmicDB_FilesystemMount,
     ],
-    "Storage": [
+    DatabaseScope.Storage: [
         CosmicDB_StorageDatabaseInfo,
         CosmicDB_ObservationKey,
         CosmicDB_File,
