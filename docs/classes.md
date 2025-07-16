@@ -80,6 +80,7 @@ Table [`cosmic_observation`](./tables.md#table-cosmic_observation)
 
 Attribute | Type
 -|-
+archival_filesystem_uuid | `str`
 calibration_id | `str`
 configuration_id | `int`
 criteria_json | `int`
@@ -88,6 +89,7 @@ id | `datetime`
 scan_id | `int`
 start | `str`
 validity_code | `datetime`
+archival_filesystem | [CosmicDB_Filesystem](#class-cosmicdb_filesystem)
 configuration | [CosmicDB_Configuration](#class-cosmicdb_configuration)
 scan | [CosmicDB_Scan](#class-cosmicdb_scan)
 subbands | list([CosmicDB_ObservationSubband](#class-cosmicdb_observationsubband))
@@ -129,9 +131,10 @@ Table [`cosmic_filesystem`](./tables.md#table-cosmic_filesystem)
 
 Attribute | Type
 -|-
-id | `datetime`
-label | `str`
+label | `datetime`
+uuid | `str`
 mount_history | list([CosmicDB_FilesystemMount](#class-cosmicdb_filesystemmount))
+observations | list([CosmicDB_Observation](#class-cosmicdb_observation))
 ## Class `CosmicDB_FilesystemMount`
 
 Table [`cosmic_filesystem_mount`](./tables.md#table-cosmic_filesystem_mount)
@@ -139,7 +142,7 @@ Table [`cosmic_filesystem_mount`](./tables.md#table-cosmic_filesystem_mount)
 Attribute | Type
 -|-
 end | `str`
-filesystem_id | `datetime`
+filesystem_uuid | `datetime`
 host | `str`
 host_mountpoint | `str`
 id | `str`
@@ -149,14 +152,22 @@ filesystem | [CosmicDB_Filesystem](#class-cosmicdb_filesystem)
 # Storage Database Scope
 ![Storage Class Diagram](./classes_Storage.png)
 
+## Class `CosmicDB_StorageDatabaseInfo`
+
+Table [`cosmic_database_info`](./tables.md#table-cosmic_database_info)
+
+Attribute | Type
+-|-
+filesystem_uuid | `datetime`
+id | `str`
 ## Class `CosmicDB_ObservationKey`
 
 Table [`cosmic_observation_key`](./tables.md#table-cosmic_observation_key)
 
 Attribute | Type
 -|-
-configuration_id | `datetime`
-id | `int`
+configuration_id | `int`
+observation_id | `int`
 scan_id | `int`
 hits | list([CosmicDB_ObservationHit](#class-cosmicdb_observationhit))
 stamps | list([CosmicDB_ObservationStamp](#class-cosmicdb_observationstamp))
@@ -166,7 +177,6 @@ Table [`cosmic_file`](./tables.md#table-cosmic_file)
 
 Attribute | Type
 -|-
-filesystem_id | `str`
 id | `str`
 local_uri | `int`
 flags | [CosmicDB_FileFlags](#class-cosmicdb_fileflags)

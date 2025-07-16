@@ -13,7 +13,6 @@ from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import RelationshipDirection
-from sqlalchemy import UniqueConstraint
 
 from sqlalchemy.dialects import mysql
 
@@ -149,6 +148,39 @@ class Base(DeclarativeBase):
     def __repr__(self) -> str:
         return self._get_str(verbosity=0)
 
+class CosmicDB_Filesystem(Base):
+    __tablename__ = f"cosmic_filesystem{TABLE_SUFFIX}"
+    uuid: Mapped[String_UUID] = mapped_column(primary_key=True)
+    label: Mapped[String_URI]
+
+    # files: Mapped[List["CosmicDB_File"]] = relationship(
+    #     back_populates="filesystem"
+    # )
+
+    mount_history: Mapped[List["CosmicDB_FilesystemMount"]] = relationship(
+        back_populates="filesystem"
+    )
+
+    observations: Mapped[List["CosmicDB_Observation"]] = relationship(
+        back_populates="archival_filesystem"
+    )
+
+class CosmicDB_FilesystemMount(Base):
+    __tablename__ = f"cosmic_filesystem_mount{TABLE_SUFFIX}"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    filesystem_uuid: Mapped[String_UUID] = mapped_column(ForeignKey(f"{CosmicDB_Filesystem.__tablename__}.uuid"), index=True)
+
+    host: Mapped[String_URI]
+    host_mountpoint: Mapped[String_URI]
+    start: Mapped[datetime] = mapped_column(index=True)
+    end: Mapped[Optional[datetime]]
+
+    network_uri: Mapped[Optional[String_URI]]
+
+    filesystem: Mapped["CosmicDB_Filesystem"] = relationship(
+        back_populates="mount_history"
+    )
 
 class CosmicDB_Dataset(Base):
     __tablename__ = f"cosmic_dataset{TABLE_SUFFIX}"
@@ -223,11 +255,17 @@ class CosmicDB_Observation(Base):
     
     calibration_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_calibration{TABLE_SUFFIX}.id"))
 
+    archival_filesystem_uuid: Mapped[int] = mapped_column(ForeignKey(f"{CosmicDB_Filesystem.__tablename__}.uuid"))
+
     start: Mapped[datetime]
     end: Mapped[datetime]
     criteria_json: Mapped[String_JSON]
     validity_code: Mapped[int] = mapped_column(default=1) # TODO make this TINYINT...
 
+    
+    archival_filesystem: Mapped["CosmicDB_Filesystem"] = relationship(
+        back_populates="observations",
+    )
     
     configuration: Mapped["CosmicDB_Configuration"] = relationship(
         back_populates="observations",
@@ -325,47 +363,28 @@ class CosmicDB_ObservationBeam(Base):
         back_populates="beams"
     )
 
-class CosmicDB_Filesystem(Base):
-    __tablename__ = f"cosmic_filesystem{TABLE_SUFFIX}"
-    id: Mapped[String_UUID] = mapped_column(primary_key=True)
-    label: Mapped[String_URI]
-
-    # files: Mapped[List["CosmicDB_File"]] = relationship(
-    #     back_populates="filesystem"
-    # )
-
-    mount_history: Mapped[List["CosmicDB_FilesystemMount"]] = relationship(
-        back_populates="filesystem"
-    )
-
-class CosmicDB_FilesystemMount(Base):
-    __tablename__ = f"cosmic_filesystem_mount{TABLE_SUFFIX}"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    filesystem_id: Mapped[String_UUID] = mapped_column(ForeignKey(f"{CosmicDB_Filesystem.__tablename__}.id"), index=True)
-
-    host: Mapped[String_URI]
-    host_mountpoint: Mapped[String_URI]
-    start: Mapped[datetime] = mapped_column(index=True)
-    end: Mapped[Optional[datetime]]
-
-    network_uri: Mapped[Optional[String_URI]]
-
-    filesystem: Mapped["CosmicDB_Filesystem"] = relationship(
-        back_populates="mount_history"
-    )
-
 ### Observation Products below ###
 # These are stored in a separate database that is local to the storage medium which can be physically relocated
+
+class CosmicDB_StorageDatabaseInfo(Base):
+    __tablename__ = f"cosmic_database_info{TABLE_SUFFIX}"
+
+    # single entity per database
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    # Dislocated foreign key
+    filesystem_uuid: Mapped[String_UUID] = mapped_column(
+        index=True
+    )
 
 class CosmicDB_ObservationKey(Base):
     __tablename__ = f"cosmic_observation_key{TABLE_SUFFIX}"
 
     # This is the primary bridge between the storage database and that of COSMIC
     # Dislocated foreign keys
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=False) # ForeignKey(f"{CosmicDB_Observation.__tablename__}.id") in COSMIC Head DB
-    scan_id: Mapped[String_ScanID] # ForeignKey(f"{CosmicDB_Scan.__tablename__}.id") in COSMIC Head DB
-    configuration_id: Mapped[int] # ForeignKey(f"{CosmicDB_Configuration.__tablename__}.id") in COSMIC Head DB
+    observation_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=False)
+    scan_id: Mapped[String_ScanID]
+    configuration_id: Mapped[int]
 
     hits: Mapped[List["CosmicDB_ObservationHit"]] = relationship(
         back_populates="observation_key", cascade="all, delete-orphan"
@@ -377,26 +396,14 @@ class CosmicDB_ObservationKey(Base):
 
 class CosmicDB_File(Base):
     __tablename__ = f"cosmic_file{TABLE_SUFFIX}"
-    __table_args__ = (
-        UniqueConstraint("filesystem_id", "local_uri", name="uix_filesystem_uri"),
-    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    # Dislocated foreign key
-    filesystem_id: Mapped[String_UUID] = mapped_column(
-        # ForeignKey(f"{CosmicDB_Filesystem.__tablename__}.id"),
-        index=True
-    )
-    local_uri: Mapped[String_URI] = mapped_column(index=True)
+    local_uri: Mapped[String_URI] = mapped_column(index=True, unique=True)
     
     flags: Mapped["CosmicDB_FileFlags"] = relationship(
         back_populates="file",
     )
-    
-    # filesystem: Mapped["CosmicDB_Filesystem"] = relationship(
-    #     back_populates="files"
-    # )
 
 
 class CosmicDB_FileFlags(Base):
@@ -417,7 +424,7 @@ class CosmicDB_ObservationStamp(Base):
     
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    observation_id: Mapped[int] = mapped_column(ForeignKey(f"{CosmicDB_ObservationKey.__tablename__}.id"))
+    observation_id: Mapped[int] = mapped_column(ForeignKey(f"{CosmicDB_ObservationKey.__tablename__}.observation_id"))
 
     # Dislocated foreign keys
     tuning: Mapped[String_Tuning]
@@ -504,7 +511,7 @@ class CosmicDB_ObservationHit(Base):
     
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    observation_id: Mapped[int] = mapped_column(ForeignKey(f"{CosmicDB_ObservationKey.__tablename__}.id"))
+    observation_id: Mapped[int] = mapped_column(ForeignKey(f"{CosmicDB_ObservationKey.__tablename__}.observation_id"))
     
     # Dislocated foreign keys
     tuning: Mapped[String_Tuning]
@@ -620,6 +627,7 @@ DATABASE_SCOPES = {
         CosmicDB_FilesystemMount,
     ],
     "Storage": [
+        CosmicDB_StorageDatabaseInfo,
         CosmicDB_ObservationKey,
         CosmicDB_File,
         CosmicDB_FileFlags,
@@ -630,10 +638,12 @@ DATABASE_SCOPES = {
     ]
 }
 
+
+# Dislocated foreign key mappings
 SCOPE_BRIDGES = {
-    CosmicDB_ObservationKey.scan_id: CosmicDB_Scan.id,
-    CosmicDB_ObservationKey.configuration_id: CosmicDB_Configuration.id,
-    CosmicDB_ObservationKey.scan_id: CosmicDB_Observation.id,
-    CosmicDB_ObservationHit.signal_beam: CosmicDB_ObservationBeam.enumeration,
-    CosmicDB_File.filesystem_id: CosmicDB_Filesystem.id,
+    CosmicDB_Scan.id: CosmicDB_ObservationKey.scan_id,
+    CosmicDB_Configuration.id: CosmicDB_ObservationKey.configuration_id,
+    CosmicDB_Observation.id: CosmicDB_ObservationKey.observation_id,
+    CosmicDB_ObservationBeam.enumeration: CosmicDB_ObservationHit.signal_beam,
+    CosmicDB_Filesystem.uuid: CosmicDB_StorageDatabaseInfo.filesystem_uuid,
 }

@@ -14,10 +14,18 @@ Class diagrams for showing the fields and relationships are included in the gene
 
 ## Entity Hierarchy
 
-### Operation Scope
-[Full class documentation](./docs/classes.md#operation-database-scope)
+The overarching COSMIC database is scoped into distinct [Operational](#operation-scope) and [Storage](#storage-scope) databases.
 
-![Operation Class Relations](./docs/entities_Operation.png)
+There are "dislocated" Foreign Keys that bridge the two scopes which are not implemented as actual constraints within the separate databases but can inform inter-scope queries.
+
+![Scoped Class Relations](./docs/entity_relationships.png)
+
+### Operation Scope
+This database is hosted on-site at the VLA and serves the following purposes:
+- provide all information pertinent to operational queries about COSMIC's observations.
+- support high-level scientific queries about which coordinates have been observed and how, with information about which Storage Database to follow through to.
+
+[Full class documentation](./docs/classes.md#operation-database-scope)
 
 The commensal observations made under COSMIC are made within the 'scan's that the VLA sections its time into. Scans are grouped into datasets higher up.
 
@@ -31,9 +39,9 @@ Calibrations are the result of observations.
 Observation outputs are separated into their own database that is local to their storage unit.
 
 ### Storage Scope
-[Full class documentation](./docs/classes.md#storage-database-scope)
+This database is initially hosted on-site at the VLA when being populated and then is hosted off-site for read-only purposes. It provides meta-data for observational products that are stored on the filesystem alongside the database as well as the related files's paths.
 
-![Storage Class Relations](./docs/entities_Storage.png)
+[Full class documentation](./docs/classes.md#storage-database-scope)
 
 ## Operation
 

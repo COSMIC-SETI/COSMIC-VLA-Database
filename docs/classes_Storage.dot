@@ -1,10 +1,16 @@
 digraph CosmicDB_Storage {
 layout=dot;
+nodesep=0.5;
 rankdir=LR;
-ranksep="2.25";
+ranksep=2.5;
+CosmicDB_StorageDatabaseInfo [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_StorageDatabaseInfo</font></td></tr>
+	<tr><td port="pk" bgcolor="lightgrey" border="3">id</td></tr>
+	<tr><td port="filesystem_uuid">filesystem_uuid</td></tr>
+</table>>, shape=plain];
 CosmicDB_ObservationKey [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
 	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_ObservationKey</font></td></tr>
-	<tr><td port="pk" bgcolor="lightgrey" border="3">id</td></tr>
+	<tr><td port="pk" bgcolor="lightgrey" border="3">observation_id</td></tr>
 	<tr><td port="configuration_id">configuration_id</td></tr>
 	<tr><td port="scan_id">scan_id</td></tr>
 	<tr><td bgcolor="darkgrey" port="hits">hits</td></tr>
@@ -13,7 +19,6 @@ CosmicDB_ObservationKey [label=<<table border="0" cellborder="1" cellspacing="0"
 CosmicDB_File [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
 	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_File</font></td></tr>
 	<tr><td port="pk" bgcolor="lightgrey" border="3">id</td></tr>
-	<tr><td port="filesystem_id">filesystem_id</td></tr>
 	<tr><td port="local_uri">local_uri</td></tr>
 	<tr><td bgcolor="darkgrey" port="flags">flags</td></tr>
 </table>>, shape=plain];
@@ -132,13 +137,24 @@ CosmicDB_ObservationHit:flags -> CosmicDB_HitFlags:class  [arrowtail=inv, dir=ba
 CosmicDB_ObservationHit:stamp -> CosmicDB_ObservationStamp:class  [arrowtail=none, dir=back];
 CosmicDB_HitFlags:hit -> CosmicDB_ObservationHit:class  [arrowtail=none, dir=back];
 CosmicDB_StampFlags:stamp -> CosmicDB_ObservationStamp:class  [arrowtail=none, dir=back];
-CosmicDB_FileFlags:pk -> CosmicDB_File:pk  [arrowtail=none, color=darkgrey, dir=back];
-CosmicDB_ObservationStamp:file_id -> CosmicDB_File:pk  [arrowtail=none, color=darkgrey, dir=back];
-CosmicDB_ObservationStamp:observation_id -> CosmicDB_ObservationKey:pk  [arrowtail=none, color=darkgrey, dir=back];
-CosmicDB_ObservationHit:file_id -> CosmicDB_File:pk  [arrowtail=none, color=darkgrey, dir=back];
-CosmicDB_ObservationHit:observation_id -> CosmicDB_ObservationKey:pk  [arrowtail=none, color=darkgrey, dir=back];
-CosmicDB_ObservationHit:stamp_id -> CosmicDB_ObservationStamp:pk  [arrowtail=none, color=darkgrey, dir=back];
-CosmicDB_HitFlags:pk -> CosmicDB_ObservationHit:pk  [arrowtail=none, color=darkgrey, dir=back];
-CosmicDB_StampFlags:redundant_to -> CosmicDB_ObservationStamp:pk  [arrowtail=none, color=darkgrey, dir=back];
-CosmicDB_StampFlags:pk -> CosmicDB_ObservationStamp:pk  [arrowtail=none, color=darkgrey, dir=back];
+CosmicDB_FileFlags:pk -> CosmicDB_File:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
+CosmicDB_ObservationStamp:file_id -> CosmicDB_File:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
+CosmicDB_ObservationStamp:observation_id -> CosmicDB_ObservationKey:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
+CosmicDB_ObservationHit:file_id -> CosmicDB_File:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
+CosmicDB_ObservationHit:observation_id -> CosmicDB_ObservationKey:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
+CosmicDB_ObservationHit:stamp_id -> CosmicDB_ObservationStamp:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
+CosmicDB_HitFlags:pk -> CosmicDB_ObservationHit:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
+CosmicDB_StampFlags:redundant_to -> CosmicDB_ObservationStamp:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
+CosmicDB_StampFlags:pk -> CosmicDB_ObservationStamp:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
+subgraph legend {
+cluster=True;
+label="Legend";
+"Foreign Relations_0" [label="", shape=none];
+"Foreign Relations_1" [label="Foreign Relations", shape=none];
+"Foreign Relations_0" -> "Foreign Relations_1"  [arrowtail=none, color=black, dir=back];
+"Foreign Keys_0" [label="", shape=none];
+"Foreign Keys_1" [label="Foreign Keys", shape=none];
+"Foreign Keys_0" -> "Foreign Keys_1"  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
+}
+
 }
