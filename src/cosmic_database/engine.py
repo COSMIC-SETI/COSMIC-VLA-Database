@@ -136,7 +136,7 @@ def cli_create_all_tables():
     parser.add_argument(
         "-c", "--engine-configuration",
         type=str,
-        default="/home/cosmic/conf/cosmicdb_conf.yaml",
+        default="/home/cosmic/conf/cosmicdb_v1.0_conf.yaml",
         help="The YAML file path containing the instantiation arguments for the SQLAlchemy.engine.url.URL instance specifying the database."
     )
 
