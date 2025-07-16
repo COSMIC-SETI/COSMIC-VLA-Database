@@ -67,7 +67,7 @@ with open(os.path.join(DOCS_DIR, "tables.md"), "w") as tables_fio:
 
 scoped_entity_graph = pydot.Dot(f"CosmicDB", graph_type="digraph", rankdir="LR", layout="dot", nodesep=0.25, ranksep=1)
 scope_subgraph_map = {
-    scope: pydot.Subgraph(graph_name=scope, label=f'"{scope} Scope"', cluster=True)
+    scope: pydot.Subgraph(graph_name=scope.value, label=f'"{scope.value} Scope"', cluster=True)
     for scope in entities.DATABASE_SCOPES.keys()
 }
 
@@ -80,14 +80,14 @@ for one_end, other_end in entities.SCOPE_BRIDGES.items():
         end_class = table_class_map[end.table.name]
         edge_ends.append(f"{end_class.__qualname__}:{end.name}:{end_edge_portpos}")
 
-        end_scope_name = None
+        end_db_scope = None
         for scope, scope_entities in entities.DATABASE_SCOPES.items():
             if end_class in scope_entities:
-                end_scope_name = scope
+                end_db_scope = scope
                 break
         
-        assert end_scope_name is not None
-        entity_scope_map[end_class.__qualname__] = end_scope_name
+        assert end_db_scope is not None
+        entity_scope_map[end_class.__qualname__] = end_db_scope
 
         entity_bridge_fields = entity_fields_map.get(
             end_class.__qualname__,
@@ -130,13 +130,13 @@ for one_end, other_end in entities.SCOPE_BRIDGES.items():
 docstr_lines = []
 for db_scope, scope_entities in entities.DATABASE_SCOPES.items():
     docstr_lines.extend([
-        f"# {db_scope} Database Scope"
+        f"# {db_scope.value} Database Scope"
         "",
-        f"![{db_scope} Class Diagram](./classes_{db_scope}.png)",
+        f"![{db_scope.value} Class Diagram](./classes_{db_scope.value}.png)",
         "",
     ])
 
-    graph = pydot.Dot(f"CosmicDB_{db_scope}", graph_type="digraph", rankdir="LR", layout="dot", nodesep=0.5, ranksep=2.5)
+    graph = pydot.Dot(f"CosmicDB_{db_scope.value}", graph_type="digraph", rankdir="LR", layout="dot", nodesep=0.5, ranksep=2.5)
     entity_graph = scope_subgraph_map[db_scope] #pydot.Dot(f"{db_scope}_Entities", graph_type="digraph", rankdir="LR", layout="dot", ranksep="1.0")
     scope_entity_relations = {}
     scope_fk_relations = {}
@@ -263,14 +263,14 @@ for db_scope, scope_entities in entities.DATABASE_SCOPES.items():
         if class_.__qualname__ not in entity_fields_map:
             # entity doesn't bridge scopes and hasn't been processed
             entity_fields_map[class_.__qualname__] = dot_node_fields[0:1]
-            scope_name = None
+            db_scope = None
             for scope, scope_entities in entities.DATABASE_SCOPES.items():
                 if class_ in scope_entities:
-                    scope_name = scope
+                    db_scope = scope
                     break
             
-            assert scope_name is not None, f"{class_.__qualname__} has not been assigned to a scope."
-            entity_scope_map[class_.__qualname__] = scope_name
+            assert db_scope is not None, f"{class_.__qualname__} has not been assigned to a scope."
+            entity_scope_map[class_.__qualname__] = db_scope
 
         entity_fields_map[class_.__qualname__].extend(dot_node_fields[entity_relationship_field_index:])
 
@@ -370,8 +370,8 @@ for db_scope, scope_entities in entities.DATABASE_SCOPES.items():
         )
 
     graph.add_subgraph(legend_subgraph)
-    graph.write_raw(f"classes_{db_scope}.dot")
-    graph.write_png(f"classes_{db_scope}.png", prog="dot")
+    graph.write_raw(f"classes_{db_scope.value}.dot")
+    graph.write_png(f"classes_{db_scope.value}.png", prog="dot")
 
 
 with open(os.path.join(DOCS_DIR, "classes.md"), "w") as classes_fio:
