@@ -63,7 +63,7 @@ class Base(DeclarativeBase):
             suffix = ''
             if col.primary_key:
                 suffix +=' (PK)'
-            if len(col.foreign_key) > 0:
+            if len(col.foreign_keys) > 0:
                 suffix +=' (FK)'
             value_matrix.append(
                 [
@@ -82,9 +82,10 @@ class Base(DeclarativeBase):
             ))
             for value_row in value_matrix
         ]
-        lines.append("Relations:")
-        for relation, relationship in self.__mapper__.relationships.items():
-            lines.append(f"\t{relation}: {relationship.mapper.entity.__qualname__}")
+        if len(self.__mapper__.relationships) > 0:
+            lines.append("Relations:")
+            for relation, relationship in self.__mapper__.relationships.items():
+                lines.append(f"\t{relation}: {relationship.mapper.entity.__qualname__}")
 
         return "\n".join(lines)
 
@@ -658,6 +659,14 @@ DATABASE_SCOPES = {
     ]
 }
 
+ENTITY_SCOPE_MAP = {
+    m.class_: [
+        scope
+        for scope, scope_entities in DATABASE_SCOPES.items()
+        if m.class_ in scope_entities
+    ][0]
+    for m in Base.registry.mappers
+}
 
 # Dislocated foreign key mappings
 SCOPE_BRIDGES = {
