@@ -79,6 +79,52 @@ I.e. asides from the fields of its cosmic_observation table, it has `CosmicDB_Ob
 
 ## Database Maintenance
 
+### Setup new server
+<details>
+<summary> Shouldn't need to do this section </summary>
+```bash
+# mkdir /var/log/mysql/
+# chown mysql:mysql /var/log/mysqld
+# mkdir /var/run/mysqld
+# chown mysql:mysql /var/run/mysqld
+```
+</details>
+
+```bash
+# mkdir ./cosmic_db/mysql_datadir
+# chown mysql:mysql ./cosmic_db/mysql_datadir
+# cd ./cosmic_db
+# mysqld --initialize --user=mysql --datadir=./mysql_datadir
+#
+# echo [mysqld] >> mysql.cnf
+# echo user = mysql >> mysql.cnf
+# echo datadir = $(pwd)/mysql_datadir >> mysql.cnf
+# echo port = 3307 >> mysql.cnf
+# echo bind-address = 0.0.0.0 >> mysql.cnf
+# echo mysqlx-bind-address = 0.0.0.0 >> mysql.cnf
+# echo key_buffer_size = 16M >> mysql.cnf
+# echo log_error = /var/log/mysql/error.log >> mysql.cnf
+#
+# mysqld_safe --defaults-file=./mysql.cnf
+```
+
+For first time startup, the root user will be assigned a random password, printed in `/var/log/mysql/error.log`.
+Change this by logging in `mysql -P 3307 -u root -p`.
+
+```
+mysql> ALTER USER 'root'@'localhost' IDENTIFIED BY 'MyNewPass';
+mysql> CREATE USER 'cosmic'@'%' IDENTIFIED BY 'password';
+```
+
+Then see the [next section](#create-a-database).
+
+### Create a database
+```
+mysql> CREATE DATABASE dbname;
+mysql> GRANT ALL PRIVILEGES ON `dbname`.* TO `cosmic`@`%`;
+```
+
+
 ### Committing Filesystem and Mount Entities
 
 Gather information about the filesystem to be written to the database, from the host machine:
@@ -89,12 +135,6 @@ $ lsblk -o name,size,mountpoint,label,uuid
 A provided convenience CLI, `cosmicdb_write_filesystem_mount`, minimises the admin of creating novel Filesystems when necessary and leverages the expected pattern of host-mount and network-mount paths.
 
 A more manual method would be to write the appropriate entities to the database using the provided `cosmicdb_write` CLI.
-
-### Create a database
-```
-mysql> CREATE DATABASE dbname;
-mysql> GRANT ALL PRIVILEGES ON `dbname`.* TO `cosmic`@`%`;
-```
 
 ### Create a table for a new ORM entity
 

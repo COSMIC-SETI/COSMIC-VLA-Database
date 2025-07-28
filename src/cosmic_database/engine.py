@@ -10,7 +10,7 @@ class CosmicDB_Engine:
 
     def __init__(
         self,
-        database_scope: entities.DatabaseScope = None,
+        scope: entities.DatabaseScope = None,
         engine_url: str = None,
         engine_conf_yaml_filepath: str = None,
         **kwargs
@@ -22,21 +22,21 @@ class CosmicDB_Engine:
         """
 
         if engine_conf_yaml_filepath is not None:
-            engine_url, self.scope = self._create_url(
+            self.engine_url, self.scope = self._create_url(
                 engine_conf_yaml_filepath,
-                database_scope
+                scope
             )
-        
-        if engine_url is None:
-            raise ValueError("No value provided for the engine URL.")
-
-        if self.scope is None:
-            raise ValueError("No scope specified.")
+        else:
+            if engine_url is None:
+                raise ValueError("No value provided for the engine URL.")
+            if scope is None:
+                raise ValueError("No scope specified.")
+            self.engine_url = engine_url
+            self.scope = scope
 
         kwargs["pool_recycle"] = kwargs.get("pool_recycle", 3600)
-        self.engine_url = engine_url
         self.engine = sqlalchemy.create_engine(
-            engine_url,
+            self.engine_url,
             **kwargs
         )
     
@@ -145,18 +145,18 @@ class CosmicDB_Engine:
         session.refresh(ent)
         return ent
 
-def cli_add_engine_arguments(parser, default_scope: entities.DatabaseScope = None):
+def cli_add_engine_arguments(parser, require_scope: bool = False):
     parser.add_argument(
         "--engine-configuration",
         type=str,
         default="/home/cosmic/conf/cosmicdb_v2.0_conf.yaml",
         help="The YAML file path containing the instantiation arguments for the SQLAlchemy.engine.url.URL instance specifying the database."
     )
-    if default_scope is not False:
+    if require_scope is not False:
         parser.add_argument(
             "--scope",
             type=str,
-            default=default_scope,
+            default=None,
             choices=[
                 v
                 for v, __ in entities.DatabaseScope.__members__.items()
@@ -165,8 +165,13 @@ def cli_add_engine_arguments(parser, default_scope: entities.DatabaseScope = Non
         )
 
 def cli_parse_engine_scope_argument(args):
-    if args.scope is not None:
+    if hasattr(args, "scope") and args.scope is not None:
         args.scope = entities.DatabaseScope(args.scope)
+    else:
+        try:
+            args.scope = entities.ENTITY_SCOPE_MAP[args.entity]
+        except KeyError as err:
+            raise ValueError(f"args.entity is not scoped: {args.entity}") from err
 
 def cli_create_all_tables():
     import argparse
@@ -186,7 +191,7 @@ def cli_create_all_tables():
     args = parser.parse_args()
     cli_parse_engine_scope_argument(args)
     
-    engine = CosmicDB_Engine(engine_url = args.engine_url, engine_conf_yaml_filepath = args.engine_configuration, database_scope = args.scope)
+    engine = CosmicDB_Engine(engine_url = args.engine_url, engine_conf_yaml_filepath = args.engine_configuration, scope = args.scope)
     engine.create_all_tables()
 
 
@@ -369,7 +374,7 @@ def cli_alter_db():
         description="Minor interface to create or drop COSMIC database tables and columns.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    cli_add_engine_arguments(parser)
+    cli_add_engine_arguments(parser, require_scope=False)
     parser.add_argument(
         "entity",
         type=str,
@@ -398,13 +403,14 @@ def cli_alter_db():
     )
 
     args = parser.parse_args()
-    cli_parse_engine_scope_argument(args)
+    
     assert sum([args.drop, args.create]) == 1, "Choose one alteration!"
 
     entity_name = f"CosmicDB_{args.entity}"
     args.entity = getattr(entities, entity_name)
+    cli_parse_engine_scope_argument(args)
 
-    engine = CosmicDB_Engine(engine_conf_yaml_filepath=args.engine_configuration, database_scope=args.scope)
+    engine = CosmicDB_Engine(engine_conf_yaml_filepath=args.engine_configuration, scope=args.scope)
     assert args.entity in entities.DATABASE_SCOPES[engine.scope]
     if args.field is None:
         if args.create:
@@ -435,7 +441,7 @@ def cli_write_filesystem_mount():
         description="Minor interface to write COSMIC FilesystemMount and Filesystem entities.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    cli_add_engine_arguments(parser, default_scope=False)
+    cli_add_engine_arguments(parser, require_scope=False)
     
     parser.add_argument(
         "--uuid",
@@ -477,7 +483,7 @@ def cli_write_filesystem_mount():
 
     engine = CosmicDB_Engine(
         engine_conf_yaml_filepath=args.engine_configuration,
-        database_scope=entities.DatabaseScope.Operation
+        scope=entities.DatabaseScope.Operation
     )
     with engine.session() as session:
         filesystem_entity = session.scalars(
@@ -534,7 +540,7 @@ def cli_write():
         description="Minor interface to write COSMIC database entities.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    cli_add_engine_arguments(parser)
+    cli_add_engine_arguments(parser, require_scope=False)
     parser.add_argument(
         "entity",
         type=str,
@@ -553,10 +559,11 @@ def cli_write():
     )
 
     args = parser.parse_args()
-    cli_parse_engine_scope_argument(args)
 
     entity_name = f"CosmicDB_{args.entity}"
     args.entity = getattr(entities, entity_name)
+
+    cli_parse_engine_scope_argument(args)
 
     assert len(args.fields)%2 == 0, "Provide field names and values in pairs."
     given_field_values = {
@@ -578,7 +585,7 @@ def cli_write():
     
     entity = args.entity(**field_values)
 
-    engine = CosmicDB_Engine(engine_conf_yaml_filepath=args.engine_configuration, database_scope=args.scope)
+    engine = CosmicDB_Engine(engine_conf_yaml_filepath=args.engine_configuration, scope=args.scope)
     with engine.session() as session:
         session.add(entity)
         try:
@@ -596,7 +603,7 @@ def cli_inspect():
         description="Minor interface to expose COSMIC database entities.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    cli_add_engine_arguments(parser, default_scope=entities.DatabaseScope.Operation.value)
+    cli_add_engine_arguments(parser, require_scope=False)
     parser.add_argument(
         "--pandas-output-filepath",
         type=str,
@@ -671,13 +678,13 @@ def cli_inspect():
     )
 
     args = parser.parse_args()
-    cli_parse_engine_scope_argument(args)
 
     entity_name = f"CosmicDB_{args.entity}"
     args.entity = getattr(entities, entity_name)
+    cli_parse_engine_scope_argument(args)
 
     if args.entity_schema:
-        print(args.entity.schema_string())
+        print(entities.Base.schema_string(args.entity))
         return
 
     """
@@ -749,7 +756,7 @@ def cli_inspect():
 
     engine = CosmicDB_Engine(
         engine_conf_yaml_filepath=args.engine_configuration,
-        database_scope=args.scope
+        scope=args.scope
     )
 
     pandas_output_filepath_splitext = None
