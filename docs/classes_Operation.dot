@@ -1,14 +1,14 @@
 digraph CosmicDB_Operation {
-rankdir=LR;
 layout=dot;
 nodesep=0.5;
+rankdir=LR;
 ranksep=2.5;
-CosmicDB_Dataset [shape=plain, label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+CosmicDB_Dataset [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
 	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_Dataset</font></td></tr>
 	<tr><td port="pk" bgcolor="lightgrey" border="3">id {str}</td></tr>
 	<tr><td bgcolor="darkgrey" port="scans">scans</td></tr>
-</table>>];
-CosmicDB_Scan [shape=plain, label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+</table>>, shape=plain];
+CosmicDB_Scan [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
 	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_Scan</font></td></tr>
 	<tr><td port="pk" bgcolor="lightgrey" border="3">id {str}</td></tr>
 	<tr><td port="dataset_id">dataset_id (FK)</td></tr>
@@ -17,8 +17,8 @@ CosmicDB_Scan [shape=plain, label=<<table border="0" cellborder="1" cellspacing=
 	<tr><td bgcolor="darkgrey" port="dataset">dataset</td></tr>
 	<tr><td bgcolor="darkgrey" port="configurations">configurations</td></tr>
 	<tr><td bgcolor="darkgrey" port="observations">observations</td></tr>
-</table>>];
-CosmicDB_Configuration [shape=plain, label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+</table>>, shape=plain];
+CosmicDB_Configuration [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
 	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_Configuration</font></td></tr>
 	<tr><td port="pk" bgcolor="lightgrey" border="3">id</td></tr>
 	<tr><td port="scan_id">scan_id (FK)</td></tr>
@@ -30,14 +30,14 @@ CosmicDB_Configuration [shape=plain, label=<<table border="0" cellborder="1" cel
 	<tr><td bgcolor="darkgrey" port="scan">scan</td></tr>
 	<tr><td bgcolor="darkgrey" port="antenna">antenna</td></tr>
 	<tr><td bgcolor="darkgrey" port="observations">observations</td></tr>
-</table>>];
-CosmicDB_ConfigurationAntenna [shape=plain, label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+</table>>, shape=plain];
+CosmicDB_ConfigurationAntenna [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
 	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_ConfigurationAntenna</font></td></tr>
 	<tr><td port="pk" bgcolor="lightgrey" border="3">configuration_id (FK)<br/>name {str}</td></tr>
 	<tr><td port="enumeration">enumeration</td></tr>
 	<tr><td bgcolor="darkgrey" port="configuration">configuration</td></tr>
-</table>>];
-CosmicDB_Calibration [shape=plain, label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+</table>>, shape=plain];
+CosmicDB_Calibration [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
 	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_Calibration</font></td></tr>
 	<tr><td port="pk" bgcolor="lightgrey" border="3">id</td></tr>
 	<tr><td port="observation_id">observation_id (FK)</td></tr>
@@ -47,15 +47,15 @@ CosmicDB_Calibration [shape=plain, label=<<table border="0" cellborder="1" cells
 	<tr><td bgcolor="darkgrey" port="observation">observation</td></tr>
 	<tr><td bgcolor="darkgrey" port="observations_applied">observations_applied</td></tr>
 	<tr><td bgcolor="darkgrey" port="antenna">antenna</td></tr>
-</table>>];
-CosmicDB_AntennaCalibration [shape=plain, label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+</table>>, shape=plain];
+CosmicDB_AntennaCalibration [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
 	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_AntennaCalibration</font></td></tr>
 	<tr><td port="pk" bgcolor="lightgrey" border="3">antenna_name {str}<br/>calibration_id (FK)<br/>tuning {str}</td></tr>
 	<tr><td port="coarse_channels_flagged_rfi">coarse_channels_flagged_rfi</td></tr>
 	<tr><td port="coarse_channels_processed">coarse_channels_processed</td></tr>
 	<tr><td bgcolor="darkgrey" port="calibration">calibration</td></tr>
-</table>>];
-CosmicDB_Observation [shape=plain, label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+</table>>, shape=plain];
+CosmicDB_Observation [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
 	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_Observation</font></td></tr>
 	<tr><td port="pk" bgcolor="lightgrey" border="3">id</td></tr>
 	<tr><td port="archival_filesystem_uuid">archival_filesystem_uuid (FK)</td></tr>
@@ -72,8 +72,8 @@ CosmicDB_Observation [shape=plain, label=<<table border="0" cellborder="1" cells
 	<tr><td bgcolor="darkgrey" port="subbands">subbands</td></tr>
 	<tr><td bgcolor="darkgrey" port="beams">beams</td></tr>
 	<tr><td bgcolor="darkgrey" port="active_calibration">active_calibration</td></tr>
-</table>>];
-CosmicDB_ObservationSubband [shape=plain, label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+</table>>, shape=plain];
+CosmicDB_ObservationSubband [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
 	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_ObservationSubband</font></td></tr>
 	<tr><td port="pk" bgcolor="lightgrey" border="3">observation_id (FK)<br/>subband_offset<br/>tuning {str}</td></tr>
 	<tr><td port="node_uri">node_uri</td></tr>
@@ -83,8 +83,8 @@ CosmicDB_ObservationSubband [shape=plain, label=<<table border="0" cellborder="1
 	<tr><td port="subband_length">subband_length</td></tr>
 	<tr><td port="successful_participation">successful_participation</td></tr>
 	<tr><td bgcolor="darkgrey" port="observation">observation</td></tr>
-</table>>];
-CosmicDB_ObservationBeam [shape=plain, label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+</table>>, shape=plain];
+CosmicDB_ObservationBeam [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
 	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_ObservationBeam</font></td></tr>
 	<tr><td port="pk" bgcolor="lightgrey" border="3">enumeration<br/>observation_id (FK)</td></tr>
 	<tr><td port="dec_radians">dec_radians</td></tr>
@@ -93,15 +93,15 @@ CosmicDB_ObservationBeam [shape=plain, label=<<table border="0" cellborder="1" c
 	<tr><td port="source">source</td></tr>
 	<tr><td port="start">start</td></tr>
 	<tr><td bgcolor="darkgrey" port="observation">observation</td></tr>
-</table>>];
-CosmicDB_Filesystem [shape=plain, label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+</table>>, shape=plain];
+CosmicDB_Filesystem [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
 	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_Filesystem</font></td></tr>
 	<tr><td port="pk" bgcolor="lightgrey" border="3">uuid {str}</td></tr>
 	<tr><td port="label">label</td></tr>
 	<tr><td bgcolor="darkgrey" port="mount_history">mount_history</td></tr>
 	<tr><td bgcolor="darkgrey" port="observations">observations</td></tr>
-</table>>];
-CosmicDB_FilesystemMount [shape=plain, label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+</table>>, shape=plain];
+CosmicDB_FilesystemMount [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
 	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_FilesystemMount</font></td></tr>
 	<tr><td port="pk" bgcolor="lightgrey" border="3">id</td></tr>
 	<tr><td port="filesystem_uuid">filesystem_uuid (FK)</td></tr>
@@ -111,50 +111,51 @@ CosmicDB_FilesystemMount [shape=plain, label=<<table border="0" cellborder="1" c
 	<tr><td port="network_uri" bgcolor="lightgrey:white" style="radial">network_uri*</td></tr>
 	<tr><td port="start">start</td></tr>
 	<tr><td bgcolor="darkgrey" port="filesystem">filesystem</td></tr>
-</table>>];
-CosmicDB_Dataset:scans -> CosmicDB_Scan:class [arrowtail=inv, dir=back];
-CosmicDB_Scan:dataset -> CosmicDB_Dataset:class [arrowtail=none, dir=back];
-CosmicDB_Scan:configurations -> CosmicDB_Configuration:class [arrowtail=inv, dir=back];
-CosmicDB_Scan:observations -> CosmicDB_Observation:class [arrowtail=inv, dir=back];
-CosmicDB_Configuration:scan -> CosmicDB_Scan:class [arrowtail=none, dir=back];
-CosmicDB_Configuration:antenna -> CosmicDB_ConfigurationAntenna:class [arrowtail=inv, dir=back];
-CosmicDB_Configuration:observations -> CosmicDB_Observation:class [arrowtail=inv, dir=back];
-CosmicDB_ConfigurationAntenna:configuration -> CosmicDB_Configuration:class [arrowtail=none, dir=back];
-CosmicDB_Calibration:observation -> CosmicDB_Observation:class [arrowtail=none, dir=back];
-CosmicDB_Calibration:observations_applied -> CosmicDB_Observation:class [arrowtail=inv, dir=back];
-CosmicDB_Calibration:antenna -> CosmicDB_AntennaCalibration:class [arrowtail=inv, dir=back];
-CosmicDB_AntennaCalibration:calibration -> CosmicDB_Calibration:class [arrowtail=none, dir=back];
-CosmicDB_Observation:archival_filesystem -> CosmicDB_Filesystem:class [arrowtail=none, dir=back];
-CosmicDB_Observation:configuration -> CosmicDB_Configuration:class [arrowtail=none, dir=back];
-CosmicDB_Observation:scan -> CosmicDB_Scan:class [arrowtail=none, dir=back];
-CosmicDB_Observation:subbands -> CosmicDB_ObservationSubband:class [arrowtail=inv, dir=back];
-CosmicDB_Observation:beams -> CosmicDB_ObservationBeam:class [arrowtail=inv, dir=back];
-CosmicDB_Observation:active_calibration -> CosmicDB_Calibration:class [arrowtail=none, dir=back];
-CosmicDB_ObservationSubband:observation -> CosmicDB_Observation:class [arrowtail=none, dir=back];
-CosmicDB_ObservationBeam:observation -> CosmicDB_Observation:class [arrowtail=none, dir=back];
-CosmicDB_Filesystem:mount_history -> CosmicDB_FilesystemMount:class [arrowtail=inv, dir=back];
-CosmicDB_Filesystem:observations -> CosmicDB_Observation:class [arrowtail=inv, dir=back];
-CosmicDB_FilesystemMount:filesystem -> CosmicDB_Filesystem:class [arrowtail=none, dir=back];
-CosmicDB_Scan:dataset_id -> CosmicDB_Dataset:pk [arrowtail=none, dir=back, color=darkgrey, penwidth=3.0];
-CosmicDB_Configuration:scan_id -> CosmicDB_Scan:pk [arrowtail=none, dir=back, color=darkgrey, penwidth=3.0];
-CosmicDB_ConfigurationAntenna:pk -> CosmicDB_Configuration:pk [arrowtail=none, dir=back, color=darkgrey, penwidth=3.0];
-CosmicDB_Calibration:observation_id -> CosmicDB_Observation:pk [arrowtail=none, dir=back, color=darkgrey, penwidth=3.0];
-CosmicDB_AntennaCalibration:pk -> CosmicDB_Calibration:pk [arrowtail=none, dir=back, color=darkgrey, penwidth=3.0];
-CosmicDB_Observation:archival_filesystem_uuid -> CosmicDB_Filesystem:pk [arrowtail=none, dir=back, color=darkgrey, penwidth=3.0];
-CosmicDB_Observation:calibration_id -> CosmicDB_Calibration:pk [arrowtail=none, dir=back, color=darkgrey, penwidth=3.0];
-CosmicDB_Observation:configuration_id -> CosmicDB_Configuration:pk [arrowtail=none, dir=back, color=darkgrey, penwidth=3.0];
-CosmicDB_Observation:scan_id -> CosmicDB_Scan:pk [arrowtail=none, dir=back, color=darkgrey, penwidth=3.0];
-CosmicDB_ObservationSubband:pk -> CosmicDB_Observation:pk [arrowtail=none, dir=back, color=darkgrey, penwidth=3.0];
-CosmicDB_ObservationBeam:pk -> CosmicDB_Observation:pk [arrowtail=none, dir=back, color=darkgrey, penwidth=3.0];
-CosmicDB_FilesystemMount:filesystem_uuid -> CosmicDB_Filesystem:pk [arrowtail=none, dir=back, color=darkgrey, penwidth=3.0];
+</table>>, shape=plain];
+CosmicDB_Dataset:scans -> CosmicDB_Scan:class  [arrowtail=inv, dir=back];
+CosmicDB_Scan:dataset -> CosmicDB_Dataset:class  [arrowtail=none, dir=back];
+CosmicDB_Scan:configurations -> CosmicDB_Configuration:class  [arrowtail=inv, dir=back];
+CosmicDB_Scan:observations -> CosmicDB_Observation:class  [arrowtail=inv, dir=back];
+CosmicDB_Configuration:scan -> CosmicDB_Scan:class  [arrowtail=none, dir=back];
+CosmicDB_Configuration:antenna -> CosmicDB_ConfigurationAntenna:class  [arrowtail=inv, dir=back];
+CosmicDB_Configuration:observations -> CosmicDB_Observation:class  [arrowtail=inv, dir=back];
+CosmicDB_ConfigurationAntenna:configuration -> CosmicDB_Configuration:class  [arrowtail=none, dir=back];
+CosmicDB_Calibration:observation -> CosmicDB_Observation:class  [arrowtail=none, dir=back];
+CosmicDB_Calibration:observations_applied -> CosmicDB_Observation:class  [arrowtail=inv, dir=back];
+CosmicDB_Calibration:antenna -> CosmicDB_AntennaCalibration:class  [arrowtail=inv, dir=back];
+CosmicDB_AntennaCalibration:calibration -> CosmicDB_Calibration:class  [arrowtail=none, dir=back];
+CosmicDB_Observation:archival_filesystem -> CosmicDB_Filesystem:class  [arrowtail=none, dir=back];
+CosmicDB_Observation:configuration -> CosmicDB_Configuration:class  [arrowtail=none, dir=back];
+CosmicDB_Observation:scan -> CosmicDB_Scan:class  [arrowtail=none, dir=back];
+CosmicDB_Observation:subbands -> CosmicDB_ObservationSubband:class  [arrowtail=inv, dir=back];
+CosmicDB_Observation:beams -> CosmicDB_ObservationBeam:class  [arrowtail=inv, dir=back];
+CosmicDB_Observation:active_calibration -> CosmicDB_Calibration:class  [arrowtail=none, dir=back];
+CosmicDB_ObservationSubband:observation -> CosmicDB_Observation:class  [arrowtail=none, dir=back];
+CosmicDB_ObservationBeam:observation -> CosmicDB_Observation:class  [arrowtail=none, dir=back];
+CosmicDB_Filesystem:mount_history -> CosmicDB_FilesystemMount:class  [arrowtail=inv, dir=back];
+CosmicDB_Filesystem:observations -> CosmicDB_Observation:class  [arrowtail=inv, dir=back];
+CosmicDB_FilesystemMount:filesystem -> CosmicDB_Filesystem:class  [arrowtail=none, dir=back];
+CosmicDB_Scan:dataset_id -> CosmicDB_Dataset:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
+CosmicDB_Configuration:scan_id -> CosmicDB_Scan:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
+CosmicDB_ConfigurationAntenna:pk -> CosmicDB_Configuration:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
+CosmicDB_Calibration:observation_id -> CosmicDB_Observation:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
+CosmicDB_AntennaCalibration:pk -> CosmicDB_Calibration:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
+CosmicDB_Observation:archival_filesystem_uuid -> CosmicDB_Filesystem:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
+CosmicDB_Observation:calibration_id -> CosmicDB_Calibration:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
+CosmicDB_Observation:configuration_id -> CosmicDB_Configuration:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
+CosmicDB_Observation:scan_id -> CosmicDB_Scan:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
+CosmicDB_ObservationSubband:pk -> CosmicDB_Observation:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
+CosmicDB_ObservationBeam:pk -> CosmicDB_Observation:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
+CosmicDB_FilesystemMount:filesystem_uuid -> CosmicDB_Filesystem:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
 subgraph legend {
+cluster=True;
 label="Legend";
-cluster=true;
 "Foreign Relations_0" [label="", shape=none];
 "Foreign Relations_1" [label="Foreign Relations", shape=none];
-"Foreign Relations_0" -> "Foreign Relations_1" [arrowtail=none, dir=back, color=black];
+"Foreign Relations_0" -> "Foreign Relations_1"  [arrowtail=none, color=black, dir=back];
 "Foreign Keys_0" [label="", shape=none];
 "Foreign Keys_1" [label="Foreign Keys", shape=none];
-"Foreign Keys_0" -> "Foreign Keys_1" [arrowtail=none, dir=back, color=darkgrey, penwidth=3.0];
+"Foreign Keys_0" -> "Foreign Keys_1"  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
 }
+
 }
