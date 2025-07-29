@@ -10,9 +10,9 @@ class CosmicDB_Engine:
 
     def __init__(
         self,
+        engine_conf_yaml_filepath: str = None,
         scope: entities.DatabaseScope = None,
         engine_url: str = None,
-        engine_conf_yaml_filepath: str = None,
         **kwargs
     ):
         """
@@ -21,18 +21,18 @@ class CosmicDB_Engine:
 
         """
 
-        if engine_conf_yaml_filepath is not None:
+        if engine_url is not None:
+            if scope is None:
+                raise ValueError("No scope specified.")
+            self.engine_url = engine_url
+            self.scope = scope  
+        elif engine_conf_yaml_filepath is not None:
             self.engine_url, self.scope = self._create_url(
                 engine_conf_yaml_filepath,
                 scope
             )
-        else:
-            if engine_url is None:
-                raise ValueError("No value provided for the engine URL.")
-            if scope is None:
-                raise ValueError("No scope specified.")
-            self.engine_url = engine_url
-            self.scope = scope
+        if not hasattr(self, "engine_url"):
+            raise ValueError("Specify either a configuration YAML filepath, or both an engine URL and a Scope")
 
         kwargs["pool_recycle"] = kwargs.get("pool_recycle", 3600)
         self.engine = sqlalchemy.create_engine(
@@ -88,7 +88,11 @@ class CosmicDB_Engine:
             session.add_all(entities)
             session.commit()
 
-    def select_entity(self, session, entity_class, **criteria_kwargs):
+    def select_entity(self, entity_class, session=None, **criteria_kwargs):
+        if session is None:
+            with self.session() as session:
+                return self.select_entity(entity_class, session, **criteria_kwargs)
+
         return session.scalars(
             sqlalchemy.select(entity_class)
             .where(*[
@@ -145,14 +149,40 @@ class CosmicDB_Engine:
         session.refresh(ent)
         return ent
 
-def cli_add_engine_arguments(parser, require_scope: bool = False):
+def get_storage_filesystem_latest_mount(
+    engine_conf_yaml_filepath: str
+):
+    cosmicdb_operation_engine = CosmicDB_Engine(engine_conf_yaml_filepath, scope=entities.DatabaseScope.Operation)
+    cosmicdb_storage_engine = CosmicDB_Engine(engine_conf_yaml_filepath, scope=entities.DatabaseScope.Storage)
+    storage_filesystem_uuid = cosmicdb_storage_engine.select_entity(
+        entities.CosmicDB_StorageDatabaseInfo
+    ).filesystem_uuid
+    assert storage_filesystem_uuid is not None # not nullable, so should be impossible
+    filesystem_entity = cosmicdb_operation_engine.select_entity(
+        entities.CosmicDB_Filesystem,
+        uuid = storage_filesystem_uuid
+    )
+    assert filesystem_entity is not None, f"No Operation Filesystem entity with UUID: {storage_filesystem_uuid}"
+
+    with cosmicdb_operation_engine.session() as session:
+        return filesystem_entity.get_latest_mount(session)
+
+def get_storage_filesystem_latest_network_uri(
+    engine_conf_yaml_filepath: str
+):
+    storage_filesystem_latest_mount = get_storage_filesystem_latest_mount(engine_conf_yaml_filepath)
+    assert storage_filesystem_latest_mount.is_current(), f"Filesystem's latest mount is closed: {storage_filesystem_latest_mount}"
+    assert storage_filesystem_latest_mount.network_uri is not None, f"No given network mount for the filesystem's latest mount: {storage_filesystem_latest_mount}"
+    return storage_filesystem_latest_mount.network_uri
+
+def cli_add_engine_arguments(parser, add_scope_argument: bool = True):
     parser.add_argument(
         "--engine-configuration",
         type=str,
         default="/home/cosmic/conf/cosmicdb_v2.0_conf.yaml",
         help="The YAML file path containing the instantiation arguments for the SQLAlchemy.engine.url.URL instance specifying the database."
     )
-    if require_scope is not False:
+    if add_scope_argument is not False:
         parser.add_argument(
             "--scope",
             type=str,
@@ -374,7 +404,7 @@ def cli_alter_db():
         description="Minor interface to create or drop COSMIC database tables and columns.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    cli_add_engine_arguments(parser, require_scope=False)
+    cli_add_engine_arguments(parser, add_scope_argument=False)
     parser.add_argument(
         "entity",
         type=str,
@@ -441,7 +471,7 @@ def cli_write_filesystem_mount():
         description="Minor interface to write COSMIC FilesystemMount and Filesystem entities.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    cli_add_engine_arguments(parser, require_scope=False)
+    cli_add_engine_arguments(parser, add_scope_argument=False)
     
     parser.add_argument(
         "--uuid",
@@ -540,7 +570,7 @@ def cli_write():
         description="Minor interface to write COSMIC database entities.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    cli_add_engine_arguments(parser, require_scope=False)
+    cli_add_engine_arguments(parser, add_scope_argument=False)
     parser.add_argument(
         "entity",
         type=str,
@@ -603,7 +633,7 @@ def cli_inspect():
         description="Minor interface to expose COSMIC database entities.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    cli_add_engine_arguments(parser, require_scope=False)
+    cli_add_engine_arguments(parser, add_scope_argument=False)
     parser.add_argument(
         "--pandas-output-filepath",
         type=str,
