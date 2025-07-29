@@ -96,24 +96,12 @@ CosmicDB_AntennaCalibration [label=<<table border="0" cellborder="1" cellspacing
 	<tr><td>tuning</td></tr>
 	<tr><td bgcolor="darkgrey" port="calibration">calibration</td></tr>
 </table>>, shape=plain];
-CosmicDB_HitFlags:hit -> CosmicDB_ObservationHit:class;
-CosmicDB_HitFlags [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
-	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_HitFlags</font></td></tr>
+CosmicDB_HitFlagSARFI:hit -> CosmicDB_ObservationHit:class;
+CosmicDB_HitFlagSARFI [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_HitFlagSARFI</font></td></tr>
+	<tr><td>antenna_index</td></tr>
 	<tr><td>hit_id</td></tr>
-	<tr><td>location_out_of_date</td></tr>
-	<tr><td>no_stamp</td></tr>
-	<tr><td>sarfi</td></tr>
 	<tr><td bgcolor="darkgrey" port="hit">hit</td></tr>
-</table>>, shape=plain];
-CosmicDB_StampFlags:stamp -> CosmicDB_ObservationStamp:class;
-CosmicDB_StampFlags [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
-	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_StampFlags</font></td></tr>
-	<tr><td>location_out_of_date</td></tr>
-	<tr><td>no_hits</td></tr>
-	<tr><td>redundant_to</td></tr>
-	<tr><td>sarfi</td></tr>
-	<tr><td>stamp_id</td></tr>
-	<tr><td bgcolor="darkgrey" port="stamp">stamp</td></tr>
 </table>>, shape=plain];
 CosmicDB_StampHitRelationship [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
 	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_StampHitRelationship</font></td></tr>
@@ -156,7 +144,7 @@ CosmicDB_ObservationBeam [label=<<table border="0" cellborder="1" cellspacing="0
 CosmicDB_ObservationHit:beam -> CosmicDB_ObservationBeam:class;
 CosmicDB_ObservationHit:observation -> CosmicDB_Observation:class;
 CosmicDB_ObservationHit:observation_subband -> CosmicDB_ObservationSubband:class;
-CosmicDB_ObservationHit:flags -> CosmicDB_HitFlags:class;
+CosmicDB_ObservationHit:sarfi_flag -> CosmicDB_HitFlagSARFI:class;
 CosmicDB_ObservationHit:file -> CosmicDB_File:class;
 CosmicDB_ObservationHit [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
 	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_ObservationHit</font></td></tr>
@@ -166,7 +154,6 @@ CosmicDB_ObservationHit [label=<<table border="0" cellborder="1" cellspacing="0"
 	<tr><td>fch1_mhz</td></tr>
 	<tr><td>file_id</td></tr>
 	<tr><td>file_local_enumeration</td></tr>
-	<tr><td>file_uri</td></tr>
 	<tr><td>foff_mhz</td></tr>
 	<tr><td>id</td></tr>
 	<tr><td>num_channels</td></tr>
@@ -193,13 +180,12 @@ CosmicDB_ObservationHit [label=<<table border="0" cellborder="1" cellspacing="0"
 	<tr><td bgcolor="darkgrey" port="beam">beam</td></tr>
 	<tr><td bgcolor="darkgrey" port="observation">observation</td></tr>
 	<tr><td bgcolor="darkgrey" port="observation_subband">observation_subband</td></tr>
-	<tr><td bgcolor="darkgrey" port="flags">flags</td></tr>
+	<tr><td bgcolor="darkgrey" port="sarfi_flag">sarfi_flag</td></tr>
 	<tr><td bgcolor="darkgrey" port="file">file</td></tr>
 </table>>, shape=plain];
 CosmicDB_ObservationStamp:observation -> CosmicDB_Observation:class;
 CosmicDB_ObservationStamp:observation_subband -> CosmicDB_ObservationSubband:class;
 CosmicDB_ObservationStamp:beam -> CosmicDB_ObservationBeam:class;
-CosmicDB_ObservationStamp:flags -> CosmicDB_StampFlags:class;
 CosmicDB_ObservationStamp:file -> CosmicDB_File:class;
 CosmicDB_ObservationStamp [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
 	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_ObservationStamp</font></td></tr>
@@ -240,7 +226,6 @@ CosmicDB_ObservationStamp [label=<<table border="0" cellborder="1" cellspacing="
 	<tr><td bgcolor="darkgrey" port="observation">observation</td></tr>
 	<tr><td bgcolor="darkgrey" port="observation_subband">observation_subband</td></tr>
 	<tr><td bgcolor="darkgrey" port="beam">beam</td></tr>
-	<tr><td bgcolor="darkgrey" port="flags">flags</td></tr>
 	<tr><td bgcolor="darkgrey" port="file">file</td></tr>
 </table>>, shape=plain];
 }

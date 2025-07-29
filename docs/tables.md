@@ -90,28 +90,14 @@ tuning | VARCHAR(10) | X |  |
 coarse_channels_processed | INTEGER |  |  | 
 coarse_channels_flagged_rfi | INTEGER |  |  | 
 
-# Table `cosmic_hit_flags`
+# Table `cosmic_hit_flag_sarfi`
 
-Class [`cosmic_database.entities.CosmicDB_HitFlags`](./classes.md#class-CosmicDB_HitFlags)
+Class [`cosmic_database.entities.CosmicDB_HitFlagSARFI`](./classes.md#class-CosmicDB_HitFlagSARFI)
 
 Column | Type | Primary Key | Foreign Key(s) | Nullable
 -|-|-|-|-
 hit_id | INTEGER | X | [cosmic_observation_hit](#table-cosmic_observation_hit).id | 
-sarfi | BOOLEAN |  |  | X
-location_out_of_date | BOOLEAN |  |  | X
-no_stamp | BOOLEAN |  |  | X
-
-# Table `cosmic_stamp_flags`
-
-Class [`cosmic_database.entities.CosmicDB_StampFlags`](./classes.md#class-CosmicDB_StampFlags)
-
-Column | Type | Primary Key | Foreign Key(s) | Nullable
--|-|-|-|-
-stamp_id | INTEGER | X | [cosmic_observation_stamp](#table-cosmic_observation_stamp).id | 
-sarfi | BOOLEAN |  |  | X
-location_out_of_date | BOOLEAN |  |  | X
-redundant_to | INTEGER |  | [cosmic_observation_stamp](#table-cosmic_observation_stamp).id | X
-no_hits | BOOLEAN |  |  | X
+antenna_index | INTEGER |  |  | 
 
 # Table `cosmic_stamp_hit_relationship`
 
@@ -169,7 +155,6 @@ observation_id | INTEGER |  | [cosmic_observation](#table-cosmic_observation).id
 tuning | VARCHAR(10) |  | [cosmic_observation_subband](#table-cosmic_observation_subband).tuning | 
 subband_offset | INTEGER |  | [cosmic_observation_subband](#table-cosmic_observation_subband).subband_offset | 
 file_id | INTEGER |  | [cosmic_file](#table-cosmic_file).id | X
-file_uri | VARCHAR(255) |  |  | X
 file_local_enumeration | INTEGER |  |  | 
 signal_frequency | DOUBLE |  |  | 
 signal_index | INTEGER |  |  | 

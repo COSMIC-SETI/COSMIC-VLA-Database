@@ -102,29 +102,15 @@ coarse_channels_flagged_rfi | `int`
 coarse_channels_processed | `int`
 tuning | `str`
 calibration | [CosmicDB_ObservationCalibration](#class-cosmicdb_observationcalibration)
-# Class `CosmicDB_HitFlags`
+# Class `CosmicDB_HitFlagSARFI`
 
-Table [`cosmic_hit_flags`](./tables.md#table-cosmic_hit_flags)
+Table [`cosmic_hit_flag_sarfi`](./tables.md#table-cosmic_hit_flag_sarfi)
 
 Attribute | Type
 -|-
+antenna_index | `int`
 hit_id | `int`
-location_out_of_date | `bool`
-no_stamp | `bool`
-sarfi | `bool`
 hit | [CosmicDB_ObservationHit](#class-cosmicdb_observationhit)
-# Class `CosmicDB_StampFlags`
-
-Table [`cosmic_stamp_flags`](./tables.md#table-cosmic_stamp_flags)
-
-Attribute | Type
--|-
-location_out_of_date | `bool`
-no_hits | `bool`
-redundant_to | `int`
-sarfi | `bool`
-stamp_id | `int`
-stamp | [CosmicDB_ObservationStamp](#class-cosmicdb_observationstamp)
 # Class `CosmicDB_StampHitRelationship`
 
 Table [`cosmic_stamp_hit_relationship`](./tables.md#table-cosmic_stamp_hit_relationship)
@@ -182,7 +168,6 @@ dec_degrees | `float`
 fch1_mhz | `float`
 file_id | `int`
 file_local_enumeration | `int`
-file_uri | `str`
 foff_mhz | `float`
 id | `int`
 num_channels | `int`
@@ -209,7 +194,7 @@ tuning | `str`
 beam | [CosmicDB_ObservationBeam](#class-cosmicdb_observationbeam)
 observation | [CosmicDB_Observation](#class-cosmicdb_observation)
 observation_subband | [CosmicDB_ObservationSubband](#class-cosmicdb_observationsubband)
-flags | [CosmicDB_HitFlags](#class-cosmicdb_hitflags)
+sarfi_flag | [CosmicDB_HitFlagSARFI](#class-cosmicdb_hitflagsarfi)
 file | [CosmicDB_File](#class-cosmicdb_file)
 # Class `CosmicDB_ObservationStamp`
 
@@ -254,5 +239,4 @@ tuning | `str`
 observation | [CosmicDB_Observation](#class-cosmicdb_observation)
 observation_subband | [CosmicDB_ObservationSubband](#class-cosmicdb_observationsubband)
 beam | [CosmicDB_ObservationBeam](#class-cosmicdb_observationbeam)
-flags | [CosmicDB_StampFlags](#class-cosmicdb_stampflags)
 file | [CosmicDB_File](#class-cosmicdb_file)

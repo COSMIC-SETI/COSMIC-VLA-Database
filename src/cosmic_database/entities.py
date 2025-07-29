@@ -336,8 +336,6 @@ class CosmicDB_ObservationHit(Base):
     subband_offset: Mapped[int]
 
     file_id: Mapped[Optional[int]] = mapped_column(ForeignKey(f"cosmic_file{TABLE_SUFFIX}.id"), nullable=True, index=True)
-    # storage filepath
-    file_uri: Mapped[Optional[String_URI]]
     # stamp index within file
     file_local_enumeration: Mapped[int]
 
