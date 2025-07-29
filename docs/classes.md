@@ -7,7 +7,7 @@ Table [`cosmic_dataset`](./tables.md#table-cosmic_dataset)
 
 Attribute | Type
 -|-
-id | `bool`
+id | `int`
 scans | list([CosmicDB_Scan](#class-cosmicdb_scan))
 ## Class `CosmicDB_Scan`
 
@@ -233,7 +233,6 @@ tstart | `float`
 tuning | `float`
 file | [CosmicDB_File](#class-cosmicdb_file)
 observation_key | [CosmicDB_ObservationKey](#class-cosmicdb_observationkey)
-flags | [CosmicDB_StampFlags](#class-cosmicdb_stampflags)
 hits | [CosmicDB_ObservationHit](#class-cosmicdb_observationhit)
 ## Class `CosmicDB_ObservationHit`
 
@@ -271,28 +270,22 @@ tstart | `float`
 tuning | `float`
 file | [CosmicDB_File](#class-cosmicdb_file)
 observation_key | [CosmicDB_ObservationKey](#class-cosmicdb_observationkey)
-flags | [CosmicDB_HitFlags](#class-cosmicdb_hitflags)
+sarfi_flag | [CosmicDB_HitFlagSARFI](#class-cosmicdb_hitflagsarfi)
 stamp | [CosmicDB_ObservationStamp](#class-cosmicdb_observationstamp)
-## Class `CosmicDB_HitFlags`
+## Class `CosmicDB_HitFlagSARFI`
 
-Table [`cosmic_hit_flags`](./tables.md#table-cosmic_hit_flags)
+Table [`cosmic_hit_flag_sarfi`](./tables.md#table-cosmic_hit_flag_sarfi)
 
 Attribute | Type
 -|-
-hit_id | `str`
-location_out_of_date | `int`
-no_stamp | `bool`
-sarfi | `bool`
+antenna_index | `str`
+hit_id | `int`
 hit | [CosmicDB_ObservationHit](#class-cosmicdb_observationhit)
-## Class `CosmicDB_StampFlags`
+## Class `CosmicDB_StampHitRelationship`
 
-Table [`cosmic_stamp_flags`](./tables.md#table-cosmic_stamp_flags)
+Table [`cosmic_stamp_hit_relationship`](./tables.md#table-cosmic_stamp_hit_relationship)
 
 Attribute | Type
 -|-
-location_out_of_date | `bool`
-no_hits | `bool`
-redundant_to | `bool`
-sarfi | `int`
-stamp_id | `bool`
-stamp | [CosmicDB_ObservationStamp](#class-cosmicdb_observationstamp)
+hit_id | `int`
+stamp_id | `int`

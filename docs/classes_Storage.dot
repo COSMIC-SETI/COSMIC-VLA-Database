@@ -1,28 +1,28 @@
 digraph CosmicDB_Storage {
-rankdir=LR;
 layout=dot;
 nodesep=0.5;
+rankdir=LR;
 ranksep=2.5;
-CosmicDB_StorageDatabaseInfo [shape=plain, label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+CosmicDB_StorageDatabaseInfo [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
 	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_StorageDatabaseInfo</font></td></tr>
 	<tr><td port="pk" bgcolor="lightgrey" border="3">id</td></tr>
 	<tr><td port="filesystem_uuid">filesystem_uuid</td></tr>
-</table>>];
-CosmicDB_ObservationKey [shape=plain, label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+</table>>, shape=plain];
+CosmicDB_ObservationKey [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
 	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_ObservationKey</font></td></tr>
 	<tr><td port="pk" bgcolor="lightgrey" border="3">observation_id</td></tr>
 	<tr><td port="configuration_id">configuration_id</td></tr>
 	<tr><td port="scan_id">scan_id</td></tr>
 	<tr><td bgcolor="darkgrey" port="hits">hits</td></tr>
 	<tr><td bgcolor="darkgrey" port="stamps">stamps</td></tr>
-</table>>];
-CosmicDB_File [shape=plain, label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+</table>>, shape=plain];
+CosmicDB_File [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
 	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_File</font></td></tr>
 	<tr><td port="pk" bgcolor="lightgrey" border="3">id</td></tr>
 	<tr><td port="local_uri">local_uri</td></tr>
 	<tr><td bgcolor="darkgrey" port="flags">flags</td></tr>
-</table>>];
-CosmicDB_FileFlags [shape=plain, label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+</table>>, shape=plain];
+CosmicDB_FileFlags [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
 	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_FileFlags</font></td></tr>
 	<tr><td port="pk" bgcolor="lightgrey" border="3">file_id (FK)</td></tr>
 	<tr><td port="irregular_filename" bgcolor="lightgrey:white" style="radial">irregular_filename*</td></tr>
@@ -30,8 +30,8 @@ CosmicDB_FileFlags [shape=plain, label=<<table border="0" cellborder="1" cellspa
 	<tr><td port="no_known_dataset" bgcolor="lightgrey:white" style="radial">no_known_dataset*</td></tr>
 	<tr><td port="to_delete" bgcolor="lightgrey:white" style="radial">to_delete*</td></tr>
 	<tr><td bgcolor="darkgrey" port="file">file</td></tr>
-</table>>];
-CosmicDB_ObservationStamp [shape=plain, label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+</table>>, shape=plain];
+CosmicDB_ObservationStamp [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
 	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_ObservationStamp</font></td></tr>
 	<tr><td port="pk" bgcolor="lightgrey" border="3">id</td></tr>
 	<tr><td port="file_id">file_id (FK)</td></tr>
@@ -68,10 +68,9 @@ CosmicDB_ObservationStamp [shape=plain, label=<<table border="0" cellborder="1" 
 	<tr><td port="tuning">tuning</td></tr>
 	<tr><td bgcolor="darkgrey" port="file">file</td></tr>
 	<tr><td bgcolor="darkgrey" port="observation_key">observation_key</td></tr>
-	<tr><td bgcolor="darkgrey" port="flags">flags</td></tr>
 	<tr><td bgcolor="darkgrey" port="hits">hits</td></tr>
-</table>>];
-CosmicDB_ObservationHit [shape=plain, label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+</table>>, shape=plain];
+CosmicDB_ObservationHit [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
 	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_ObservationHit</font></td></tr>
 	<tr><td port="pk" bgcolor="lightgrey" border="3">id</td></tr>
 	<tr><td port="file_id">file_id (FK)</td></tr>
@@ -103,57 +102,49 @@ CosmicDB_ObservationHit [shape=plain, label=<<table border="0" cellborder="1" ce
 	<tr><td port="tuning">tuning</td></tr>
 	<tr><td bgcolor="darkgrey" port="file">file</td></tr>
 	<tr><td bgcolor="darkgrey" port="observation_key">observation_key</td></tr>
-	<tr><td bgcolor="darkgrey" port="flags">flags</td></tr>
+	<tr><td bgcolor="darkgrey" port="sarfi_flag">sarfi_flag</td></tr>
 	<tr><td bgcolor="darkgrey" port="stamp">stamp</td></tr>
-</table>>];
-CosmicDB_HitFlags [shape=plain, label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
-	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_HitFlags</font></td></tr>
+</table>>, shape=plain];
+CosmicDB_HitFlagSARFI [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_HitFlagSARFI</font></td></tr>
 	<tr><td port="pk" bgcolor="lightgrey" border="3">hit_id (FK)</td></tr>
-	<tr><td port="location_out_of_date" bgcolor="lightgrey:white" style="radial">location_out_of_date*</td></tr>
-	<tr><td port="no_stamp" bgcolor="lightgrey:white" style="radial">no_stamp*</td></tr>
-	<tr><td port="sarfi" bgcolor="lightgrey:white" style="radial">sarfi*</td></tr>
+	<tr><td port="antenna_index">antenna_index</td></tr>
 	<tr><td bgcolor="darkgrey" port="hit">hit</td></tr>
-</table>>];
-CosmicDB_StampFlags [shape=plain, label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
-	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_StampFlags</font></td></tr>
-	<tr><td port="pk" bgcolor="lightgrey" border="3">stamp_id (FK)</td></tr>
-	<tr><td port="redundant_to" bgcolor="lightgrey:white" style="radial">redundant_to* (FK)</td></tr>
-	<tr><td port="location_out_of_date" bgcolor="lightgrey:white" style="radial">location_out_of_date*</td></tr>
-	<tr><td port="no_hits" bgcolor="lightgrey:white" style="radial">no_hits*</td></tr>
-	<tr><td port="sarfi" bgcolor="lightgrey:white" style="radial">sarfi*</td></tr>
-	<tr><td bgcolor="darkgrey" port="stamp">stamp</td></tr>
-</table>>];
-CosmicDB_ObservationKey:hits -> CosmicDB_ObservationHit:class [arrowtail=inv, dir=back];
-CosmicDB_ObservationKey:stamps -> CosmicDB_ObservationStamp:class [arrowtail=inv, dir=back];
-CosmicDB_File:flags -> CosmicDB_FileFlags:class [arrowtail=inv, dir=back];
-CosmicDB_FileFlags:file -> CosmicDB_File:class [arrowtail=none, dir=back];
-CosmicDB_ObservationStamp:file -> CosmicDB_File:class [arrowtail=none, dir=back];
-CosmicDB_ObservationStamp:observation_key -> CosmicDB_ObservationKey:class [arrowtail=none, dir=back];
-CosmicDB_ObservationStamp:flags -> CosmicDB_StampFlags:class [arrowtail=inv, dir=back];
-CosmicDB_ObservationStamp:hits -> CosmicDB_ObservationHit:class [arrowtail=inv, dir=back];
-CosmicDB_ObservationHit:file -> CosmicDB_File:class [arrowtail=none, dir=back];
-CosmicDB_ObservationHit:observation_key -> CosmicDB_ObservationKey:class [arrowtail=none, dir=back];
-CosmicDB_ObservationHit:flags -> CosmicDB_HitFlags:class [arrowtail=inv, dir=back];
-CosmicDB_ObservationHit:stamp -> CosmicDB_ObservationStamp:class [arrowtail=none, dir=back];
-CosmicDB_HitFlags:hit -> CosmicDB_ObservationHit:class [arrowtail=none, dir=back];
-CosmicDB_StampFlags:stamp -> CosmicDB_ObservationStamp:class [arrowtail=none, dir=back];
-CosmicDB_FileFlags:pk -> CosmicDB_File:pk [arrowtail=none, dir=back, color=darkgrey, penwidth=3.0];
-CosmicDB_ObservationStamp:file_id -> CosmicDB_File:pk [arrowtail=none, dir=back, color=darkgrey, penwidth=3.0];
-CosmicDB_ObservationStamp:observation_id -> CosmicDB_ObservationKey:pk [arrowtail=none, dir=back, color=darkgrey, penwidth=3.0];
-CosmicDB_ObservationHit:file_id -> CosmicDB_File:pk [arrowtail=none, dir=back, color=darkgrey, penwidth=3.0];
-CosmicDB_ObservationHit:observation_id -> CosmicDB_ObservationKey:pk [arrowtail=none, dir=back, color=darkgrey, penwidth=3.0];
-CosmicDB_ObservationHit:stamp_id -> CosmicDB_ObservationStamp:pk [arrowtail=none, dir=back, color=darkgrey, penwidth=3.0];
-CosmicDB_HitFlags:pk -> CosmicDB_ObservationHit:pk [arrowtail=none, dir=back, color=darkgrey, penwidth=3.0];
-CosmicDB_StampFlags:redundant_to -> CosmicDB_ObservationStamp:pk [arrowtail=none, dir=back, color=darkgrey, penwidth=3.0];
-CosmicDB_StampFlags:pk -> CosmicDB_ObservationStamp:pk [arrowtail=none, dir=back, color=darkgrey, penwidth=3.0];
+</table>>, shape=plain];
+CosmicDB_StampHitRelationship [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_StampHitRelationship</font></td></tr>
+	<tr><td port="pk" bgcolor="lightgrey" border="3">hit_id (FK)<br/>stamp_id (FK)</td></tr>
+</table>>, shape=plain];
+CosmicDB_ObservationKey:hits -> CosmicDB_ObservationHit:class  [arrowtail=inv, dir=back];
+CosmicDB_ObservationKey:stamps -> CosmicDB_ObservationStamp:class  [arrowtail=inv, dir=back];
+CosmicDB_File:flags -> CosmicDB_FileFlags:class  [arrowtail=inv, dir=back];
+CosmicDB_FileFlags:file -> CosmicDB_File:class  [arrowtail=none, dir=back];
+CosmicDB_ObservationStamp:file -> CosmicDB_File:class  [arrowtail=none, dir=back];
+CosmicDB_ObservationStamp:observation_key -> CosmicDB_ObservationKey:class  [arrowtail=none, dir=back];
+CosmicDB_ObservationStamp:hits -> CosmicDB_ObservationHit:class  [arrowtail=inv, dir=back];
+CosmicDB_ObservationHit:file -> CosmicDB_File:class  [arrowtail=none, dir=back];
+CosmicDB_ObservationHit:observation_key -> CosmicDB_ObservationKey:class  [arrowtail=none, dir=back];
+CosmicDB_ObservationHit:sarfi_flag -> CosmicDB_HitFlagSARFI:class  [arrowtail=inv, dir=back];
+CosmicDB_ObservationHit:stamp -> CosmicDB_ObservationStamp:class  [arrowtail=none, dir=back];
+CosmicDB_HitFlagSARFI:hit -> CosmicDB_ObservationHit:class  [arrowtail=none, dir=back];
+CosmicDB_FileFlags:pk -> CosmicDB_File:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
+CosmicDB_ObservationStamp:file_id -> CosmicDB_File:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
+CosmicDB_ObservationStamp:observation_id -> CosmicDB_ObservationKey:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
+CosmicDB_ObservationHit:file_id -> CosmicDB_File:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
+CosmicDB_ObservationHit:observation_id -> CosmicDB_ObservationKey:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
+CosmicDB_ObservationHit:stamp_id -> CosmicDB_ObservationStamp:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
+CosmicDB_HitFlagSARFI:pk -> CosmicDB_ObservationHit:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
+CosmicDB_StampHitRelationship:pk -> CosmicDB_ObservationHit:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
+CosmicDB_StampHitRelationship:pk -> CosmicDB_ObservationStamp:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
 subgraph legend {
+cluster=True;
 label="Legend";
-cluster=true;
 "Foreign Relations_0" [label="", shape=none];
 "Foreign Relations_1" [label="Foreign Relations", shape=none];
-"Foreign Relations_0" -> "Foreign Relations_1" [arrowtail=none, dir=back, color=black];
+"Foreign Relations_0" -> "Foreign Relations_1"  [arrowtail=none, color=black, dir=back];
 "Foreign Keys_0" [label="", shape=none];
 "Foreign Keys_1" [label="Foreign Keys", shape=none];
-"Foreign Keys_0" -> "Foreign Keys_1" [arrowtail=none, dir=back, color=darkgrey, penwidth=3.0];
+"Foreign Keys_0" -> "Foreign Keys_1"  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
 }
+
 }

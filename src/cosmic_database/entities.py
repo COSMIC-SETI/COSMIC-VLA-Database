@@ -517,11 +517,6 @@ class CosmicDB_ObservationStamp(Base):
     observation_key: Mapped["CosmicDB_ObservationKey"] = relationship(
         back_populates="stamps",
     )
-
-    flags: Mapped["CosmicDB_StampFlags"] = relationship(
-        back_populates="stamp",
-        foreign_keys="CosmicDB_StampFlags.stamp_id"
-    )
     
     hits: Mapped["CosmicDB_ObservationHit"] = relationship(
         back_populates="stamp",
@@ -595,7 +590,7 @@ class CosmicDB_ObservationHit(Base):
         back_populates="hits",
     )
 
-    flags: Mapped["CosmicDB_HitFlags"] = relationship(
+    sarfi_flag: Mapped["CosmicDB_HitFlagSARFI"] = relationship(
         back_populates="hit",
     )
 
@@ -603,33 +598,22 @@ class CosmicDB_ObservationHit(Base):
         back_populates="hits",
     )
 
-class CosmicDB_HitFlags(Base):
-    __tablename__ = f"cosmic_hit_flags{TABLE_SUFFIX}"
+class CosmicDB_HitFlagSARFI(Base):
+    __tablename__ = f"cosmic_hit_flag_sarfi{TABLE_SUFFIX}"
 
     hit_id: Mapped[int] = mapped_column(ForeignKey(f"{CosmicDB_ObservationHit.__tablename__}.id"), primary_key=True)
-    
-    sarfi: Mapped[Optional[bool]]
-    location_out_of_date: Mapped[Optional[bool]]
-    no_stamp: Mapped[Optional[bool]]
+
+    antenna_index: Mapped[int]
 
     hit: Mapped["CosmicDB_ObservationHit"] = relationship(
-        back_populates="flags"
+        back_populates="sarfi_flag"
     )
 
-class CosmicDB_StampFlags(Base):
-    __tablename__ = f"cosmic_stamp_flags{TABLE_SUFFIX}"
+class CosmicDB_StampHitRelationship(Base):
+    __tablename__ = f"cosmic_stamp_hit_relationship{TABLE_SUFFIX}"
 
-    stamp_id: Mapped[int] = mapped_column(ForeignKey(f"{CosmicDB_ObservationStamp.__tablename__}.id"), primary_key=True)
-    
-    sarfi: Mapped[Optional[bool]]
-    location_out_of_date: Mapped[Optional[bool]]
-    redundant_to: Mapped[Optional[int]] = mapped_column(ForeignKey(f"{CosmicDB_ObservationStamp.__tablename__}.id"))
-    no_hits: Mapped[Optional[bool]]
-
-    stamp: Mapped["CosmicDB_ObservationStamp"] = relationship(
-        back_populates="flags",
-        foreign_keys=stamp_id
-    )
+    stamp_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_stamp{TABLE_SUFFIX}.id"), primary_key=True)
+    hit_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_hit{TABLE_SUFFIX}.id"), primary_key=True)
 
 ## Hardcoded meta-data about the overarching database
 
@@ -654,8 +638,8 @@ DATABASE_SCOPES = {
         CosmicDB_FileFlags,
         CosmicDB_ObservationStamp,
         CosmicDB_ObservationHit,
-        CosmicDB_HitFlags,
-        CosmicDB_StampFlags,
+        CosmicDB_HitFlagSARFI,
+        CosmicDB_StampHitRelationship,
     ]
 }
 

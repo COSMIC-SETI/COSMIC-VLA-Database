@@ -249,25 +249,20 @@ num_channels | INTEGER |  |  |  |  |
 coarse_channel | INTEGER |  |  |  |  | 
 start_channel | INTEGER |  |  |  |  | 
 
-# Table `cosmic_hit_flags`
+# Table `cosmic_hit_flag_sarfi`
 
-Class [`cosmic_database.entities.CosmicDB_HitFlags`](./classes.md#class-CosmicDB_HitFlags)
+Class [`cosmic_database.entities.CosmicDB_HitFlagSARFI`](./classes.md#class-CosmicDB_HitFlagSARFI)
 
 Column | Type | Primary Key | Foreign Key(s) | Indexed | Nullable | Unique
 -|-|-|-|-|-|-
 hit_id | INTEGER | X | [cosmic_observation_hit](#table-cosmic_observation_hit).id |  |  | 
-sarfi | BOOLEAN |  |  |  | X | 
-location_out_of_date | BOOLEAN |  |  |  | X | 
-no_stamp | BOOLEAN |  |  |  | X | 
+antenna_index | INTEGER |  |  |  |  | 
 
-# Table `cosmic_stamp_flags`
+# Table `cosmic_stamp_hit_relationship`
 
-Class [`cosmic_database.entities.CosmicDB_StampFlags`](./classes.md#class-CosmicDB_StampFlags)
+Class [`cosmic_database.entities.CosmicDB_StampHitRelationship`](./classes.md#class-CosmicDB_StampHitRelationship)
 
 Column | Type | Primary Key | Foreign Key(s) | Indexed | Nullable | Unique
 -|-|-|-|-|-|-
 stamp_id | INTEGER | X | [cosmic_observation_stamp](#table-cosmic_observation_stamp).id |  |  | 
-sarfi | BOOLEAN |  |  |  | X | 
-location_out_of_date | BOOLEAN |  |  |  | X | 
-redundant_to | INTEGER |  | [cosmic_observation_stamp](#table-cosmic_observation_stamp).id |  | X | 
-no_hits | BOOLEAN |  |  |  | X | 
+hit_id | INTEGER | X | [cosmic_observation_hit](#table-cosmic_observation_hit).id |  |  | 
