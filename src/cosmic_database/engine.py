@@ -120,6 +120,14 @@ class CosmicDB_Engine:
         session.refresh(ent)
         return ent
 
+def cli_add_engine_arguments(parser):
+    parser.add_argument(
+        "--engine-configuration",
+        type=str,
+        default="/home/cosmic/conf/cosmicdb_v1.0_conf.yaml",
+        help="The YAML file path containing the instantiation arguments for the SQLAlchemy.engine.url.URL instance specifying the database."
+    )
+
 def cli_create_all_tables():
     import argparse
     
@@ -133,12 +141,7 @@ def cli_create_all_tables():
         default=None,
         help="The SQLAlchemy.engine.url.URL string specifying the database."
     )
-    parser.add_argument(
-        "-c", "--engine-configuration",
-        type=str,
-        default="/home/cosmic/conf/cosmicdb_v1.0_conf.yaml",
-        help="The YAML file path containing the instantiation arguments for the SQLAlchemy.engine.url.URL instance specifying the database."
-    )
+    cli_add_engine_arguments(parser)
 
     args = parser.parse_args()
     
@@ -153,11 +156,7 @@ def cli_create_engine_url():
         description="COSMIC Database: show the URL generated from a configuration file.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    parser.add_argument(
-        "engine_configuration",
-        type=str,
-        help="The YAML file path containing the instantiation arguments for the SQLAlchemy.engine.url.URL instance specifying the database."
-    )
+    cli_add_engine_arguments(parser)
 
     args = parser.parse_args()
     
@@ -332,12 +331,7 @@ def cli_alter_table():
         description="Minor interface to expose COSMIC database entities.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    parser.add_argument(
-        "--cosmicdb-engine-configuration",
-        type=str,
-        default="/home/cosmic/conf/cosmicdb_conf.yaml",
-        help="The YAML file path specifying the COSMIC database.",
-    )
+    cli_add_engine_arguments(parser)
     parser.add_argument(
         "entity",
         type=str,
@@ -375,7 +369,7 @@ def cli_alter_table():
     args.entity = getattr(entities, entity_name)
     args.field = getattr(args.entity, args.field)
 
-    conn = CosmicDB_Engine(engine_conf_yaml_filepath=args.cosmicdb_engine_configuration).engine.connect()
+    conn = CosmicDB_Engine(engine_conf_yaml_filepath=args.engine_configuration).engine.connect()
     ctx = MigrationContext.configure(conn)
     op = Operations(ctx)
     if args.create:
@@ -394,12 +388,7 @@ def cli_inspect():
         description="Minor interface to expose COSMIC database entities.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    parser.add_argument(
-        "--cosmicdb-engine-configuration",
-        type=str,
-        default="/home/cosmic/conf/cosmicdb_conf.yaml",
-        help="The YAML file path specifying the COSMIC database.",
-    )
+    cli_add_engine_arguments(parser)
     parser.add_argument(
         "--pandas-output-filepath",
         type=str,
@@ -579,7 +568,7 @@ def cli_inspect():
     if args.distinct:
         sql_query = sql_query.distinct()
 
-    engine = CosmicDB_Engine(engine_conf_yaml_filepath=args.cosmicdb_engine_configuration)
+    engine = CosmicDB_Engine(engine_conf_yaml_filepath=args.engine_configuration)
 
     pandas_output_filepath_splitext = None
     if (args.show_dataframe

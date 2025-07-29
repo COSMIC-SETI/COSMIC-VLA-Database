@@ -256,33 +256,17 @@ class CosmicDB_AntennaCalibration(Base):
         back_populates="antenna"
     )
 
-class CosmicDB_HitFlags(Base):
-    __tablename__ = f"cosmic_hit_flags{TABLE_SUFFIX}"
+class CosmicDB_HitFlagSARFI(Base):
+    __tablename__ = f"cosmic_hit_flag_sarfi{TABLE_SUFFIX}"
 
     hit_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_hit{TABLE_SUFFIX}.id"), primary_key=True)
     
-    sarfi: Mapped[Optional[bool]]
-    location_out_of_date: Mapped[Optional[bool]]
-    no_stamp: Mapped[Optional[bool]]
+    antenna_index: Mapped[int]
 
     hit: Mapped["CosmicDB_ObservationHit"] = relationship(
-        back_populates="flags"
+        back_populates="sarfi_flag"
     )
 
-class CosmicDB_StampFlags(Base):
-    __tablename__ = f"cosmic_stamp_flags{TABLE_SUFFIX}"
-
-    stamp_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_stamp{TABLE_SUFFIX}.id"), primary_key=True)
-    
-    sarfi: Mapped[Optional[bool]]
-    location_out_of_date: Mapped[Optional[bool]]
-    redundant_to: Mapped[Optional[int]] = mapped_column(ForeignKey(f"cosmic_observation_stamp{TABLE_SUFFIX}.id"), nullable=True)
-    no_hits: Mapped[Optional[bool]]
-
-    stamp: Mapped["CosmicDB_ObservationStamp"] = relationship(
-        back_populates="flags",
-        foreign_keys=stamp_id
-    )
 
 class CosmicDB_StampHitRelationship(Base):
     __tablename__ = f"cosmic_stamp_hit_relationship{TABLE_SUFFIX}"
@@ -416,7 +400,7 @@ class CosmicDB_ObservationHit(Base):
         overlaps="observation"
     )
 
-    flags: Mapped["CosmicDB_HitFlags"] = relationship(
+    sarfi_flag: Mapped["CosmicDB_HitFlagSARFI"] = relationship(
         back_populates="hit",
     )
 
@@ -515,11 +499,6 @@ class CosmicDB_ObservationStamp(Base):
     
     beam: Mapped["CosmicDB_ObservationBeam"] = relationship(
         back_populates="stamps"
-    )
-    
-    flags: Mapped["CosmicDB_StampFlags"] = relationship(
-        back_populates="stamp",
-        foreign_keys=CosmicDB_StampFlags.stamp_id
     )
 
     file: Mapped["CosmicDB_File"] = relationship()
