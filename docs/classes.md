@@ -281,11 +281,3 @@ Attribute | Type
 antenna_index | `str`
 hit_id | `int`
 hit | [CosmicDB_ObservationHit](#class-cosmicdb_observationhit)
-## Class `CosmicDB_StampHitRelationship`
-
-Table [`cosmic_stamp_hit_relationship`](./tables.md#table-cosmic_stamp_hit_relationship)
-
-Attribute | Type
--|-
-hit_id | `int`
-stamp_id | `int`

@@ -150,9 +150,6 @@ CosmicDB_HitFlagSARFI [label=<<table border="0" cellborder="1" cellspacing="0" c
 	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_HitFlagSARFI</font></td></tr>
 	<tr><td bgcolor="darkgrey" port="hit">hit</td></tr>
 </table>>, shape=plain];
-CosmicDB_StampHitRelationship [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
-	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_StampHitRelationship</font></td></tr>
-</table>>, shape=plain];
 }
 
 subgraph legend {

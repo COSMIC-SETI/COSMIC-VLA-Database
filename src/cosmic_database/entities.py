@@ -609,12 +609,6 @@ class CosmicDB_HitFlagSARFI(Base):
         back_populates="sarfi_flag"
     )
 
-class CosmicDB_StampHitRelationship(Base):
-    __tablename__ = f"cosmic_stamp_hit_relationship{TABLE_SUFFIX}"
-
-    stamp_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_stamp{TABLE_SUFFIX}.id"), primary_key=True)
-    hit_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_hit{TABLE_SUFFIX}.id"), primary_key=True)
-
 ## Hardcoded meta-data about the overarching database
 
 DATABASE_SCOPES = {
@@ -639,7 +633,6 @@ DATABASE_SCOPES = {
         CosmicDB_ObservationStamp,
         CosmicDB_ObservationHit,
         CosmicDB_HitFlagSARFI,
-        CosmicDB_StampHitRelationship,
     ]
 }
 

@@ -257,12 +257,3 @@ Column | Type | Primary Key | Foreign Key(s) | Indexed | Nullable | Unique
 -|-|-|-|-|-|-
 hit_id | INTEGER | X | [cosmic_observation_hit](#table-cosmic_observation_hit).id |  |  | 
 antenna_index | INTEGER |  |  |  |  | 
-
-# Table `cosmic_stamp_hit_relationship`
-
-Class [`cosmic_database.entities.CosmicDB_StampHitRelationship`](./classes.md#class-CosmicDB_StampHitRelationship)
-
-Column | Type | Primary Key | Foreign Key(s) | Indexed | Nullable | Unique
--|-|-|-|-|-|-
-stamp_id | INTEGER | X | [cosmic_observation_stamp](#table-cosmic_observation_stamp).id |  |  | 
-hit_id | INTEGER | X | [cosmic_observation_hit](#table-cosmic_observation_hit).id |  |  | 

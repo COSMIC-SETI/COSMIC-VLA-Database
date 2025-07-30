@@ -111,10 +111,6 @@ CosmicDB_HitFlagSARFI [label=<<table border="0" cellborder="1" cellspacing="0" c
 	<tr><td port="antenna_index">antenna_index</td></tr>
 	<tr><td bgcolor="darkgrey" port="hit">hit</td></tr>
 </table>>, shape=plain];
-CosmicDB_StampHitRelationship [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
-	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_StampHitRelationship</font></td></tr>
-	<tr><td port="pk" bgcolor="lightgrey" border="3">hit_id (FK)<br/>stamp_id (FK)</td></tr>
-</table>>, shape=plain];
 CosmicDB_ObservationKey:hits -> CosmicDB_ObservationHit:class  [arrowtail=inv, dir=back];
 CosmicDB_ObservationKey:stamps -> CosmicDB_ObservationStamp:class  [arrowtail=inv, dir=back];
 CosmicDB_File:flags -> CosmicDB_FileFlags:class  [arrowtail=inv, dir=back];
@@ -134,8 +130,6 @@ CosmicDB_ObservationHit:file_id -> CosmicDB_File:pk  [arrowtail=none, color=dark
 CosmicDB_ObservationHit:observation_id -> CosmicDB_ObservationKey:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
 CosmicDB_ObservationHit:stamp_id -> CosmicDB_ObservationStamp:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
 CosmicDB_HitFlagSARFI:pk -> CosmicDB_ObservationHit:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
-CosmicDB_StampHitRelationship:pk -> CosmicDB_ObservationHit:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
-CosmicDB_StampHitRelationship:pk -> CosmicDB_ObservationStamp:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
 subgraph legend {
 cluster=True;
 label="Legend";
