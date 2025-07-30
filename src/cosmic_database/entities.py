@@ -267,13 +267,6 @@ class CosmicDB_HitFlagSARFI(Base):
         back_populates="sarfi_flag"
     )
 
-
-class CosmicDB_StampHitRelationship(Base):
-    __tablename__ = f"cosmic_stamp_hit_relationship{TABLE_SUFFIX}"
-
-    stamp_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_stamp{TABLE_SUFFIX}.id"), primary_key=True)
-    hit_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_hit{TABLE_SUFFIX}.id"), primary_key=True)
-
 class CosmicDB_File(Base):
     __tablename__ = f"cosmic_file{TABLE_SUFFIX}"
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -319,96 +312,6 @@ class CosmicDB_ObservationBeam(Base):
     
     stamps: Mapped[List["CosmicDB_ObservationStamp"]] = relationship(
         back_populates="beam", cascade="all, delete-orphan"
-    )
-
-class CosmicDB_ObservationHit(Base):
-    __tablename__ = f"cosmic_observation_hit{TABLE_SUFFIX}"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    # database ObservationBeam primary_key
-    beam_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_beam{TABLE_SUFFIX}.id"))
-
-    # database Observation primary_key 
-    observation_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation{TABLE_SUFFIX}.id"))
-    # Antenna LO name
-    tuning: Mapped[String_Tuning]
-    # subband coarse-channel offset (lower bound of subband)
-    subband_offset: Mapped[int]
-
-    file_id: Mapped[Optional[int]] = mapped_column(ForeignKey(f"cosmic_file{TABLE_SUFFIX}.id"), nullable=True, index=True)
-    # stamp index within file
-    file_local_enumeration: Mapped[int]
-
-    # The frequency the top-hit starts at
-    signal_frequency: Mapped[float]
-    # Which frequency bin the top-hit starts at. This is relative to the coarse channel.
-    signal_index: Mapped[int]
-    # How many bins the top-hit drifts over. This counts the drift distance over the full rounded-up power-of-two time range.
-    signal_drift_steps: Mapped[int]
-    # The drift rate in Hz/s
-    signal_drift_rate: Mapped[float]
-    # The signal-to-noise ratio for the top-hit
-    signal_snr: Mapped[float]
-    # Which coarse channel this top-hit is in
-    signal_coarse_channel: Mapped[int]
-    # Which beam this top-hit is in. -1 for incoherent beam, or no beam
-    signal_beam: Mapped[int]
-    # The number of timesteps in the associated filterbank. This does *not* use rounded-up-to-a-power-of-two timesteps.
-    signal_num_timesteps: Mapped[int]
-    # The total power that is normalized to calculate snr. snr = (power - median) / stdev
-    signal_power: Mapped[float]
-    # The total power for the same signal, calculated incoherently. This is available in the stamps files, but not in the top-hits files.
-    signal_incoherent_power: Mapped[float]
-
-    # scan source name
-    source_name: Mapped[String_SourceName]
-    # center-frequency of the first channel in the stamp
-    fch1_mhz: Mapped[float]
-    # channel bandwidth
-    foff_mhz: Mapped[float]
-    # start time of stamp (unix)
-    tstart: Mapped[float] = mapped_column(index=True)
-    # spectrum timespan (seconds)
-    tsamp: Mapped[float]
-    # phase center RA
-    ra_hours: Mapped[float]
-    # phase center DEC
-    dec_degrees: Mapped[float]
-    # telescope ID (Breakthrough listen convention???)
-    telescope_id: Mapped[int]
-    # spectra count
-    num_timesteps: Mapped[int]
-    # channel count
-    num_channels: Mapped[int]
-    # top-hit's coarse-channel index (relative to subband, zero-indexed I believe)
-    coarse_channel: Mapped[int]
-    # stamp fine-channel index (within coarse-channel)
-    start_channel: Mapped[int]
-
-    beam: Mapped["CosmicDB_ObservationBeam"] = relationship(
-        back_populates="hits"
-    )
-
-    observation: Mapped["CosmicDB_Observation"] = relationship(
-        overlaps="hits"
-    )
-
-    observation_subband: Mapped["CosmicDB_ObservationSubband"] = relationship(
-        back_populates="hits",
-        overlaps="observation"
-    )
-
-    sarfi_flag: Mapped["CosmicDB_HitFlagSARFI"] = relationship(
-        back_populates="hit",
-    )
-
-    file: Mapped["CosmicDB_File"] = relationship()
-
-    __table_args__ = (
-        ForeignKeyConstraint(
-            ['observation_id', 'tuning', 'subband_offset'],
-            [f'cosmic_observation_subband{TABLE_SUFFIX}.observation_id', f'cosmic_observation_subband{TABLE_SUFFIX}.tuning', f'cosmic_observation_subband{TABLE_SUFFIX}.subband_offset'],
-        ),
     )
 
 class CosmicDB_ObservationStamp(Base):
@@ -501,9 +404,110 @@ class CosmicDB_ObservationStamp(Base):
 
     file: Mapped["CosmicDB_File"] = relationship()
 
+    hits: Mapped["CosmicDB_ObservationHit"] = relationship(
+        back_populates="stamp",
+    )
+
     __table_args__ = (
         ForeignKeyConstraint(
             ['observation_id', 'tuning', 'subband_offset'],
             [f'cosmic_observation_subband{TABLE_SUFFIX}.observation_id', f'cosmic_observation_subband{TABLE_SUFFIX}.tuning', f'cosmic_observation_subband{TABLE_SUFFIX}.subband_offset'],
         ),
     )
+
+class CosmicDB_ObservationHit(Base):
+    __tablename__ = f"cosmic_observation_hit{TABLE_SUFFIX}"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    # database ObservationBeam primary_key
+    beam_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation_beam{TABLE_SUFFIX}.id"))
+
+    # database Observation primary_key 
+    observation_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_observation{TABLE_SUFFIX}.id"))
+    # Antenna LO name
+    tuning: Mapped[String_Tuning]
+    # subband coarse-channel offset (lower bound of subband)
+    subband_offset: Mapped[int]
+
+    stamp_id: Mapped[Optional[int]] = mapped_column(ForeignKey(f"{CosmicDB_ObservationStamp.__tablename__}.id"))
+
+    file_id: Mapped[Optional[int]] = mapped_column(ForeignKey(f"cosmic_file{TABLE_SUFFIX}.id"), nullable=True, index=True)
+    # stamp index within file
+    file_local_enumeration: Mapped[int]
+
+    # The frequency the top-hit starts at
+    signal_frequency: Mapped[float]
+    # Which frequency bin the top-hit starts at. This is relative to the coarse channel.
+    signal_index: Mapped[int]
+    # How many bins the top-hit drifts over. This counts the drift distance over the full rounded-up power-of-two time range.
+    signal_drift_steps: Mapped[int]
+    # The drift rate in Hz/s
+    signal_drift_rate: Mapped[float]
+    # The signal-to-noise ratio for the top-hit
+    signal_snr: Mapped[float]
+    # Which coarse channel this top-hit is in
+    signal_coarse_channel: Mapped[int]
+    # Which beam this top-hit is in. -1 for incoherent beam, or no beam
+    signal_beam: Mapped[int]
+    # The number of timesteps in the associated filterbank. This does *not* use rounded-up-to-a-power-of-two timesteps.
+    signal_num_timesteps: Mapped[int]
+    # The total power that is normalized to calculate snr. snr = (power - median) / stdev
+    signal_power: Mapped[float]
+    # The total power for the same signal, calculated incoherently. This is available in the stamps files, but not in the top-hits files.
+    signal_incoherent_power: Mapped[float]
+
+    # scan source name
+    source_name: Mapped[String_SourceName]
+    # center-frequency of the first channel in the stamp
+    fch1_mhz: Mapped[float]
+    # channel bandwidth
+    foff_mhz: Mapped[float]
+    # start time of stamp (unix)
+    tstart: Mapped[float] = mapped_column(index=True)
+    # spectrum timespan (seconds)
+    tsamp: Mapped[float]
+    # phase center RA
+    ra_hours: Mapped[float]
+    # phase center DEC
+    dec_degrees: Mapped[float]
+    # telescope ID (Breakthrough listen convention???)
+    telescope_id: Mapped[int]
+    # spectra count
+    num_timesteps: Mapped[int]
+    # channel count
+    num_channels: Mapped[int]
+    # top-hit's coarse-channel index (relative to subband, zero-indexed I believe)
+    coarse_channel: Mapped[int]
+    # stamp fine-channel index (within coarse-channel)
+    start_channel: Mapped[int]
+
+    beam: Mapped["CosmicDB_ObservationBeam"] = relationship(
+        back_populates="hits"
+    )
+
+    observation: Mapped["CosmicDB_Observation"] = relationship(
+        overlaps="hits"
+    )
+
+    observation_subband: Mapped["CosmicDB_ObservationSubband"] = relationship(
+        back_populates="hits",
+        overlaps="observation"
+    )
+
+    sarfi_flag: Mapped["CosmicDB_HitFlagSARFI"] = relationship(
+        back_populates="hit",
+    )
+
+    stamp: Mapped["CosmicDB_ObservationStamp"] = relationship(
+        back_populates="hits",
+    )
+
+    file: Mapped["CosmicDB_File"] = relationship()
+
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ['observation_id', 'tuning', 'subband_offset'],
+            [f'cosmic_observation_subband{TABLE_SUFFIX}.observation_id', f'cosmic_observation_subband{TABLE_SUFFIX}.tuning', f'cosmic_observation_subband{TABLE_SUFFIX}.subband_offset'],
+        ),
+    )
+

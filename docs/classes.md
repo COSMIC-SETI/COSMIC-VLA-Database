@@ -111,14 +111,6 @@ Attribute | Type
 antenna_index | `int`
 hit_id | `int`
 hit | [CosmicDB_ObservationHit](#class-cosmicdb_observationhit)
-# Class `CosmicDB_StampHitRelationship`
-
-Table [`cosmic_stamp_hit_relationship`](./tables.md#table-cosmic_stamp_hit_relationship)
-
-Attribute | Type
--|-
-hit_id | `int`
-stamp_id | `int`
 # Class `CosmicDB_File`
 
 Table [`cosmic_file`](./tables.md#table-cosmic_file)
@@ -156,46 +148,6 @@ start | `datetime`
 observation | [CosmicDB_Observation](#class-cosmicdb_observation)
 hits | list([CosmicDB_ObservationHit](#class-cosmicdb_observationhit))
 stamps | list([CosmicDB_ObservationStamp](#class-cosmicdb_observationstamp))
-# Class `CosmicDB_ObservationHit`
-
-Table [`cosmic_observation_hit`](./tables.md#table-cosmic_observation_hit)
-
-Attribute | Type
--|-
-beam_id | `int`
-coarse_channel | `int`
-dec_degrees | `float`
-fch1_mhz | `float`
-file_id | `int`
-file_local_enumeration | `int`
-foff_mhz | `float`
-id | `int`
-num_channels | `int`
-num_timesteps | `int`
-observation_id | `int`
-ra_hours | `float`
-signal_beam | `int`
-signal_coarse_channel | `int`
-signal_drift_rate | `float`
-signal_drift_steps | `int`
-signal_frequency | `float`
-signal_incoherent_power | `float`
-signal_index | `int`
-signal_num_timesteps | `int`
-signal_power | `float`
-signal_snr | `float`
-source_name | `str`
-start_channel | `int`
-subband_offset | `int`
-telescope_id | `int`
-tsamp | `float`
-tstart | `float`
-tuning | `str`
-beam | [CosmicDB_ObservationBeam](#class-cosmicdb_observationbeam)
-observation | [CosmicDB_Observation](#class-cosmicdb_observation)
-observation_subband | [CosmicDB_ObservationSubband](#class-cosmicdb_observationsubband)
-sarfi_flag | [CosmicDB_HitFlagSARFI](#class-cosmicdb_hitflagsarfi)
-file | [CosmicDB_File](#class-cosmicdb_file)
 # Class `CosmicDB_ObservationStamp`
 
 Table [`cosmic_observation_stamp`](./tables.md#table-cosmic_observation_stamp)
@@ -239,4 +191,47 @@ tuning | `str`
 observation | [CosmicDB_Observation](#class-cosmicdb_observation)
 observation_subband | [CosmicDB_ObservationSubband](#class-cosmicdb_observationsubband)
 beam | [CosmicDB_ObservationBeam](#class-cosmicdb_observationbeam)
+file | [CosmicDB_File](#class-cosmicdb_file)
+hits | [CosmicDB_ObservationHit](#class-cosmicdb_observationhit)
+# Class `CosmicDB_ObservationHit`
+
+Table [`cosmic_observation_hit`](./tables.md#table-cosmic_observation_hit)
+
+Attribute | Type
+-|-
+beam_id | `int`
+coarse_channel | `int`
+dec_degrees | `float`
+fch1_mhz | `float`
+file_id | `int`
+file_local_enumeration | `int`
+foff_mhz | `float`
+id | `int`
+num_channels | `int`
+num_timesteps | `int`
+observation_id | `int`
+ra_hours | `float`
+signal_beam | `int`
+signal_coarse_channel | `int`
+signal_drift_rate | `float`
+signal_drift_steps | `int`
+signal_frequency | `float`
+signal_incoherent_power | `float`
+signal_index | `int`
+signal_num_timesteps | `int`
+signal_power | `float`
+signal_snr | `float`
+source_name | `str`
+stamp_id | `int`
+start_channel | `int`
+subband_offset | `int`
+telescope_id | `int`
+tsamp | `float`
+tstart | `float`
+tuning | `str`
+beam | [CosmicDB_ObservationBeam](#class-cosmicdb_observationbeam)
+observation | [CosmicDB_Observation](#class-cosmicdb_observation)
+observation_subband | [CosmicDB_ObservationSubband](#class-cosmicdb_observationsubband)
+sarfi_flag | [CosmicDB_HitFlagSARFI](#class-cosmicdb_hitflagsarfi)
+stamp | [CosmicDB_ObservationStamp](#class-cosmicdb_observationstamp)
 file | [CosmicDB_File](#class-cosmicdb_file)
