@@ -59,7 +59,7 @@ CosmicDB_Observation [label=<<table border="0" cellborder="1" cellspacing="0" ce
 	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_Observation</font></td></tr>
 	<tr><td port="pk" bgcolor="lightgrey" border="3">id</td></tr>
 	<tr><td port="archival_filesystem_uuid">archival_filesystem_uuid (FK)</td></tr>
-	<tr><td port="calibration_id">calibration_id (FK)</td></tr>
+	<tr><td port="calibration_id" bgcolor="lightgrey:white" style="radial">calibration_id* (FK)</td></tr>
 	<tr><td port="configuration_id">configuration_id (FK)</td></tr>
 	<tr><td port="scan_id">scan_id (FK)</td></tr>
 	<tr><td port="criteria_json">criteria_json</td></tr>

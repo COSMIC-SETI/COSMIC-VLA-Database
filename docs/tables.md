@@ -73,7 +73,7 @@ Column | Type | Primary Key | Foreign Key(s) | Indexed | Nullable | Unique
 id | INTEGER | X |  |  |  | 
 scan_id | VARCHAR(100) |  | [cosmic_scan](#table-cosmic_scan).id |  |  | 
 configuration_id | INTEGER |  | [cosmic_configuration](#table-cosmic_configuration).id |  |  | 
-calibration_id | INTEGER |  | [cosmic_calibration](#table-cosmic_calibration).id |  |  | 
+calibration_id | INTEGER |  | [cosmic_calibration](#table-cosmic_calibration).id |  | X | 
 archival_filesystem_uuid | VARCHAR(64) |  | [cosmic_filesystem](#table-cosmic_filesystem).uuid |  |  | 
 start | DATETIME |  |  |  |  | 
 end | DATETIME |  |  |  |  | 

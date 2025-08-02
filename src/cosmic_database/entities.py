@@ -274,7 +274,7 @@ class CosmicDB_Observation(Base):
     scan_id: Mapped[String_ScanID] = mapped_column(ForeignKey(f"{CosmicDB_Scan.__tablename__}.id"))
     configuration_id: Mapped[int] = mapped_column(ForeignKey(f"{CosmicDB_Configuration.__tablename__}.id"))
     
-    calibration_id: Mapped[int] = mapped_column(ForeignKey(f"cosmic_calibration{TABLE_SUFFIX}.id"))
+    calibration_id: Mapped[Optional[int]] = mapped_column(ForeignKey(f"cosmic_calibration{TABLE_SUFFIX}.id"))
 
     archival_filesystem_uuid: Mapped[int] = mapped_column(ForeignKey(f"{CosmicDB_Filesystem.__tablename__}.uuid"))
 
@@ -288,7 +288,7 @@ class CosmicDB_Observation(Base):
         back_populates="observations",
     )
     
-    configuration: Mapped["CosmicDB_Configuration"] = relationship(
+    configuration: Mapped[Optional["CosmicDB_Configuration"]] = relationship(
         back_populates="observations",
     )
 
