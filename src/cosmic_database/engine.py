@@ -242,8 +242,8 @@ def cli_create_engine_url():
 
 
 criterion_operations = {
-    "is": lambda lhs, rhs: lhs.is_(rhs),
-    "isnot": lambda lhs, rhs: lhs.is_not(rhs),
+    "is": lambda lhs, rhs: lhs.is_(rhs) if hasattr(lhs, "is_") else lhs is rhs,
+    "isnot": lambda lhs, rhs: lhs.is_not(rhs) if hasattr(lhs, "is_not") else lhs is not rhs,
     "eq": lambda lhs, rhs: lhs == rhs,
     "gt": lambda lhs, rhs: lhs > rhs,
     "geq": lambda lhs, rhs: lhs >= rhs,
@@ -306,7 +306,16 @@ def cli_replace_fieldnames_with_column_instances(
             replacement = col_map[el]
         except KeyError as err:
             entity_class = entity_class_map[entity]
-            raise KeyError(f"{err.args[0]} not found as a column in the table ('{entity_class.__table__}') for {entity_class}.")
+            err_str = f"{err.args[0]} not found as a column in the table ('{entity_class.__table__}') for {entity_class}."
+            if el not in entity_class.__mapper__.relationships:
+                raise KeyError(err_str)
+        
+            try:
+                replacement = entity_class_map[el]
+            except KeyError as err:
+                err_str += f" '{el}' is found as a relationship but has not been joined."
+                raise KeyError(err_str)
+                
         ret_list.append(element_setter(el_, replacement))
 
     return ret_list

@@ -88,7 +88,6 @@ I.e. asides from the fields of its cosmic_observation table, it has `CosmicDB_Ob
 # mkdir /var/run/mysqld
 # chown mysql:mysql /var/run/mysqld
 ```
-</details>
 
 ```bash
 # mkdir ./cosmic_db/mysql_datadir
@@ -110,6 +109,7 @@ I.e. asides from the fields of its cosmic_observation table, it has `CosmicDB_Ob
 
 For first time startup, the root user will be assigned a random password, printed in `/var/log/mysql/error.log`.
 Change this by logging in `mysql -P 3307 -u root -p`.
+</details>
 
 ```
 mysql> ALTER USER 'root'@'localhost' IDENTIFIED BY 'MyNewPass';
