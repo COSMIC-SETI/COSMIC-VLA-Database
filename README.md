@@ -96,19 +96,23 @@ I.e. asides from the fields of its cosmic_observation table, it has `CosmicDB_Ob
 # mysqld --initialize --user=mysql --datadir=./mysql_datadir
 #
 # echo [mysqld] >> mysql.cnf
+# echo socket = /var/run/mysqld/mysqld.sock
+# echo mysqlx_socket = /var/run/mysqld/mysqlx.sock
+# echo pid-file = /var/run/mysqld/mysqld.pid
 # echo user = mysql >> mysql.cnf
 # echo datadir = $(pwd)/mysql_datadir >> mysql.cnf
 # echo port = 3307 >> mysql.cnf
+# echo mysqlx_port = 33070 >> mysql.cnf
 # echo bind-address = 0.0.0.0 >> mysql.cnf
 # echo mysqlx-bind-address = 0.0.0.0 >> mysql.cnf
 # echo key_buffer_size = 16M >> mysql.cnf
 # echo log_error = /var/log/mysql/error.log >> mysql.cnf
-#
-# mysqld_safe --defaults-file=./mysql.cnf
 ```
 
+Then install a systemd service that executes `/usr/sbin/mysqld --defaults-file=/srv/cosmicfs*/cosmic_db/mysql.cnf` and start the service.
+
 For first time startup, the root user will be assigned a random password, printed in `/var/log/mysql/error.log`.
-Change this by logging in `mysql -P 3307 -u root -p`.
+Change this by logging in `mysql --port 3307 --protocol=TCP -u root -p`.
 </details>
 
 ```

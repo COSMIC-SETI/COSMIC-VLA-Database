@@ -197,11 +197,13 @@ def cli_add_engine_arguments(parser, add_scope_argument: bool = True):
 def cli_parse_engine_scope_argument(args):
     if hasattr(args, "scope") and args.scope is not None:
         args.scope = entities.DatabaseScope(args.scope)
-    else:
+    elif hasattr(args, "entity") and args.entity is not None:
         try:
             args.scope = entities.ENTITY_SCOPE_MAP[args.entity]
         except KeyError as err:
             raise ValueError(f"args.entity is not scoped: {args.entity}") from err
+    else:
+        raise ValueError(f"Niether an entity nor a scope has been specified via the arguments provided")
 
 def cli_create_all_tables():
     import argparse

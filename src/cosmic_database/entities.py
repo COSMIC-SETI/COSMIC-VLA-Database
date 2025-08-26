@@ -564,7 +564,7 @@ class CosmicDB_ObservationHit(Base):
     fch1_mhz: Mapped[float]
     # channel bandwidth
     foff_mhz: Mapped[float]
-    # start time of stamp (unix)
+    # start time of stamp (MJD)
     tstart: Mapped[float] = mapped_column(index=True)
     # spectrum timespan (seconds)
     tsamp: Mapped[float]
