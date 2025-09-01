@@ -508,7 +508,7 @@ class CosmicDB_ObservationStamp(Base):
     signal_num_timesteps: Mapped[int]
     # The total power that is normalized to calculate snr. snr = (power - median) / stdev
     signal_power: Mapped[float]
-    # The total power for the same signal, calculated incoherently. This is available in the stamps files, but not in the top-hits files.
+    # The total power for the same signal, calculated incoherently.
     signal_incoherent_power: Mapped[float]
     
 
@@ -557,6 +557,8 @@ class CosmicDB_ObservationHit(Base):
     signal_num_timesteps: Mapped[int]
     # The total power that is normalized to calculate snr. snr = (power - median) / stdev
     signal_power: Mapped[float]
+    # The total power for the same signal, calculated incoherently.
+    signal_incoherent_power: Mapped[Optional[float]]
 
     # scan source name
     source_name: Mapped[String_SourceName]
