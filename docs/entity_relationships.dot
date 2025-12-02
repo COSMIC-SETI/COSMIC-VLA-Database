@@ -33,6 +33,7 @@ CosmicDB_Filesystem:observations -> CosmicDB_Observation:class  [arrowtail=inv, 
 CosmicDB_FilesystemMount:filesystem -> CosmicDB_Filesystem:class  [arrowtail=none, dir=back];
 CosmicDB_ObservationKey:hits -> CosmicDB_ObservationHit:class  [arrowtail=inv, dir=back];
 CosmicDB_ObservationKey:stamps -> CosmicDB_ObservationStamp:class  [arrowtail=inv, dir=back];
+CosmicDB_ObservationKey:postprocess_seti_receipts -> CosmicDB_PostprocessReceiptSETI:class  [arrowtail=inv, dir=back];
 CosmicDB_File:flags -> CosmicDB_FileFlags:class  [arrowtail=inv, dir=back];
 CosmicDB_FileFlags:file -> CosmicDB_File:class  [arrowtail=none, dir=back];
 CosmicDB_ObservationStamp:file -> CosmicDB_File:class  [arrowtail=none, dir=back];
@@ -43,6 +44,7 @@ CosmicDB_ObservationHit:observation_key -> CosmicDB_ObservationKey:class  [arrow
 CosmicDB_ObservationHit:sarfi_flag -> CosmicDB_HitFlagSARFI:class  [arrowtail=inv, dir=back];
 CosmicDB_ObservationHit:stamp -> CosmicDB_ObservationStamp:class  [arrowtail=none, dir=back];
 CosmicDB_HitFlagSARFI:hit -> CosmicDB_ObservationHit:class  [arrowtail=none, dir=back];
+CosmicDB_PostprocessReceiptSETI:observation_key -> CosmicDB_ObservationKey:class  [arrowtail=none, dir=back];
 subgraph Operation {
 cluster=True;
 label="Operation Scope";
@@ -119,6 +121,7 @@ CosmicDB_ObservationKey [label=<<table border="0" cellborder="1" cellspacing="0"
 	<tr><td port="observation_id">observation_id</td></tr>
 	<tr><td bgcolor="darkgrey" port="hits">hits</td></tr>
 	<tr><td bgcolor="darkgrey" port="stamps">stamps</td></tr>
+	<tr><td bgcolor="darkgrey" port="postprocess_seti_receipts">postprocess_seti_receipts</td></tr>
 </table>>, shape=plain];
 CosmicDB_ObservationHit [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
 	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_ObservationHit</font></td></tr>
@@ -149,6 +152,10 @@ CosmicDB_ObservationStamp [label=<<table border="0" cellborder="1" cellspacing="
 CosmicDB_HitFlagSARFI [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
 	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_HitFlagSARFI</font></td></tr>
 	<tr><td bgcolor="darkgrey" port="hit">hit</td></tr>
+</table>>, shape=plain];
+CosmicDB_PostprocessReceiptSETI [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_PostprocessReceiptSETI</font></td></tr>
+	<tr><td bgcolor="darkgrey" port="observation_key">observation_key</td></tr>
 </table>>, shape=plain];
 }
 

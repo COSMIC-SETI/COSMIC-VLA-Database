@@ -82,6 +82,7 @@ I.e. asides from the fields of its cosmic_observation table, it has `CosmicDB_Ob
 ### Setup new server
 <details>
 <summary> Shouldn't need to do this section </summary>
+
 ```bash
 # mkdir /var/log/mysql/
 # chown mysql:mysql /var/log/mysqld
@@ -96,9 +97,9 @@ I.e. asides from the fields of its cosmic_observation table, it has `CosmicDB_Ob
 # mysqld --initialize --user=mysql --datadir=./mysql_datadir
 #
 # echo [mysqld] >> mysql.cnf
-# echo socket = /var/run/mysqld/mysqld.sock
-# echo mysqlx_socket = /var/run/mysqld/mysqlx.sock
-# echo pid-file = /var/run/mysqld/mysqld.pid
+# echo socket = /var/run/mysqld/mysqld.sock >> mysql.cnf
+# echo mysqlx_socket = /var/run/mysqld/mysqlx.sock >> mysql.cnf
+# echo pid-file = /var/run/mysqld/mysqld.pid >> mysql.cnf
 # echo user = mysql >> mysql.cnf
 # echo datadir = $(pwd)/mysql_datadir >> mysql.cnf
 # echo port = 3307 >> mysql.cnf
@@ -128,6 +129,11 @@ mysql> CREATE DATABASE dbname;
 mysql> GRANT ALL PRIVILEGES ON `dbname`.* TO `cosmic`@`%`;
 ```
 
+Use the provided executable to create the tables:
+`cosmicdb_create_all_tables --engine-configuration ./cosmicdb_new_fs.yaml --scope Storage`
+
+For the Storage scoped database, it is expected that the singular `StorageDatabaseInfo` entity is created:
+`cosmicdb_write --engine-configuration ./cosmicdb_new_fs.yaml StorageDatabaseInfo filesystem_uuid=yyxxyyyx-xxxy-xxyx-yyxx-xyyyyxxyxxxx`
 
 ### Committing Filesystem and Mount Entities
 

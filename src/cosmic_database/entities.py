@@ -30,6 +30,7 @@ String_DatasetID = Annotated[str, 60]
 String_ScanID = Annotated[str, 100]
 String_AntennaName = Annotated[str, 4]
 String_JSON = str
+String_Arguments = Annotated[str, 512]
 String_URI = Annotated[str, 255]
 String_UUID = Annotated[str, 64]
 String_Tuning = Annotated[str, 10]
@@ -415,6 +416,10 @@ class CosmicDB_ObservationKey(Base):
         back_populates="observation_key", cascade="all, delete-orphan"
     )
 
+    postprocess_seti_receipts: Mapped[List["CosmicDB_PostprocessReceiptSETI"]] = relationship(
+        back_populates="observation_key", cascade="all, delete-orphan"
+    )
+
 class CosmicDB_File(Base):
     __tablename__ = f"cosmic_file{TABLE_SUFFIX}"
 
@@ -611,6 +616,31 @@ class CosmicDB_HitFlagSARFI(Base):
         back_populates="sarfi_flag"
     )
 
+
+class CosmicDB_PostprocessReceiptSETI(Base):
+    __tablename__ = f"cosmic_postproc_receipt_seti{TABLE_SUFFIX}"
+    
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    observation_id: Mapped[int] = mapped_column(ForeignKey(f"{CosmicDB_ObservationKey.__tablename__}.observation_id"))
+
+    # Dislocated foreign keys
+    tuning: Mapped[String_Tuning]
+    subband_offset: Mapped[int]
+    
+    # receipt
+    beamformsearch_args: Mapped[String_Arguments]
+    beamformsearch_duration_s: Mapped[float]
+    sarfi_seive_duration_s: Mapped[float]
+    move_duration_s: Mapped[float]
+    hit_count: Mapped[int]
+    stamp_count: Mapped[int]
+    
+
+    observation_key: Mapped["CosmicDB_ObservationKey"] = relationship(
+        back_populates="postprocess_seti_receipts",
+    )
+
 ## Hardcoded meta-data about the overarching database
 
 DATABASE_SCOPES = {
@@ -635,6 +665,7 @@ DATABASE_SCOPES = {
         CosmicDB_ObservationStamp,
         CosmicDB_ObservationHit,
         CosmicDB_HitFlagSARFI,
+        CosmicDB_PostprocessReceiptSETI,
     ]
 }
 

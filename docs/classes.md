@@ -171,6 +171,7 @@ observation_id | `int`
 scan_id | `int`
 hits | list([CosmicDB_ObservationHit](#class-cosmicdb_observationhit))
 stamps | list([CosmicDB_ObservationStamp](#class-cosmicdb_observationstamp))
+postprocess_seti_receipts | list([CosmicDB_PostprocessReceiptSETI](#class-cosmicdb_postprocessreceiptseti))
 ## Class `CosmicDB_File`
 
 Table [`cosmic_file`](./tables.md#table-cosmic_file)
@@ -256,6 +257,7 @@ signal_coarse_channel | `int`
 signal_drift_rate | `int`
 signal_drift_steps | `float`
 signal_frequency | `int`
+signal_incoherent_power | `float`
 signal_index | `float`
 signal_num_timesteps | `int`
 signal_power | `int`
@@ -281,3 +283,20 @@ Attribute | Type
 antenna_index | `str`
 hit_id | `int`
 hit | [CosmicDB_ObservationHit](#class-cosmicdb_observationhit)
+## Class `CosmicDB_PostprocessReceiptSETI`
+
+Table [`cosmic_postproc_receipt_seti`](./tables.md#table-cosmic_postproc_receipt_seti)
+
+Attribute | Type
+-|-
+beamformsearch_args | `int`
+beamformsearch_duration_s | `str`
+hit_count | `float`
+id | `int`
+move_duration_s | `int`
+observation_id | `float`
+sarfi_seive_duration_s | `int`
+stamp_count | `float`
+subband_offset | `int`
+tuning | `int`
+observation_key | [CosmicDB_ObservationKey](#class-cosmicdb_observationkey)

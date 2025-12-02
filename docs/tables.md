@@ -236,6 +236,7 @@ signal_coarse_channel | INTEGER |  |  |  |  |
 signal_beam | INTEGER |  |  |  |  | 
 signal_num_timesteps | INTEGER |  |  |  |  | 
 signal_power | DOUBLE |  |  |  |  | 
+signal_incoherent_power | DOUBLE |  |  |  | X | 
 source_name | VARCHAR(80) |  |  |  |  | 
 fch1_mhz | DOUBLE |  |  |  |  | 
 foff_mhz | DOUBLE |  |  |  |  | 
@@ -257,3 +258,20 @@ Column | Type | Primary Key | Foreign Key(s) | Indexed | Nullable | Unique
 -|-|-|-|-|-|-
 hit_id | INTEGER | X | [cosmic_observation_hit](#table-cosmic_observation_hit).id |  |  | 
 antenna_index | INTEGER |  |  |  |  | 
+
+# Table `cosmic_postproc_receipt_seti`
+
+Class [`cosmic_database.entities.CosmicDB_PostprocessReceiptSETI`](./classes.md#class-CosmicDB_PostprocessReceiptSETI)
+
+Column | Type | Primary Key | Foreign Key(s) | Indexed | Nullable | Unique
+-|-|-|-|-|-|-
+id | INTEGER | X |  |  |  | 
+observation_id | INTEGER |  | [cosmic_observation_key](#table-cosmic_observation_key).observation_id |  |  | 
+tuning | VARCHAR(10) |  |  |  |  | 
+subband_offset | INTEGER |  |  |  |  | 
+beamformsearch_args | TEXT |  |  |  |  | 
+beamformsearch_duration_s | DOUBLE |  |  |  |  | 
+sarfi_seive_duration_s | DOUBLE |  |  |  |  | 
+move_duration_s | DOUBLE |  |  |  |  | 
+hit_count | INTEGER |  |  |  |  | 
+stamp_count | INTEGER |  |  |  |  | 

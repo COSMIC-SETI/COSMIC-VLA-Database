@@ -15,6 +15,7 @@ CosmicDB_ObservationKey [label=<<table border="0" cellborder="1" cellspacing="0"
 	<tr><td port="scan_id">scan_id</td></tr>
 	<tr><td bgcolor="darkgrey" port="hits">hits</td></tr>
 	<tr><td bgcolor="darkgrey" port="stamps">stamps</td></tr>
+	<tr><td bgcolor="darkgrey" port="postprocess_seti_receipts">postprocess_seti_receipts</td></tr>
 </table>>, shape=plain];
 CosmicDB_File [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
 	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_File</font></td></tr>
@@ -89,6 +90,7 @@ CosmicDB_ObservationHit [label=<<table border="0" cellborder="1" cellspacing="0"
 	<tr><td port="signal_drift_rate">signal_drift_rate</td></tr>
 	<tr><td port="signal_drift_steps">signal_drift_steps</td></tr>
 	<tr><td port="signal_frequency">signal_frequency</td></tr>
+	<tr><td port="signal_incoherent_power" bgcolor="lightgrey:white" style="radial">signal_incoherent_power*</td></tr>
 	<tr><td port="signal_index">signal_index</td></tr>
 	<tr><td port="signal_num_timesteps">signal_num_timesteps</td></tr>
 	<tr><td port="signal_power">signal_power</td></tr>
@@ -111,8 +113,23 @@ CosmicDB_HitFlagSARFI [label=<<table border="0" cellborder="1" cellspacing="0" c
 	<tr><td port="antenna_index">antenna_index</td></tr>
 	<tr><td bgcolor="darkgrey" port="hit">hit</td></tr>
 </table>>, shape=plain];
+CosmicDB_PostprocessReceiptSETI [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_PostprocessReceiptSETI</font></td></tr>
+	<tr><td port="pk" bgcolor="lightgrey" border="3">id</td></tr>
+	<tr><td port="observation_id">observation_id (FK)</td></tr>
+	<tr><td port="beamformsearch_args">beamformsearch_args</td></tr>
+	<tr><td port="beamformsearch_duration_s">beamformsearch_duration_s</td></tr>
+	<tr><td port="hit_count">hit_count</td></tr>
+	<tr><td port="move_duration_s">move_duration_s</td></tr>
+	<tr><td port="sarfi_seive_duration_s">sarfi_seive_duration_s</td></tr>
+	<tr><td port="stamp_count">stamp_count</td></tr>
+	<tr><td port="subband_offset">subband_offset</td></tr>
+	<tr><td port="tuning">tuning</td></tr>
+	<tr><td bgcolor="darkgrey" port="observation_key">observation_key</td></tr>
+</table>>, shape=plain];
 CosmicDB_ObservationKey:hits -> CosmicDB_ObservationHit:class  [arrowtail=inv, dir=back];
 CosmicDB_ObservationKey:stamps -> CosmicDB_ObservationStamp:class  [arrowtail=inv, dir=back];
+CosmicDB_ObservationKey:postprocess_seti_receipts -> CosmicDB_PostprocessReceiptSETI:class  [arrowtail=inv, dir=back];
 CosmicDB_File:flags -> CosmicDB_FileFlags:class  [arrowtail=inv, dir=back];
 CosmicDB_FileFlags:file -> CosmicDB_File:class  [arrowtail=none, dir=back];
 CosmicDB_ObservationStamp:file -> CosmicDB_File:class  [arrowtail=none, dir=back];
@@ -123,6 +140,7 @@ CosmicDB_ObservationHit:observation_key -> CosmicDB_ObservationKey:class  [arrow
 CosmicDB_ObservationHit:sarfi_flag -> CosmicDB_HitFlagSARFI:class  [arrowtail=inv, dir=back];
 CosmicDB_ObservationHit:stamp -> CosmicDB_ObservationStamp:class  [arrowtail=none, dir=back];
 CosmicDB_HitFlagSARFI:hit -> CosmicDB_ObservationHit:class  [arrowtail=none, dir=back];
+CosmicDB_PostprocessReceiptSETI:observation_key -> CosmicDB_ObservationKey:class  [arrowtail=none, dir=back];
 CosmicDB_FileFlags:pk -> CosmicDB_File:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
 CosmicDB_ObservationStamp:file_id -> CosmicDB_File:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
 CosmicDB_ObservationStamp:observation_id -> CosmicDB_ObservationKey:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
@@ -130,6 +148,7 @@ CosmicDB_ObservationHit:file_id -> CosmicDB_File:pk  [arrowtail=none, color=dark
 CosmicDB_ObservationHit:observation_id -> CosmicDB_ObservationKey:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
 CosmicDB_ObservationHit:stamp_id -> CosmicDB_ObservationStamp:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
 CosmicDB_HitFlagSARFI:pk -> CosmicDB_ObservationHit:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
+CosmicDB_PostprocessReceiptSETI:observation_id -> CosmicDB_ObservationKey:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
 subgraph legend {
 cluster=True;
 label="Legend";
