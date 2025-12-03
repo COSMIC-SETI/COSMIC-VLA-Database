@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cosmic_database"
-version = "2.1.5"
+version = "2.1.6"
 authors = [
   { name="Ross Donnachie", email="code@radonn.co.za" },
 ]
@@ -28,3 +28,4 @@ cosmicdb_create_engine_url = "cosmic_database:engine.cli_create_engine_url"
 cosmicdb_inspect = "cosmic_database:engine.cli_inspect"
 cosmicdb_write = "cosmic_database:engine.cli_write"
 cosmicdb_write_filesystem_mount = "cosmic_database:engine.cli_write_filesystem_mount"
+cosmicdb_write_changelog = "cosmic_database:engine.cli_write_changelog"

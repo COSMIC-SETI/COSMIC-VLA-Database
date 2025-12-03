@@ -574,6 +574,39 @@ def cli_write_filesystem_mount():
         session.add(filesystem_mount_entity)
         session.commit()
 
+
+def cli_write_changelog():
+    import argparse
+    from datetime import datetime
+    now = datetime.now()
+
+    parser = argparse.ArgumentParser(
+        description="Minor interface to write COSMIC ChangelogEntry entity.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    cli_add_engine_arguments(parser, add_scope_argument=False)
+    
+    parser.add_argument(
+        "description",
+        type=str,
+        help="The changlog entry.",
+    )
+    
+    args = parser.parse_args()
+
+    engine = CosmicDB_Engine(
+        engine_conf_yaml_filepath=args.engine_configuration,
+        scope=entities.DatabaseScope.Operation
+    )
+    with engine.session() as session:
+        changelog_entry = entities.CosmicDB_ChangelogEntry(
+            timestamp=now,
+            description=args.description
+        )
+        session.add(changelog_entry)
+        session.commit()
+
+
 def cli_write():
     import argparse
 

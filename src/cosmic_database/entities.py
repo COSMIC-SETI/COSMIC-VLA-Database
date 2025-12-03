@@ -641,6 +641,12 @@ class CosmicDB_PostprocessReceiptSETI(Base):
         back_populates="postprocess_seti_receipts",
     )
 
+class CosmicDB_ChangelogEntry(Base):
+    __tablename__ = f"cosmic_changelog_entry{TABLE_SUFFIX}"
+    
+    timestamp: Mapped[datetime] = mapped_column(index=True, primary_key=True)
+    description: Mapped[String_JSON]
+
 ## Hardcoded meta-data about the overarching database
 
 DATABASE_SCOPES = {
@@ -656,6 +662,7 @@ DATABASE_SCOPES = {
         CosmicDB_ObservationBeam,
         CosmicDB_Filesystem,
         CosmicDB_FilesystemMount,
+        CosmicDB_ChangelogEntry,
     ],
     DatabaseScope.Storage: [
         CosmicDB_StorageDatabaseInfo,
