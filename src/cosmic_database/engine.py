@@ -48,12 +48,19 @@ class CosmicDB_Engine:
                 scope, yaml_dict = next(iter(yaml_dict.items()))
                 scope = entities.DatabaseScope(scope)
             else:
-                assert any(scope.value in yaml_dict for scope in entities.DatabaseScope), f"Expecting a Multi-scope engine configuration YAML."
                 assert scope is not None, f"Multi-scope engine configuration YAML requires a scope selection."
+                try:
+                    [entities.DatabaseScope(key) for key in yaml_dict.keys()]
+                except ValueError as err:
+                    raise ValueError(f"Expecting a Multi-scope engine configuration YAML: {engine_conf_yaml_filepath}.") from err
+
                 try:
                     yaml_dict = yaml_dict[scope.value]
                 except KeyError:
-                    raise KeyError(f"'{scope.value}' not found in: {{{yaml_dict.keys()}}}")
+                    raise KeyError(f"'{scope.value}' not found: {engine_conf_yaml_filepath}")
+
+                if isinstance(yaml_dict, list):
+                    raise ValueError(f"Selected '{scope}' scope has multiple values: `{engine_conf_yaml_filepath}`.")
 
             return sqlalchemy.engine.url.URL.create(
                 **yaml_dict
@@ -148,6 +155,66 @@ class CosmicDB_Engine:
         
         session.refresh(ent)
         return ent
+
+
+class CosmicDB_EngineMultiConfig:
+    def __init__(
+        self,
+        filepath: str
+    ):
+        self.operation_engurl = None
+        self.storage_uuid_map_engurl = {}
+
+        with open(filepath, "r") as yaml_fio:
+            yaml_dict = yaml.safe_load(yaml_fio)
+        try:
+            for key, engine_conf in yaml_dict.items():
+                engscope = entities.DatabaseScope(key)
+                if engscope == entities.DatabaseScope.Operation:
+                    self.operation_engurl = sqlalchemy.engine.url.URL.create(
+                        **engine_conf
+                    )
+                else:
+                    if not isinstance(engine_conf, list):
+                        engine_conf = [engine_conf]
+                    
+                    for engconf in engine_conf:
+                        engurl = sqlalchemy.engine.url.URL.create(
+                            **engconf
+                        )
+                        storage_dbinfo = CosmicDB_Engine(
+                            engine_url = engurl,
+                            scope = engscope
+                        ).select_entity(entities.CosmicDB_StorageDatabaseInfo)
+                        assert storage_dbinfo is not None, f"{engurl} has no StorageDatabaseInfo record."
+
+                        self.storage_uuid_map_engurl[storage_dbinfo.filesystem_uuid] = engurl
+
+        except ValueError as err:
+            raise ValueError(f"Expecting an exhaustive Multi-scope engine configuration YAML: {filepath}.") from err
+    
+    def get_operation_dbengine(self):
+        return CosmicDB_Engine(
+            engine_url = self.operation_engurl,
+            scope = entities.DatabaseScope.Operation
+        )
+
+    def get_storage_dbengine(self, filesystem_uuid: str):
+        return CosmicDB_Engine(
+            engine_url = self.storage_uuid_map_engurl[filesystem_uuid],
+            scope = entities.DatabaseScope.Storage
+        )
+
+    def get_active_storage_dbengine(self, operations_dbengine = None):
+        if operations_dbengine is None:
+            operations_dbengine = self.get_operation_dbengine()
+        
+        return self.get_storage_dbengine(
+            entities.CosmicDB_OperationDatabaseInfo.get_current_archival_filesystem_mount(
+                operations_dbengine.session()
+            ).filesystem_uuid
+        )
+
 
 def get_storage_filesystem_latest_mount(
     engine_conf_yaml_filepath: str
@@ -605,6 +672,47 @@ def cli_write_changelog():
         )
         session.add(changelog_entry)
         session.commit()
+
+
+def cli_write_operation_dbinfo():
+    import argparse
+    from datetime import datetime
+    now = datetime.now()
+
+    parser = argparse.ArgumentParser(
+        description="Minor interface to write COSMIC OperationDatabaseInfo entity.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    cli_add_engine_arguments(parser, add_scope_argument=False)
+    
+    parser.add_argument(
+        "archival_filesystem_mount_id",
+        type=int,
+        help="The now active FilesystemMount ID.",
+    )
+    
+    args = parser.parse_args()
+
+    engine = CosmicDB_Engine(
+        engine_conf_yaml_filepath=args.engine_configuration,
+        scope=entities.DatabaseScope.Operation
+    )
+    with engine.session() as session:
+        prior = session.scalars(
+            sqlalchemy.select(entities.CosmicDB_OperationDatabaseInfo)
+            .where(
+                entities.CosmicDB_OperationDatabaseInfo.end is None
+            )
+        ).one_or_none()
+        dbinfo_entry = entities.CosmicDB_OperationDatabaseInfo(
+            start=now,
+            archival_filesystem_mount_id=args.archival_filesystem_mount_id
+        )
+        session.add(dbinfo_entry)
+        session.commit()
+        if prior is not None:
+            prior.end = now
+            session.commit()
 
 
 def cli_write():

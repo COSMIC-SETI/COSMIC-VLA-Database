@@ -29,7 +29,7 @@ class DatabaseScope(str, Enum):
 String_DatasetID = Annotated[str, 60]
 String_ScanID = Annotated[str, 100]
 String_AntennaName = Annotated[str, 4]
-String_JSON = str
+String_Unlimited = str
 String_Arguments = Annotated[str, 512]
 String_URI = Annotated[str, 255]
 String_UUID = Annotated[str, 64]
@@ -41,7 +41,7 @@ class Base(DeclarativeBase):
         String_DatasetID: String(String_DatasetID.__metadata__[0]),
         String_ScanID: String(String_ScanID.__metadata__[0]),
         String_AntennaName: String(String_AntennaName.__metadata__[0]),
-        String_JSON: Text,
+        String_Unlimited: Text,
         String_URI: String(String_URI.__metadata__[0]),
         String_UUID: String(String_UUID.__metadata__[0]),
         String_Tuning: String(String_Tuning.__metadata__[0]),
@@ -156,6 +156,11 @@ class Base(DeclarativeBase):
     def __repr__(self) -> str:
         return self._get_str(verbosity=0)
 
+class CosmicDB_OperationFlag(Base):
+    __tablename__ = f"cosmic_operation_flag{TABLE_SUFFIX}"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    details: Mapped[String_Unlimited]
+
 class CosmicDB_Filesystem(Base):
     __tablename__ = f"cosmic_filesystem{TABLE_SUFFIX}"
     uuid: Mapped[String_UUID] = mapped_column(primary_key=True)
@@ -204,6 +209,28 @@ class CosmicDB_FilesystemMount(Base):
     def is_current(self) -> bool:
         return self.end is None
 
+class CosmicDB_OperationDatabaseInfo(Base):
+    __tablename__ = f"cosmic_operation_database_info{TABLE_SUFFIX}"
+
+    # single active entity per database
+    id: Mapped[int] = mapped_column(primary_key=True)
+    start: Mapped[datetime] = mapped_column(index=True)
+    end: Mapped[Optional[datetime]]
+
+    archival_filesystem_mount_id: Mapped[String_UUID] = mapped_column(
+        ForeignKey(f"{CosmicDB_FilesystemMount.__tablename__}.id"),
+    )
+
+    filesystem_mount: Mapped["CosmicDB_FilesystemMount"] = relationship()
+    
+    def get_current_archival_filesystem_mount(session) -> CosmicDB_FilesystemMount:
+        return session.scalars(
+            select(CosmicDB_OperationDatabaseInfo)
+            .where(
+                CosmicDB_OperationDatabaseInfo.end.is_(None)
+            )
+        ).one().filesystem_mount
+
 class CosmicDB_Dataset(Base):
     __tablename__ = f"cosmic_dataset{TABLE_SUFFIX}"
 
@@ -219,7 +246,7 @@ class CosmicDB_Scan(Base):
     id: Mapped[String_ScanID] = mapped_column(primary_key=True)
     dataset_id: Mapped[String_DatasetID] = mapped_column(ForeignKey(f"{CosmicDB_Dataset.__tablename__}.id"), index=True)
     start: Mapped[datetime]
-    metadata_json: Mapped[String_JSON]
+    metadata_json: Mapped[String_Unlimited]
     
     dataset: Mapped["CosmicDB_Dataset"] = relationship(
         back_populates="scans"
@@ -241,8 +268,8 @@ class CosmicDB_Configuration(Base):
 
     start: Mapped[datetime]
     end: Mapped[datetime]
-    criteria_json: Mapped[String_JSON]
-    configuration_json: Mapped[String_JSON]
+    criteria_json: Mapped[String_Unlimited]
+    configuration_json: Mapped[String_Unlimited]
     successful: Mapped[bool]
 
     scan: Mapped["CosmicDB_Scan"] = relationship(
@@ -281,7 +308,7 @@ class CosmicDB_Observation(Base):
 
     start: Mapped[datetime]
     end: Mapped[datetime]
-    criteria_json: Mapped[String_JSON]
+    criteria_json: Mapped[String_Unlimited]
     validity_code: Mapped[int] = mapped_column(default=1) # TODO make this TINYINT...
 
     
@@ -369,6 +396,8 @@ class CosmicDB_ObservationSubband(Base):
         back_populates="subbands"
     )
 
+    flag: Mapped[Optional[int]] = mapped_column(ForeignKey(f"{CosmicDB_OperationFlag.__tablename__}.id"))
+
 class CosmicDB_ObservationBeam(Base):
     __tablename__ = f"cosmic_observation_beam{TABLE_SUFFIX}"
 
@@ -387,6 +416,11 @@ class CosmicDB_ObservationBeam(Base):
 
 ### Observation Products below ###
 # These are stored in a separate database that is local to the storage medium which can be physically relocated
+
+class CosmicDB_StorageFlag(Base):
+    __tablename__ = f"cosmic_storage_flag{TABLE_SUFFIX}"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    details: Mapped[String_Unlimited]
 
 class CosmicDB_StorageDatabaseInfo(Base):
     __tablename__ = f"cosmic_database_info{TABLE_SUFFIX}"
@@ -527,6 +561,8 @@ class CosmicDB_ObservationStamp(Base):
         back_populates="stamp",
     )
 
+    flag: Mapped[Optional[int]] = mapped_column(ForeignKey(f"{CosmicDB_StorageFlag.__tablename__}.id"))
+
 class CosmicDB_ObservationHit(Base):
     __tablename__ = f"cosmic_observation_hit{TABLE_SUFFIX}"
     
@@ -605,6 +641,8 @@ class CosmicDB_ObservationHit(Base):
         back_populates="hits",
     )
 
+    flag: Mapped[Optional[int]] = mapped_column(ForeignKey(f"{CosmicDB_StorageFlag.__tablename__}.id"))
+
 class CosmicDB_HitFlagSARFI(Base):
     __tablename__ = f"cosmic_hit_flag_sarfi{TABLE_SUFFIX}"
 
@@ -645,12 +683,13 @@ class CosmicDB_ChangelogEntry(Base):
     __tablename__ = f"cosmic_changelog_entry{TABLE_SUFFIX}"
     
     timestamp: Mapped[datetime] = mapped_column(index=True, primary_key=True)
-    description: Mapped[String_JSON]
+    description: Mapped[String_Unlimited]
 
 ## Hardcoded meta-data about the overarching database
 
 DATABASE_SCOPES = {
     DatabaseScope.Operation: [
+        CosmicDB_OperationDatabaseInfo,
         CosmicDB_Dataset,
         CosmicDB_Scan,
         CosmicDB_Configuration,
@@ -663,6 +702,7 @@ DATABASE_SCOPES = {
         CosmicDB_Filesystem,
         CosmicDB_FilesystemMount,
         CosmicDB_ChangelogEntry,
+        CosmicDB_OperationFlag,
     ],
     DatabaseScope.Storage: [
         CosmicDB_StorageDatabaseInfo,
@@ -673,6 +713,7 @@ DATABASE_SCOPES = {
         CosmicDB_ObservationHit,
         CosmicDB_HitFlagSARFI,
         CosmicDB_PostprocessReceiptSETI,
+        CosmicDB_StorageFlag,
     ]
 }
 
