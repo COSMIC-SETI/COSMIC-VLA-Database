@@ -8,6 +8,7 @@ CosmicDB_Configuration:id:e -> CosmicDB_ObservationKey:configuration_id:w  [arro
 CosmicDB_Observation:id:e -> CosmicDB_ObservationKey:observation_id:w  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0, weight=100];
 CosmicDB_ObservationBeam:enumeration:e -> CosmicDB_ObservationHit:signal_beam:w  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0, weight=100];
 CosmicDB_Filesystem:uuid:e -> CosmicDB_StorageDatabaseInfo:filesystem_uuid:w  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0, weight=100];
+CosmicDB_OperationDatabaseInfo:filesystem_mount -> CosmicDB_FilesystemMount:class  [arrowtail=none, dir=back];
 CosmicDB_Dataset:scans -> CosmicDB_Scan:class  [arrowtail=inv, dir=back];
 CosmicDB_Scan:dataset -> CosmicDB_Dataset:class  [arrowtail=none, dir=back];
 CosmicDB_Scan:configurations -> CosmicDB_Configuration:class  [arrowtail=inv, dir=back];
@@ -83,6 +84,10 @@ CosmicDB_Filesystem [label=<<table border="0" cellborder="1" cellspacing="0" cel
 	<tr><td bgcolor="darkgrey" port="mount_history">mount_history</td></tr>
 	<tr><td bgcolor="darkgrey" port="observations">observations</td></tr>
 </table>>, shape=plain];
+CosmicDB_OperationDatabaseInfo [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_OperationDatabaseInfo</font></td></tr>
+	<tr><td bgcolor="darkgrey" port="filesystem_mount">filesystem_mount</td></tr>
+</table>>, shape=plain];
 CosmicDB_Dataset [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
 	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_Dataset</font></td></tr>
 	<tr><td bgcolor="darkgrey" port="scans">scans</td></tr>
@@ -108,6 +113,12 @@ CosmicDB_ObservationSubband [label=<<table border="0" cellborder="1" cellspacing
 CosmicDB_FilesystemMount [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
 	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_FilesystemMount</font></td></tr>
 	<tr><td bgcolor="darkgrey" port="filesystem">filesystem</td></tr>
+</table>>, shape=plain];
+CosmicDB_ChangelogEntry [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_ChangelogEntry</font></td></tr>
+</table>>, shape=plain];
+CosmicDB_OperationFlag [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_OperationFlag</font></td></tr>
 </table>>, shape=plain];
 }
 
@@ -156,6 +167,9 @@ CosmicDB_HitFlagSARFI [label=<<table border="0" cellborder="1" cellspacing="0" c
 CosmicDB_PostprocessReceiptSETI [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
 	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_PostprocessReceiptSETI</font></td></tr>
 	<tr><td bgcolor="darkgrey" port="observation_key">observation_key</td></tr>
+</table>>, shape=plain];
+CosmicDB_StorageFlag [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_StorageFlag</font></td></tr>
 </table>>, shape=plain];
 }
 

@@ -36,6 +36,7 @@ CosmicDB_ObservationStamp [label=<<table border="0" cellborder="1" cellspacing="
 	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_ObservationStamp</font></td></tr>
 	<tr><td port="pk" bgcolor="lightgrey" border="3">id</td></tr>
 	<tr><td port="file_id">file_id (FK)</td></tr>
+	<tr><td port="flag" bgcolor="lightgrey:white" style="radial">flag* (FK)</td></tr>
 	<tr><td port="observation_id">observation_id (FK)</td></tr>
 	<tr><td port="coarse_channel">coarse_channel</td></tr>
 	<tr><td port="dec_degrees">dec_degrees</td></tr>
@@ -75,6 +76,7 @@ CosmicDB_ObservationHit [label=<<table border="0" cellborder="1" cellspacing="0"
 	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_ObservationHit</font></td></tr>
 	<tr><td port="pk" bgcolor="lightgrey" border="3">id</td></tr>
 	<tr><td port="file_id">file_id (FK)</td></tr>
+	<tr><td port="flag" bgcolor="lightgrey:white" style="radial">flag* (FK)</td></tr>
 	<tr><td port="observation_id">observation_id (FK)</td></tr>
 	<tr><td port="stamp_id" bgcolor="lightgrey:white" style="radial">stamp_id* (FK)</td></tr>
 	<tr><td port="coarse_channel">coarse_channel</td></tr>
@@ -127,6 +129,11 @@ CosmicDB_PostprocessReceiptSETI [label=<<table border="0" cellborder="1" cellspa
 	<tr><td port="tuning">tuning</td></tr>
 	<tr><td bgcolor="darkgrey" port="observation_key">observation_key</td></tr>
 </table>>, shape=plain];
+CosmicDB_StorageFlag [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_StorageFlag</font></td></tr>
+	<tr><td port="pk" bgcolor="lightgrey" border="3">id</td></tr>
+	<tr><td port="details">details</td></tr>
+</table>>, shape=plain];
 CosmicDB_ObservationKey:hits -> CosmicDB_ObservationHit:class  [arrowtail=inv, dir=back];
 CosmicDB_ObservationKey:stamps -> CosmicDB_ObservationStamp:class  [arrowtail=inv, dir=back];
 CosmicDB_ObservationKey:postprocess_seti_receipts -> CosmicDB_PostprocessReceiptSETI:class  [arrowtail=inv, dir=back];
@@ -143,8 +150,10 @@ CosmicDB_HitFlagSARFI:hit -> CosmicDB_ObservationHit:class  [arrowtail=none, dir
 CosmicDB_PostprocessReceiptSETI:observation_key -> CosmicDB_ObservationKey:class  [arrowtail=none, dir=back];
 CosmicDB_FileFlags:pk -> CosmicDB_File:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
 CosmicDB_ObservationStamp:file_id -> CosmicDB_File:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
+CosmicDB_ObservationStamp:flag -> CosmicDB_StorageFlag:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
 CosmicDB_ObservationStamp:observation_id -> CosmicDB_ObservationKey:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
 CosmicDB_ObservationHit:file_id -> CosmicDB_File:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
+CosmicDB_ObservationHit:flag -> CosmicDB_StorageFlag:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
 CosmicDB_ObservationHit:observation_id -> CosmicDB_ObservationKey:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
 CosmicDB_ObservationHit:stamp_id -> CosmicDB_ObservationStamp:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
 CosmicDB_HitFlagSARFI:pk -> CosmicDB_ObservationHit:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];

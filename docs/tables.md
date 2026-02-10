@@ -1,3 +1,12 @@
+# Table `cosmic_operation_flag`
+
+Class [`cosmic_database.entities.CosmicDB_OperationFlag`](./classes.md#class-CosmicDB_OperationFlag)
+
+Column | Type | Primary Key | Foreign Key(s) | Indexed | Nullable | Unique
+-|-|-|-|-|-|-
+id | INTEGER | X |  |  |  | 
+details | TEXT |  |  |  |  | 
+
 # Table `cosmic_filesystem`
 
 Class [`cosmic_database.entities.CosmicDB_Filesystem`](./classes.md#class-CosmicDB_Filesystem)
@@ -20,6 +29,17 @@ host_mountpoint | VARCHAR(255) |  |  |  |  |
 start | DATETIME |  |  | X |  | 
 end | DATETIME |  |  |  | X | 
 network_uri | VARCHAR(255) |  |  |  | X | 
+
+# Table `cosmic_operation_database_info`
+
+Class [`cosmic_database.entities.CosmicDB_OperationDatabaseInfo`](./classes.md#class-CosmicDB_OperationDatabaseInfo)
+
+Column | Type | Primary Key | Foreign Key(s) | Indexed | Nullable | Unique
+-|-|-|-|-|-|-
+id | INTEGER | X |  |  |  | 
+start | DATETIME |  |  | X |  | 
+end | DATETIME |  |  |  | X | 
+archival_filesystem_mount_id | INTEGER |  | [cosmic_filesystem_mount](#table-cosmic_filesystem_mount).id |  |  | 
 
 # Table `cosmic_dataset`
 
@@ -119,6 +139,7 @@ node_uri | VARCHAR(255) |  |  |  |  |
 subband_length | INTEGER |  |  |  |  | 
 subband_frequency_lower_MHz | DOUBLE |  |  |  |  | 
 subband_bandwidth_MHz | DOUBLE |  |  |  |  | 
+flag | INTEGER |  | [cosmic_operation_flag](#table-cosmic_operation_flag).id |  | X | 
 
 # Table `cosmic_observation_beam`
 
@@ -133,6 +154,15 @@ dec_radians | DOUBLE |  |  | X |  |
 source | VARCHAR(80) |  |  | X |  | 
 start | DATETIME |  |  | X |  | 
 end | DATETIME |  |  |  |  | 
+
+# Table `cosmic_storage_flag`
+
+Class [`cosmic_database.entities.CosmicDB_StorageFlag`](./classes.md#class-CosmicDB_StorageFlag)
+
+Column | Type | Primary Key | Foreign Key(s) | Indexed | Nullable | Unique
+-|-|-|-|-|-|-
+id | INTEGER | X |  |  |  | 
+details | TEXT |  |  |  |  | 
 
 # Table `cosmic_database_info`
 
@@ -213,6 +243,7 @@ signal_coarse_channel | INTEGER |  |  |  |  |
 signal_num_timesteps | INTEGER |  |  |  |  | 
 signal_power | DOUBLE |  |  |  |  | 
 signal_incoherent_power | DOUBLE |  |  |  |  | 
+flag | INTEGER |  | [cosmic_storage_flag](#table-cosmic_storage_flag).id |  | X | 
 
 # Table `cosmic_observation_hit`
 
@@ -249,6 +280,7 @@ num_timesteps | INTEGER |  |  |  |  |
 num_channels | INTEGER |  |  |  |  | 
 coarse_channel | INTEGER |  |  |  |  | 
 start_channel | INTEGER |  |  |  |  | 
+flag | INTEGER |  | [cosmic_storage_flag](#table-cosmic_storage_flag).id |  | X | 
 
 # Table `cosmic_hit_flag_sarfi`
 
@@ -275,3 +307,12 @@ sarfi_seive_duration_s | DOUBLE |  |  |  |  |
 move_duration_s | DOUBLE |  |  |  |  | 
 hit_count | INTEGER |  |  |  |  | 
 stamp_count | INTEGER |  |  |  |  | 
+
+# Table `cosmic_changelog_entry`
+
+Class [`cosmic_database.entities.CosmicDB_ChangelogEntry`](./classes.md#class-CosmicDB_ChangelogEntry)
+
+Column | Type | Primary Key | Foreign Key(s) | Indexed | Nullable | Unique
+-|-|-|-|-|-|-
+timestamp | DATETIME | X |  | X |  | 
+description | TEXT |  |  |  |  | 

@@ -3,6 +3,14 @@ layout=dot;
 nodesep=0.5;
 rankdir=LR;
 ranksep=2.5;
+CosmicDB_OperationDatabaseInfo [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_OperationDatabaseInfo</font></td></tr>
+	<tr><td port="pk" bgcolor="lightgrey" border="3">id</td></tr>
+	<tr><td port="archival_filesystem_mount_id">archival_filesystem_mount_id (FK)</td></tr>
+	<tr><td port="end" bgcolor="lightgrey:white" style="radial">end*</td></tr>
+	<tr><td port="start">start</td></tr>
+	<tr><td bgcolor="darkgrey" port="filesystem_mount">filesystem_mount</td></tr>
+</table>>, shape=plain];
 CosmicDB_Dataset [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
 	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_Dataset</font></td></tr>
 	<tr><td port="pk" bgcolor="lightgrey" border="3">id {str}</td></tr>
@@ -76,6 +84,7 @@ CosmicDB_Observation [label=<<table border="0" cellborder="1" cellspacing="0" ce
 CosmicDB_ObservationSubband [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
 	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_ObservationSubband</font></td></tr>
 	<tr><td port="pk" bgcolor="lightgrey" border="3">observation_id (FK)<br/>subband_offset<br/>tuning {str}</td></tr>
+	<tr><td port="flag" bgcolor="lightgrey:white" style="radial">flag* (FK)</td></tr>
 	<tr><td port="node_uri">node_uri</td></tr>
 	<tr><td port="percentage_recorded">percentage_recorded</td></tr>
 	<tr><td port="subband_bandwidth_MHz">subband_bandwidth_MHz</td></tr>
@@ -112,6 +121,17 @@ CosmicDB_FilesystemMount [label=<<table border="0" cellborder="1" cellspacing="0
 	<tr><td port="start">start</td></tr>
 	<tr><td bgcolor="darkgrey" port="filesystem">filesystem</td></tr>
 </table>>, shape=plain];
+CosmicDB_ChangelogEntry [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_ChangelogEntry</font></td></tr>
+	<tr><td port="pk" bgcolor="lightgrey" border="3">timestamp {datetime}</td></tr>
+	<tr><td port="description">description</td></tr>
+</table>>, shape=plain];
+CosmicDB_OperationFlag [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+	<tr><td bgcolor="black" port="class"><font color="white">CosmicDB_OperationFlag</font></td></tr>
+	<tr><td port="pk" bgcolor="lightgrey" border="3">id</td></tr>
+	<tr><td port="details">details</td></tr>
+</table>>, shape=plain];
+CosmicDB_OperationDatabaseInfo:filesystem_mount -> CosmicDB_FilesystemMount:class  [arrowtail=none, dir=back];
 CosmicDB_Dataset:scans -> CosmicDB_Scan:class  [arrowtail=inv, dir=back];
 CosmicDB_Scan:dataset -> CosmicDB_Dataset:class  [arrowtail=none, dir=back];
 CosmicDB_Scan:configurations -> CosmicDB_Configuration:class  [arrowtail=inv, dir=back];
@@ -135,6 +155,7 @@ CosmicDB_ObservationBeam:observation -> CosmicDB_Observation:class  [arrowtail=n
 CosmicDB_Filesystem:mount_history -> CosmicDB_FilesystemMount:class  [arrowtail=inv, dir=back];
 CosmicDB_Filesystem:observations -> CosmicDB_Observation:class  [arrowtail=inv, dir=back];
 CosmicDB_FilesystemMount:filesystem -> CosmicDB_Filesystem:class  [arrowtail=none, dir=back];
+CosmicDB_OperationDatabaseInfo:archival_filesystem_mount_id -> CosmicDB_FilesystemMount:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
 CosmicDB_Scan:dataset_id -> CosmicDB_Dataset:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
 CosmicDB_Configuration:scan_id -> CosmicDB_Scan:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
 CosmicDB_ConfigurationAntenna:pk -> CosmicDB_Configuration:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
@@ -144,6 +165,7 @@ CosmicDB_Observation:archival_filesystem_uuid -> CosmicDB_Filesystem:pk  [arrowt
 CosmicDB_Observation:calibration_id -> CosmicDB_Calibration:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
 CosmicDB_Observation:configuration_id -> CosmicDB_Configuration:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
 CosmicDB_Observation:scan_id -> CosmicDB_Scan:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
+CosmicDB_ObservationSubband:flag -> CosmicDB_OperationFlag:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
 CosmicDB_ObservationSubband:pk -> CosmicDB_Observation:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
 CosmicDB_ObservationBeam:pk -> CosmicDB_Observation:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];
 CosmicDB_FilesystemMount:filesystem_uuid -> CosmicDB_Filesystem:pk  [arrowtail=none, color=darkgrey, dir=back, penwidth=3.0];

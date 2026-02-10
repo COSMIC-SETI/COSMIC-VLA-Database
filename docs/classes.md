@@ -1,13 +1,24 @@
 # Operation Database Scope
 ![Operation Class Diagram](./classes_Operation.png)
 
+## Class `CosmicDB_OperationDatabaseInfo`
+
+Table [`cosmic_operation_database_info`](./tables.md#table-cosmic_operation_database_info)
+
+Attribute | Type
+-|-
+archival_filesystem_mount_id | `str`
+end | `int`
+id | `datetime`
+start | `int`
+filesystem_mount | [CosmicDB_FilesystemMount](#class-cosmicdb_filesystemmount)
 ## Class `CosmicDB_Dataset`
 
 Table [`cosmic_dataset`](./tables.md#table-cosmic_dataset)
 
 Attribute | Type
 -|-
-id | `int`
+id | `datetime`
 scans | list([CosmicDB_Scan](#class-cosmicdb_scan))
 ## Class `CosmicDB_Scan`
 
@@ -101,6 +112,7 @@ Table [`cosmic_observation_subband`](./tables.md#table-cosmic_observation_subban
 
 Attribute | Type
 -|-
+flag | `int`
 node_uri | `int`
 observation_id | `str`
 percentage_recorded | `int`
@@ -149,6 +161,22 @@ id | `str`
 network_uri | `int`
 start | `str`
 filesystem | [CosmicDB_Filesystem](#class-cosmicdb_filesystem)
+## Class `CosmicDB_ChangelogEntry`
+
+Table [`cosmic_changelog_entry`](./tables.md#table-cosmic_changelog_entry)
+
+Attribute | Type
+-|-
+description | `datetime`
+timestamp | `str`
+## Class `CosmicDB_OperationFlag`
+
+Table [`cosmic_operation_flag`](./tables.md#table-cosmic_operation_flag)
+
+Attribute | Type
+-|-
+details | `datetime`
+id | `str`
 # Storage Database Scope
 ![Storage Class Diagram](./classes_Storage.png)
 
@@ -158,7 +186,7 @@ Table [`cosmic_database_info`](./tables.md#table-cosmic_database_info)
 
 Attribute | Type
 -|-
-filesystem_uuid | `datetime`
+filesystem_uuid | `int`
 id | `str`
 ## Class `CosmicDB_ObservationKey`
 
@@ -205,6 +233,7 @@ fch1_mhz | `float`
 fft_size | `float`
 file_id | `int`
 file_local_enumeration | `int`
+flag | `int`
 foff_mhz | `int`
 id | `float`
 num_antennas | `int`
@@ -246,6 +275,7 @@ dec_degrees | `int`
 fch1_mhz | `float`
 file_id | `float`
 file_local_enumeration | `int`
+flag | `int`
 foff_mhz | `int`
 id | `float`
 num_channels | `int`
@@ -300,3 +330,11 @@ stamp_count | `float`
 subband_offset | `int`
 tuning | `int`
 observation_key | [CosmicDB_ObservationKey](#class-cosmicdb_observationkey)
+## Class `CosmicDB_StorageFlag`
+
+Table [`cosmic_storage_flag`](./tables.md#table-cosmic_storage_flag)
+
+Attribute | Type
+-|-
+details | `str`
+id | `str`
