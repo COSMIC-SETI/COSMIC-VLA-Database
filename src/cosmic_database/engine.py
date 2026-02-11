@@ -820,7 +820,7 @@ def _inspect_pandas_df(
     output_filepath_splitext = None
     for chunk_i, df in enumerate(pandas.read_sql_query(
         sql = sql_query,
-        con = engine.engine,
+        con = engine.engine.connect(),
         chunksize=chunksize
     )):
         print(f"{prindent}dataframe #{chunk_i}\n", df)
