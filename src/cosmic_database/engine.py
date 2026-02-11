@@ -52,7 +52,7 @@ class CosmicDB_EngineMultiConfig:
                 return self.storage_uuid_map_engurl[
                     self.get_active_storage_dbuuid()
                 ]
-                
+
             if len(self.storage_uuid_map_engurl) == 1:
                 return next(iter(self.storage_uuid_map_engurl.values()))
             
@@ -60,11 +60,11 @@ class CosmicDB_EngineMultiConfig:
                 self.get_active_storage_dbuuid()
             ]
 
-    def get_dbengine(self, scope: entities.DatabaseScope):
+    def get_dbengine(self, scope: entities.DatabaseScope, storage_fs_uuid: str = None):
         if scope == entities.DatabaseScope.Operation:
             return self.get_operation_dbengine()
         if scope == entities.DatabaseScope.Storage:
-            return self.get_active_storage_dbengine()
+            return self.get_storage_dbengine(storage_fs_uuid)
     
     def get_operation_dbengine(self):
         return CosmicDB_Engine(
@@ -72,7 +72,9 @@ class CosmicDB_EngineMultiConfig:
             scope = entities.DatabaseScope.Operation
         )
 
-    def get_storage_dbengine(self, filesystem_uuid: str):
+    def get_storage_dbengine(self, filesystem_uuid: str = None):
+        if filesystem_uuid is None:
+            filesystem_uuid = self.get_active_storage_dbuuid()
         try:
             return CosmicDB_Engine(
                 engine_url = self.storage_uuid_map_engurl[filesystem_uuid],
@@ -86,9 +88,10 @@ class CosmicDB_EngineMultiConfig:
         if operations_dbengine is None:
             operations_dbengine = self.get_operation_dbengine()
         
-        return entities.CosmicDB_OperationDatabaseInfo.get_current_archival_filesystem_mount(
-            operations_dbengine.session()
-        ).filesystem_uuid
+        with operations_dbengine.session() as session:
+            return entities.CosmicDB_OperationDatabaseInfo.get_current_archival_filesystem_mount(
+                session
+            ).filesystem_uuid
 
     def get_active_storage_dbengine(self, operations_dbengine = None):
         return self.get_storage_dbengine(
@@ -265,7 +268,7 @@ def get_storage_filesystem_latest_network_uri(
     assert storage_filesystem_latest_mount.network_uri is not None, f"No given network mount for the filesystem's latest mount: {storage_filesystem_latest_mount}"
     return storage_filesystem_latest_mount.network_uri
 
-def cli_add_engine_arguments(parser, add_scope_argument: bool = True):
+def cli_add_engine_arguments(parser, add_scope_argument: bool = True, add_storagedb_uuid_argument: bool = True):
     parser.add_argument(
         "--engine-configuration",
         type=str,
@@ -282,6 +285,13 @@ def cli_add_engine_arguments(parser, add_scope_argument: bool = True):
                 for v, __ in entities.DatabaseScope.__members__.items()
             ],
             help="Scope selection for multi-scope configurations."
+        )
+    if add_storagedb_uuid_argument:
+        parser.add_argument(
+            "--storagedb-uuid",
+            type=str,
+            default=None,
+            help="The identifying filesystem UUID in the scoped case of a Storage DB. Default is to target the active Storage DB.",
         )
 
 def cli_parse_engine_scope_argument(args):
@@ -302,22 +312,17 @@ def cli_create_all_tables():
         description="COSMIC Database: create all the tables.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    parser.add_argument(
-        "--uuid",
-        type=str,
-        default=None,
-        help="The filesystem UUID to enable selecting non-active DatabaseScope.Storage database."
-    )
     cli_add_engine_arguments(parser)
 
     args = parser.parse_args()
     cli_parse_engine_scope_argument(args)
     
-    if args.uuid is None or args.scope == entities.DatabaseScope.Operation:
-        engine = CosmicDB_EngineMultiConfig(args.engine_configuration).get_dbengine(args.scope)
-    else:
-        engine = CosmicDB_EngineMultiConfig(args.engine_configuration).get_storage_dbengine(args.uuid)
-    engine.create_all_tables()
+    CosmicDB_EngineMultiConfig(
+        args.engine_configuration
+    ).get_dbengine(
+        args.scope,
+        args.storagedb_uuid
+    ).create_all_tables()
 
 
 def cli_create_engine_url():
@@ -544,7 +549,7 @@ def cli_alter_db():
     args.entity = getattr(entities, entity_name)
     cli_parse_engine_scope_argument(args)
 
-    engine = CosmicDB_EngineMultiConfig(args.engine_configuration).get_dbengine(args.scope)
+    engine = CosmicDB_EngineMultiConfig(args.engine_configuration).get_dbengine(args.scope, args.storagedb_uuid)
     assert args.entity in entities.DATABASE_SCOPES[engine.scope]
     if args.field is None:
         if args.create:
@@ -575,7 +580,7 @@ def cli_write_filesystem_mount():
         description="Minor interface to write COSMIC FilesystemMount and Filesystem entities.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    cli_add_engine_arguments(parser, add_scope_argument=False)
+    cli_add_engine_arguments(parser, add_scope_argument=False, add_storagedb_uuid_argument=False)
     
     parser.add_argument(
         "--uuid",
@@ -674,7 +679,7 @@ def cli_write_changelog():
         description="Minor interface to write COSMIC ChangelogEntry entity.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    cli_add_engine_arguments(parser, add_scope_argument=False)
+    cli_add_engine_arguments(parser, add_scope_argument=False, add_storagedb_uuid_argument=False)
     
     parser.add_argument(
         "description",
@@ -703,7 +708,7 @@ def cli_write_operation_dbinfo():
         description="Minor interface to write COSMIC OperationDatabaseInfo entity.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    cli_add_engine_arguments(parser, add_scope_argument=False)
+    cli_add_engine_arguments(parser, add_scope_argument=False, add_storagedb_uuid_argument=False)
     
     parser.add_argument(
         "archival_filesystem_mount_id",
@@ -787,7 +792,7 @@ def cli_write():
     
     entity = args.entity(**field_values)
 
-    engine = CosmicDB_EngineMultiConfig(args.engine_configuration).get_dbengine(args.scope)
+    engine = CosmicDB_EngineMultiConfig(args.engine_configuration).get_dbengine(args.scope, args.storagedb_uuid)
     with engine.session() as session:
         session.add(entity)
         try:
@@ -803,6 +808,49 @@ def cli_write():
         session.refresh(entity)
         print(entity)
 
+def _inspect_pandas_df(
+    sql_query,
+    engine,
+    chunksize,
+    output_filepath,
+    prindent: str = ''
+):
+    import pandas
+
+    output_filepath_splitext = None
+    for chunk_i, df in enumerate(pandas.read_sql_query(
+        sql = sql_query,
+        con = engine.engine,
+        chunksize=chunksize
+    )):
+        print(f"{prindent}dataframe #{chunk_i}\n", df)
+        if output_filepath is not None:
+            if chunk_i == 1:
+                output_filepath_splitext = os.path.splitext(output_filepath)
+            if chunk_i > 0:
+                output_filepath = f"{output_filepath_splitext[0]}.{chunk_i}{output_filepath_splitext[1]}"
+            print(f"{prindent}Output: {output_filepath}")
+            df.to_pickle(output_filepath)
+
+def _inspect_scalars(
+    sql_query,      
+    engine,
+    verbosity,
+    prindent: str = ''
+):  
+    with engine.session() as session:
+        results = session.scalars(sql_query).all()
+        result_num_str_len = len(str(len(results)))
+        for result_enum, result in enumerate(results):
+            try:
+                result_str = "\n\t" + "\n\t".join(
+                    res._get_str(verbosity)
+                    for res in result
+                )
+            except TypeError:
+                result_str = result._get_str(verbosity)
+            print(f"{prindent}#{str(result_enum+1).ljust(result_num_str_len)} {result_str}")
+
 def cli_inspect():
     import argparse
 
@@ -810,7 +858,14 @@ def cli_inspect():
         description="Minor interface to expose COSMIC database entities.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    cli_add_engine_arguments(parser, add_scope_argument=False)
+    cli_add_engine_arguments(parser, add_scope_argument=False, add_storagedb_uuid_argument=False)
+    parser.add_argument(
+        "--storagedb-uuid",
+        type=str,
+        default=None,
+        help="The identifying filesystem UUID in the scoped case of a Storage DB. Default is to query all Storage DBs.",
+    )
+    
     parser.add_argument(
         "--pandas-output-filepath",
         type=str,
@@ -961,37 +1016,57 @@ def cli_inspect():
     if args.distinct:
         sql_query = sql_query.distinct()
 
-    engine = CosmicDB_EngineMultiConfig(args.engine_configuration).get_dbengine(args.scope)
+    engine_multi_config = CosmicDB_EngineMultiConfig(args.engine_configuration)
+    
+    inspection_call = lambda engine, outfilepath, prindent: _inspect_scalars(
+        sql_query,      
+        engine,
+        args.verbosity,
+        prindent
+    )
 
-    pandas_output_filepath_splitext = None
     if (args.show_dataframe
       or args.pandas_output_filepath is not None
       or args.select is not None
     ):
-        import pandas
-        for chunk_i, df in enumerate(pandas.read_sql_query(
-            sql = sql_query,
-            con = engine.engine,
-            chunksize=args.pandas_chunksize
-        )):
-            print(f"dataframe #{chunk_i}\n", df)
-            if args.pandas_output_filepath is not None:
-                if chunk_i == 1:
-                    pandas_output_filepath_splitext = os.path.splitext(args.pandas_output_filepath)
-                if chunk_i > 0:
-                    args.pandas_output_filepath = f"{pandas_output_filepath_splitext[0]}.{chunk_i}{pandas_output_filepath_splitext[1]}"
-                print(f"Output: {args.pandas_output_filepath}")
-                df.to_pickle(args.pandas_output_filepath)
-    else:
-        with engine.session() as session:
-            results = session.scalars(sql_query).all()
-            result_num_str_len = len(str(len(results)))
-            for result_enum, result in enumerate(results):
-                try:
-                    result_str = "\n\t" + "\n\t".join(
-                        res._get_str(args.verbosity)
-                        for res in result
-                    )
-                except TypeError:
-                    result_str = result._get_str(args.verbosity)
-                print(f"#{str(result_enum+1).ljust(result_num_str_len)} {result_str}")
+        inspection_call = lambda engine, outfilepath, prindent: _inspect_pandas_df(
+            sql_query,
+            engine,
+            args.pandas_chunksize,
+            outfilepath,
+            prindent
+        )
+
+    operation_engine = engine_multi_config.get_operation_dbengine()
+    if args.scope == entities.DatabaseScope.Operation:
+        inspection_call(
+            operation_engine,
+            args.pandas_output_filepath,
+            ''
+        )
+    elif args.scope == entities.DatabaseScope.Storage and args.storagedb_uuid is not None:
+        inspection_call(
+            engine_multi_config.get_storage_dbengine(args.storagedb_uuid),
+            args.pandas_output_filepath,
+            ''
+        )
+    elif args.scope == entities.DatabaseScope.Storage and args.storagedb_uuid is None:
+        filepath_parts = None if args.pandas_output_filepath is None else os.path.splitext(args.pandas_output_filepath)
+        for uuid in engine_multi_config.storage_uuid_map_engurl.keys():
+            filesystem_entity = operation_engine.select_entity(
+                entities.CosmicDB_Filesystem,
+                uuid = uuid
+            )
+            assert filesystem_entity is not None, f"No Filesystem entity in Operations DB with UUID = {uuid}"
+            filepath = None if filepath_parts is None else f"{filepath_parts[0]}.{filesystem_entity.label}{filepath_parts[1]}"
+
+            heading_str = f"Querying Storage DB with filesystem UUID '{filesystem_entity.uuid}' (label = '{filesystem_entity.label}'):"
+            print("="*len(heading_str))
+            print(heading_str)
+            print("-"*len(heading_str))
+            inspection_call(
+                engine_multi_config.get_storage_dbengine(uuid),
+                filepath,
+                '\t'
+            )
+            print("="*len(heading_str), "\n")
