@@ -14,6 +14,7 @@ class CosmicDB_EngineMultiConfig:
     ):
         self.operation_engurl = None
         self.storage_uuid_map_engurl = {}
+        self.storage_label_map_uuid = None
 
         with open(filepath, "r") as yaml_fio:
             yaml_dict = yaml.safe_load(yaml_fio)
@@ -44,27 +45,58 @@ class CosmicDB_EngineMultiConfig:
         except ValueError as err:
             raise ValueError(f"Expecting a Multi-scope engine configuration YAML: {filepath}.") from err
 
-    def get_dbengine_url(self, scope: entities.DatabaseScope, storage_fs_uuid: str = None):
+        if self.operation_engurl is not None:
+            # populate the storage_label_map_uuid
+            with self.get_operation_dbengine().session() as session:
+                self.storage_label_map_uuid = {
+                    filesystem_entity.label: filesystem_entity.uuid
+
+                    for filesystem_entity in session.scalars(
+                        sqlalchemy.select(
+                            entities.CosmicDB_Filesystem
+                        ).where(
+                            entities.CosmicDB_Filesystem.uuid in list(self.storage_uuid_map_engurl.keys())
+                        )
+                    ).all()
+                }
+
+    def _get_fs_uuid_by_label(self, label):
+        if self.operation_engurl is not None and label not in self.storage_label_map_uuid:
+            filesystem_entity = self.get_operation_dbengine().select_entity(
+                entities.CosmicDB_Filesystem,
+                label = label
+            )
+            if filesystem_entity is not None:
+                self.storage_label_map_uuid[label] = filesystem_entity.uuid
+        return self.storage_label_map_uuid[label]
+
+    def get_dbengine_url(self, scope: entities.DatabaseScope, storage_fs_uuid: str = None, storage_fs_label: str = None):
         if scope == entities.DatabaseScope.Operation:
             return self.operation_engurl
         if scope == entities.DatabaseScope.Storage:
-            if storage_fs_uuid is not None:
-                return self.storage_uuid_map_engurl[
-                    self.get_active_storage_dbuuid()
-                ]
-
             if len(self.storage_uuid_map_engurl) == 1:
                 return next(iter(self.storage_uuid_map_engurl.values()))
+
+            if storage_fs_uuid is None and storage_fs_label is not None:
+                return self.storage_uuid_map_engurl[self._get_fs_uuid_by_label(storage_fs_label)]
+            if storage_fs_uuid is not None:
+                return self.storage_uuid_map_engurl[
+                    storage_fs_uuid
+                ]
             
             return self.storage_uuid_map_engurl[
                 self.get_active_storage_dbuuid()
             ]
 
-    def get_dbengine(self, scope: entities.DatabaseScope, storage_fs_uuid: str = None):
-        if scope == entities.DatabaseScope.Operation:
-            return self.get_operation_dbengine()
-        if scope == entities.DatabaseScope.Storage:
-            return self.get_storage_dbengine(storage_fs_uuid)
+    def get_dbengine(self, scope: entities.DatabaseScope, storage_fs_uuid: str = None, storage_fs_label: str = None):
+        return CosmicDB_Engine(
+            engine_url = self.get_dbengine_url(
+                scope,
+                storage_fs_uuid,
+                storage_fs_label
+            ),
+            scope = scope
+        )
     
     def get_operation_dbengine(self):
         return CosmicDB_Engine(
@@ -72,17 +104,15 @@ class CosmicDB_EngineMultiConfig:
             scope = entities.DatabaseScope.Operation
         )
 
-    def get_storage_dbengine(self, filesystem_uuid: str = None):
-        if filesystem_uuid is None:
-            filesystem_uuid = self.get_active_storage_dbuuid()
-        try:
-            return CosmicDB_Engine(
-                engine_url = self.storage_uuid_map_engurl[filesystem_uuid],
-                scope = entities.DatabaseScope.Storage
-            )
-        except KeyError:
-            pass
-        raise KeyError(f"No match for UUID '{filesystem_uuid}': {self.storage_uuid_map_engurl.keys()}")
+    def get_storage_dbengine(self, uuid: str = None, label: str = None):
+        return CosmicDB_Engine(
+            engine_url = self.get_dbengine_url(
+                entities.DatabaseScope.Storage,
+                uuid,
+                label
+            ),
+            scope = entities.DatabaseScope.Storage
+        )
 
     def get_active_storage_dbuuid(self, operations_dbengine = None):
         if operations_dbengine is None:
@@ -291,7 +321,13 @@ def cli_add_engine_arguments(parser, add_scope_argument: bool = True, add_storag
             "--storagedb-uuid",
             type=str,
             default=None,
-            help="The identifying filesystem UUID in the scoped case of a Storage DB. Default is to target the active Storage DB.",
+            help="The identifying FileSystem UUID in the scoped case of a Storage DB. Default is to target the active Storage DB.",
+        )
+        parser.add_argument(
+            "--storagedb-fslabel",
+            type=str,
+            default=None,
+            help="The identifying FileSystem label in the scoped case of a Storage DB. Inferior to the UUID.",
         )
 
 def cli_parse_engine_scope_argument(args):
@@ -302,8 +338,12 @@ def cli_parse_engine_scope_argument(args):
             args.scope = entities.ENTITY_SCOPE_MAP[args.entity]
         except KeyError as err:
             raise ValueError(f"args.entity is not scoped: {args.entity}") from err
+    elif hasattr(args, "storagedb_uuid") and args.storagedb_uuid is not None:
+        args.scope = entities.DatabaseScope.Storage
+    elif hasattr(args, "storagedb_fslabel") and args.storagedb_fslabel is not None:
+        args.scope = entities.DatabaseScope.Storage
     else:
-        raise ValueError(f"Niether an entity nor a scope has been specified via the arguments provided")
+        raise ValueError(f"Niether an entity nor a scope has been specified via the arguments provided.")
 
 def cli_create_all_tables():
     import argparse
@@ -321,7 +361,8 @@ def cli_create_all_tables():
         args.engine_configuration
     ).get_dbengine(
         args.scope,
-        args.storagedb_uuid
+        args.storagedb_uuid,
+        args.storagedb_fslabel
     ).create_all_tables()
 
 
@@ -549,7 +590,7 @@ def cli_alter_db():
     args.entity = getattr(entities, entity_name)
     cli_parse_engine_scope_argument(args)
 
-    engine = CosmicDB_EngineMultiConfig(args.engine_configuration).get_dbengine(args.scope, args.storagedb_uuid)
+    engine = CosmicDB_EngineMultiConfig(args.engine_configuration).get_dbengine(args.scope, args.storagedb_uuid, args.storagedb_fslabel)
     assert args.entity in entities.DATABASE_SCOPES[engine.scope]
     if args.field is None:
         if args.create:
@@ -792,7 +833,7 @@ def cli_write():
     
     entity = args.entity(**field_values)
 
-    engine = CosmicDB_EngineMultiConfig(args.engine_configuration).get_dbengine(args.scope, args.storagedb_uuid)
+    engine = CosmicDB_EngineMultiConfig(args.engine_configuration).get_dbengine(args.scope, args.storagedb_uuid, args.storagedb_fslabel)
     with engine.session() as session:
         session.add(entity)
         try:
@@ -864,6 +905,12 @@ def cli_inspect():
         type=str,
         default=None,
         help="The identifying filesystem UUID in the scoped case of a Storage DB. Default is to query all Storage DBs.",
+    )
+    parser.add_argument(
+        "--storagedb-fslabel",
+        type=str,
+        default=None,
+        help="The identifying FileSystem label in the scoped case of a Storage DB. Inferior to the UUID.",
     )
     
     parser.add_argument(
@@ -1037,20 +1084,20 @@ def cli_inspect():
             prindent
         )
 
-    operation_engine = engine_multi_config.get_operation_dbengine()
     if args.scope == entities.DatabaseScope.Operation:
         inspection_call(
-            operation_engine,
+            engine_multi_config.get_operation_dbengine(),
             args.pandas_output_filepath,
             ''
         )
-    elif args.scope == entities.DatabaseScope.Storage and args.storagedb_uuid is not None:
+    elif args.scope == entities.DatabaseScope.Storage and (args.storagedb_uuid or args.storagedb_fslabel) is not None:
         inspection_call(
-            engine_multi_config.get_storage_dbengine(args.storagedb_uuid),
+            engine_multi_config.get_dbengine(args.scope, args.storagedb_uuid, args.storagedb_fslabel),
             args.pandas_output_filepath,
             ''
         )
-    elif args.scope == entities.DatabaseScope.Storage and args.storagedb_uuid is None:
+    elif args.scope == entities.DatabaseScope.Storage and (args.storagedb_uuid or args.storagedb_fslabel) is None:
+        operation_engine = engine_multi_config.get_operation_dbengine()
         filepath_parts = None if args.pandas_output_filepath is None else os.path.splitext(args.pandas_output_filepath)
         for uuid in engine_multi_config.storage_uuid_map_engurl.keys():
             filesystem_entity = operation_engine.select_entity(
