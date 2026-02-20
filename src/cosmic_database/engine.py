@@ -163,6 +163,19 @@ def cli_create_engine_url():
     print(CosmicDB_Engine._create_url(args.engine_configuration))
 
 
+def _in_csv_tolist(rhs: str):
+    import pandas
+    try:
+        filepath, column = rhs.split(":")
+    except ValueError:
+        raise ValueError(f"The in_csv operator expects the column specification after a colon (':').") from None
+    df = pandas.read_csv(filepath)
+    try:
+        return df[column].tolist()
+    except KeyError:
+        raise KeyError(f"CSV file '{filepath}' has no column '{column}'.") from None
+
+
 criterion_operations = {
     "is": lambda lhs, rhs: lhs.is_(rhs),
     "isnot": lambda lhs, rhs: lhs.is_not(rhs),
@@ -172,7 +185,9 @@ criterion_operations = {
     "lt": lambda lhs, rhs: lhs < rhs,
     "leq": lambda lhs, rhs: lhs <= rhs,
     "neq": lambda lhs, rhs: lhs != rhs,
+    "not_in": lambda lhs, rhs: lhs.not_in(rhs),
     "in": lambda lhs, rhs: lhs.in_(rhs),
+    "in_csv": lambda lhs, rhs: lhs.in_(_in_csv_tolist(rhs)),
     "like": lambda lhs, rhs: lhs.like(rhs),
     "ilike": lambda lhs, rhs: lhs.ilike(rhs),
     "contains": lambda lhs, rhs: lhs.contains(rhs),
@@ -262,7 +277,10 @@ def cli_parse_where_criterion(operand, operator: str, value:str):
     elif isinstance(operand, list):
         raise ValueError("Where criterion for a list is not supported.")
 
-    if operator == "in":
+    if operator in [
+        "in",
+        "not_in"
+    ]:
         value = list(
             map(
                 value_conversions[value_type],
@@ -583,12 +601,22 @@ def cli_inspect():
         )):
             print(f"dataframe #{chunk_i}\n", df)
             if args.pandas_output_filepath is not None:
-                if chunk_i == 1:
-                    pandas_output_filepath_splitext = os.path.splitext(args.pandas_output_filepath)
-                if chunk_i > 0:
-                    args.pandas_output_filepath = f"{pandas_output_filepath_splitext[0]}.{chunk_i}{pandas_output_filepath_splitext[1]}"
-                print(f"Output: {args.pandas_output_filepath}")
-                df.to_pickle(args.pandas_output_filepath)
+                if os.path.splitext(args.pandas_output_filepath)[1] == ".csv":
+                    df.to_csv(
+                        args.pandas_output_filepath,
+                        mode='w' if chunk_i == 0 else 'a',
+                        header=True if chunk_i == 0 else False,
+                        index=False
+                    )
+                else:
+                    # assume pkl
+
+                    if chunk_i == 1:
+                        pandas_output_filepath_splitext = os.path.splitext(args.pandas_output_filepath)
+                    if chunk_i > 0:
+                        args.pandas_output_filepath = f"{pandas_output_filepath_splitext[0]}.{chunk_i}{pandas_output_filepath_splitext[1]}"
+                    print(f"Output: {args.pandas_output_filepath}")
+                    df.to_pickle(args.pandas_output_filepath)
     else:
         with engine.session() as session:
             results = session.scalars(sql_query).all()
