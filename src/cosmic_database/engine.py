@@ -578,7 +578,7 @@ def cli_inspect():
         import pandas
         for chunk_i, df in enumerate(pandas.read_sql_query(
             sql = sql_query,
-            con = engine.engine,
+            con = engine.engine.connect(),
             chunksize=args.pandas_chunksize
         )):
             print(f"dataframe #{chunk_i}\n", df)
