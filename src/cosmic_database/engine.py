@@ -382,16 +382,31 @@ def cli_create_engine_url():
     print(f"{scope.value}: '{url}'")
 
 
+def _in_csv_tolist(rhs: str):
+    import pandas
+    try:
+        filepath, column = rhs.split(":")
+    except ValueError:
+        raise ValueError(f"The in_csv operator expects the column specification after a colon (':').") from None
+    df = pandas.read_csv(filepath)
+    try:
+        return df[column].tolist()
+    except KeyError:
+        raise KeyError(f"CSV file '{filepath}' has no column '{column}'.") from None
+
+
 criterion_operations = {
-    "is": lambda lhs, rhs: lhs.is_(rhs) if hasattr(lhs, "is_") else lhs is rhs,
-    "isnot": lambda lhs, rhs: lhs.is_not(rhs) if hasattr(lhs, "is_not") else lhs is not rhs,
+    "is": lambda lhs, rhs: lhs.is_(rhs),
+    "isnot": lambda lhs, rhs: lhs.is_not(rhs),
     "eq": lambda lhs, rhs: lhs == rhs,
     "gt": lambda lhs, rhs: lhs > rhs,
     "geq": lambda lhs, rhs: lhs >= rhs,
     "lt": lambda lhs, rhs: lhs < rhs,
     "leq": lambda lhs, rhs: lhs <= rhs,
     "neq": lambda lhs, rhs: lhs != rhs,
+    "not_in": lambda lhs, rhs: lhs.not_in(rhs),
     "in": lambda lhs, rhs: lhs.in_(rhs),
+    "in_csv": lambda lhs, rhs: lhs.in_(_in_csv_tolist(rhs)),
     "like": lambda lhs, rhs: lhs.like(rhs),
     "ilike": lambda lhs, rhs: lhs.ilike(rhs),
     "contains": lambda lhs, rhs: lhs.contains(rhs),
@@ -489,7 +504,10 @@ def cli_parse_where_criterion(operand, operator: str, value:str):
     elif isinstance(operand, list):
         raise ValueError("Where criterion for a list is not supported.")
 
-    if operator == "in":
+    if operator in [
+        "in",
+        "not_in",
+    ]:
         value = list(
             map(
                 value_conversions[value_type],
@@ -866,12 +884,21 @@ def _inspect_pandas_df(
     )):
         print(f"{prindent}dataframe #{chunk_i}\n", df)
         if output_filepath is not None:
-            if chunk_i == 1:
-                output_filepath_splitext = os.path.splitext(output_filepath)
-            if chunk_i > 0:
-                output_filepath = f"{output_filepath_splitext[0]}.{chunk_i}{output_filepath_splitext[1]}"
-            print(f"{prindent}Output: {output_filepath}")
-            df.to_pickle(output_filepath)
+            if os.path.splitext(output_filepath)[1] == ".csv":
+                df.to_csv(
+                    output_filepath,
+                    mode='w' if chunk_i == 0 else 'a',
+                    header=True if chunk_i == 0 else False,
+                    index=False
+                )
+            else:
+                # assume pkl
+                if chunk_i == 1:
+                    output_filepath_splitext = os.path.splitext(output_filepath)
+                if chunk_i > 0:
+                    output_filepath = f"{output_filepath_splitext[0]}.{chunk_i}{output_filepath_splitext[1]}"
+                print(f"{prindent}Output: {output_filepath}")
+                df.to_pickle(output_filepath)
 
 def _inspect_scalars(
     sql_query,      
