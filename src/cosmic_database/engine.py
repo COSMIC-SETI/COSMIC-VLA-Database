@@ -287,6 +287,8 @@ def cli_parse_where_criterion(operand, operator: str, value:str):
                 value.split(';')
             )
         )
+    elif operator == "in_csv":
+        pass
     else:
         if value_type not in value_conversions:
             assert value in ["null", "none", "None", "NULL"], f"Can only compare entity ({operand}) against `None`."
