@@ -784,7 +784,7 @@ def cli_write_operation_dbinfo():
         prior = session.scalars(
             sqlalchemy.select(entities.CosmicDB_OperationDatabaseInfo)
             .where(
-                entities.CosmicDB_OperationDatabaseInfo.end is None
+                entities.CosmicDB_OperationDatabaseInfo.end.is_(None)
             )
         ).one_or_none()
         dbinfo_entry = entities.CosmicDB_OperationDatabaseInfo(
