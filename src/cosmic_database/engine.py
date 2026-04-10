@@ -15,6 +15,7 @@ class CosmicDB_EngineMultiConfig:
         self.operation_engurl = None
         self.storage_uuid_map_engurl = {}
         self.storage_label_map_uuid = None
+        self.problematic_storage_engurls = []
 
         with open(filepath, "r") as yaml_fio:
             yaml_dict = yaml.safe_load(yaml_fio)
@@ -23,6 +24,7 @@ class CosmicDB_EngineMultiConfig:
             for key, engine_conf in yaml_dict.items():
                 engscope = entities.DatabaseScope(key)
                 if engscope == entities.DatabaseScope.Operation:
+                    assert self.operation_engurl is None, f"More than one Operation scoped database specified in {filepath}."
                     self.operation_engurl = sqlalchemy.engine.url.URL.create(
                         **engine_conf
                     )
@@ -34,13 +36,17 @@ class CosmicDB_EngineMultiConfig:
                         engurl = sqlalchemy.engine.url.URL.create(
                             **engconf
                         )
-                        storage_dbinfo = CosmicDB_Engine(
-                            engine_url = engurl,
-                            scope = engscope
-                        ).select_entity(entities.CosmicDB_StorageDatabaseInfo)
-                        assert storage_dbinfo is not None, f"{engurl} has no StorageDatabaseInfo record."
+                        try:
+                            storage_dbinfo = CosmicDB_Engine(
+                                engine_url = engurl,
+                                scope = engscope
+                            ).select_entity(entities.CosmicDB_StorageDatabaseInfo)
+                            assert storage_dbinfo is not None, f"{engurl} has no StorageDatabaseInfo record."
 
-                        self.storage_uuid_map_engurl[storage_dbinfo.filesystem_uuid] = engurl
+                            self.storage_uuid_map_engurl[storage_dbinfo.filesystem_uuid] = engurl
+                        except BaseException as err:
+                            print(f"Failed to access CosmicDB_StorageDatabaseInfo.filesystem_uuid at {engurl}:\n{err}")
+                            self.problematic_storage_engurls.append(engurl)
 
         except ValueError as err:
             raise ValueError(f"Expecting a Multi-scope engine configuration YAML: {filepath}.") from err
@@ -76,6 +82,8 @@ class CosmicDB_EngineMultiConfig:
         if scope == entities.DatabaseScope.Storage:
             if len(self.storage_uuid_map_engurl) == 1:
                 return next(iter(self.storage_uuid_map_engurl.values()))
+            if len(self.storage_uuid_map_engurl) == 0 and len(self.problematic_storage_engurls):
+                return self.problematic_storage_engurls[0]
 
             if storage_fs_uuid is None and storage_fs_label is not None:
                 return self.storage_uuid_map_engurl[self._get_fs_uuid_by_label(storage_fs_label)]
@@ -209,18 +217,27 @@ class CosmicDB_Engine:
             session.add_all(entities)
             session.commit()
 
-    def select_entity(self, entity_class, session=None, **criteria_kwargs):
+    def select_entity(self, entity_class, session=None, create_missing_entity = False, **criteria_kwargs):
         if session is None:
             with self.session() as session:
-                return self.select_entity(entity_class, session, **criteria_kwargs)
+                return self.select_entity(entity_class, session, create_missing_entity, **criteria_kwargs)
 
-        return session.scalars(
+        ret = session.scalars(
             sqlalchemy.select(entity_class)
             .where(*[
                 getattr(entity_class, colname) == colval
                 for colname, colval in criteria_kwargs.items()
             ])
         ).one_or_none()
+        if create_missing_entity and ret is None:
+            ret = entity_class(
+                **criteria_kwargs
+            )
+            session.add(ret)
+            session.commit()
+            session.refresh(ret)
+
+        return ret
 
     def update_entity(self,
         session,
@@ -302,7 +319,7 @@ def cli_add_engine_arguments(parser, add_scope_argument: bool = True, add_storag
     parser.add_argument(
         "--engine-configuration",
         type=str,
-        default="/home/cosmic/conf/cosmicdb_v2.1_conf.yaml",
+        default=os.environ.get("COSMICDB_CONFPATH", "/home/cosmic/conf/cosmicdb_v2.1_conf.yaml"),
         help="The YAML file path containing the instantiation arguments for the SQLAlchemy.engine.url.URL instance specifying the database."
     )
     if add_scope_argument is not False:
@@ -514,8 +531,6 @@ def cli_parse_where_criterion(operand, operator: str, value:str):
                 value.split(';')
             )
         )
-    elif operator == "in_csv":
-        pass
     else:
         if value_type not in value_conversions:
             assert value in ["null", "none", "None", "NULL"], f"Can only compare entity ({operand}) against `None`."
@@ -784,7 +799,7 @@ def cli_write_operation_dbinfo():
         prior = session.scalars(
             sqlalchemy.select(entities.CosmicDB_OperationDatabaseInfo)
             .where(
-                entities.CosmicDB_OperationDatabaseInfo.end.is_(None)
+                entities.CosmicDB_OperationDatabaseInfo.end is None
             )
         ).one_or_none()
         dbinfo_entry = entities.CosmicDB_OperationDatabaseInfo(
@@ -1126,17 +1141,26 @@ def cli_inspect():
             ''
         )
     elif args.scope == entities.DatabaseScope.Storage and (args.storagedb_uuid or args.storagedb_fslabel) is None:
-        operation_engine = engine_multi_config.get_operation_dbengine()
+        operation_engine = None
+        try:
+            operation_engine = engine_multi_config.get_operation_dbengine()
+        except ValueError:
+            pass
+
         filepath_parts = None if args.pandas_output_filepath is None else os.path.splitext(args.pandas_output_filepath)
         for uuid in engine_multi_config.storage_uuid_map_engurl.keys():
-            filesystem_entity = operation_engine.select_entity(
-                entities.CosmicDB_Filesystem,
-                uuid = uuid
-            )
-            assert filesystem_entity is not None, f"No Filesystem entity in Operations DB with UUID = {uuid}"
-            filepath = None if filepath_parts is None else f"{filepath_parts[0]}.{filesystem_entity.label}{filepath_parts[1]}"
+            heading_str = f"Querying Storage DB with filesystem UUID '{uuid}':"
+            if operation_engine:
+                filesystem_entity = operation_engine.select_entity(
+                    entities.CosmicDB_Filesystem,
+                    uuid = uuid
+                )
+                assert filesystem_entity is not None, f"No Filesystem entity in Operations DB with UUID = {uuid}"
+                filepath = None if filepath_parts is None else f"{filepath_parts[0]}.{filesystem_entity.label}{filepath_parts[1]}"
+                heading_str = heading_str[0:-1] + f" (label = '{filesystem_entity.label}'): "
+            else:
+                filepath = None if filepath_parts is None else f"{filepath_parts[0]}.{uuid}{filepath_parts[1]}"
 
-            heading_str = f"Querying Storage DB with filesystem UUID '{filesystem_entity.uuid}' (label = '{filesystem_entity.label}'):"
             print("="*len(heading_str))
             print(heading_str)
             print("-"*len(heading_str))

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cosmic_database"
-version = "2.1.14"
+version = "2.1.15"
 authors = [
   { name="Ross Donnachie", email="code@radonn.co.za" },
 ]
